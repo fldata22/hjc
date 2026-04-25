@@ -11,4 +11,5 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/crusade', [\App\Http\Controllers\Api\CrusadeController::class, 'show']);
     Route::get('/zones', [\App\Http\Controllers\Api\ZoneController::class, 'index']);
     Route::get('/churches', [\App\Http\Controllers\Api\ChurchController::class, 'index']);
+    Route::apiResource('pastors', \App\Http\Controllers\Api\PastorController::class);
 });
