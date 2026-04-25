@@ -97,4 +97,20 @@ class PastorApiTest extends TestCase
         $this->deleteJson("/api/pastors/{$pastor->id}")->assertStatus(204);
         $this->assertSoftDeleted($pastor);
     }
+
+    public function test_stage_counts_endpoint(): void
+    {
+        Pastor::factory()->count(3)->create(['crusade_id' => $this->crusade->id, 'pipeline_stage' => 'identified']);
+        Pastor::factory()->count(2)->create(['crusade_id' => $this->crusade->id, 'pipeline_stage' => 'engaged']);
+        Pastor::factory()->create(['crusade_id' => $this->crusade->id, 'pipeline_stage' => 'champion']);
+
+        $r = $this->getJson('/api/pastors/stage-counts');
+        $r->assertOk()
+          ->assertJsonPath('data.identified', 3)
+          ->assertJsonPath('data.engaged', 2)
+          ->assertJsonPath('data.committed', 0)
+          ->assertJsonPath('data.active', 0)
+          ->assertJsonPath('data.champion', 1)
+          ->assertJsonPath('data.total', 6);
+    }
 }

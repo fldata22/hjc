@@ -9,6 +9,21 @@ use Illuminate\Http\Request;
 
 class PastorController extends Controller
 {
+    public function stageCounts(): JsonResponse
+    {
+        $counts = Pastor::selectRaw('pipeline_stage, COUNT(*) as n')->groupBy('pipeline_stage')->pluck('n', 'pipeline_stage');
+        $stages = ['identified', 'engaged', 'committed', 'active', 'champion'];
+        $data = [];
+        $total = 0;
+        foreach ($stages as $s) {
+            $n = (int) ($counts[$s] ?? 0);
+            $data[$s] = $n;
+            $total += $n;
+        }
+        $data['total'] = $total;
+        return response()->json(['data' => $data]);
+    }
+
     public function index(Request $request): JsonResponse
     {
         $q = Pastor::query();
