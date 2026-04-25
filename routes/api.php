@@ -27,4 +27,8 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::delete('/reminders/{reminder}', [\App\Http\Controllers\Api\ReminderController::class, 'destroy']);
     Route::get('/powers', [\App\Http\Controllers\Api\PowerController::class, 'index']);
     Route::get('/powers/{code}', [\App\Http\Controllers\Api\PowerController::class, 'show']);
+    Route::get('/awareness-surveys', [\App\Http\Controllers\Api\AwarenessSurveyController::class, 'index']);
+    Route::post('/awareness-surveys', [\App\Http\Controllers\Api\AwarenessSurveyController::class, 'store']);
+    Route::get('/awareness-surveys/trajectory', [\App\Http\Controllers\Api\AwarenessSurveyController::class, 'trajectory']);
+    Route::patch('/awareness-surveys/{awarenessSurvey}', [\App\Http\Controllers\Api\AwarenessSurveyController::class, 'update']);
 });
