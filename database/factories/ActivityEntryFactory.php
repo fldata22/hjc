@@ -1,0 +1,22 @@
+<?php
+
+namespace Database\Factories;
+
+use App\Models\Crusade;
+use App\Models\User;
+use Illuminate\Database\Eloquent\Factories\Factory;
+
+class ActivityEntryFactory extends Factory
+{
+    public function definition(): array
+    {
+        return [
+            'crusade_id' => Crusade::factory(),
+            'user_id' => User::factory(),
+            'occurred_at' => fake()->dateTimeThisMonth(),
+            'description' => fake()->sentence(),
+            'power' => fake()->randomElement(['pastors', 'awareness', 'pledges', 'publicity', 'committees', 'budget', 'govt']),
+            'status' => 'done',
+        ];
+    }
+}
