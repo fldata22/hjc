@@ -8,6 +8,6 @@ class DatabaseSeeder extends Seeder
 {
     public function run(): void
     {
-        // Phase 1 seed implemented in Task 25.
+        $this->call(CrusadeSeeder::class);
     }
 }
