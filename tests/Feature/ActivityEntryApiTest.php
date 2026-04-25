@@ -28,7 +28,9 @@ class ActivityEntryApiTest extends TestCase
         ]);
 
         $this->getJson('/api/activity-entries?date=' . now()->toDateString())
-            ->assertOk()->assertJsonCount(1, 'data');
+            ->assertOk()
+            ->assertJsonStructure(['data', 'meta' => ['current_page', 'total']])
+            ->assertJsonCount(1, 'data');
     }
 
     public function test_filters_by_power_code(): void

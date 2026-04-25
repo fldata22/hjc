@@ -25,7 +25,10 @@ class PledgeMeetingApiTest extends TestCase
     public function test_lists_meetings(): void
     {
         PledgeMeeting::factory()->count(3)->create(['crusade_id' => $this->crusade->id]);
-        $this->getJson('/api/pledge-meetings')->assertOk()->assertJsonCount(3, 'data');
+        $this->getJson('/api/pledge-meetings')
+            ->assertOk()
+            ->assertJsonStructure(['data', 'meta' => ['current_page', 'total']])
+            ->assertJsonCount(3, 'data');
     }
 
     public function test_can_create_meeting(): void

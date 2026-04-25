@@ -26,7 +26,11 @@ class ActivityEntryController extends Controller
             $q->where('power_id', $request->integer('power_id'));
         }
 
-        return response()->json(['data' => $q->orderByDesc('occurred_at')->get()]);
+        $paginator = $q->orderByDesc('occurred_at')->paginate(min((int) $request->integer('per_page', 25), 100));
+        return response()->json([
+            'data' => $paginator->items(),
+            'meta' => ['current_page' => $paginator->currentPage(), 'total' => $paginator->total(), 'per_page' => $paginator->perPage(), 'last_page' => $paginator->lastPage()],
+        ]);
     }
 
     public function store(Request $request): JsonResponse

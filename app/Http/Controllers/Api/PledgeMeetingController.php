@@ -10,10 +10,13 @@ use Illuminate\Validation\Rule;
 
 class PledgeMeetingController extends Controller
 {
-    public function index(): JsonResponse
+    public function index(Request $request): JsonResponse
     {
+        $paginator = PledgeMeeting::orderBy('held_on')->withCount('attendees')
+            ->paginate(min((int) $request->integer('per_page', 25), 100));
         return response()->json([
-            'data' => PledgeMeeting::orderBy('held_on')->withCount('attendees')->get(),
+            'data' => $paginator->items(),
+            'meta' => ['current_page' => $paginator->currentPage(), 'total' => $paginator->total(), 'per_page' => $paginator->perPage(), 'last_page' => $paginator->lastPage()],
         ]);
     }
 
