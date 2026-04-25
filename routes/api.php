@@ -21,4 +21,8 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/pledges/summary', [\App\Http\Controllers\Api\PledgeSummaryController::class, 'show']);
     Route::get('/activity-entries', [\App\Http\Controllers\Api\ActivityEntryController::class, 'index']);
     Route::post('/activity-entries', [\App\Http\Controllers\Api\ActivityEntryController::class, 'store']);
+    Route::get('/reminders', [\App\Http\Controllers\Api\ReminderController::class, 'index']);
+    Route::post('/reminders', [\App\Http\Controllers\Api\ReminderController::class, 'store']);
+    Route::patch('/reminders/{reminder}', [\App\Http\Controllers\Api\ReminderController::class, 'update']);
+    Route::delete('/reminders/{reminder}', [\App\Http\Controllers\Api\ReminderController::class, 'destroy']);
 });
