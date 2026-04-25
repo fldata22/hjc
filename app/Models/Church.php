@@ -1,0 +1,24 @@
+<?php
+
+namespace App\Models;
+
+use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+
+class Church extends Model
+{
+    use HasFactory;
+
+    protected $fillable = ['crusade_id', 'name', 'zone_id'];
+
+    public function crusade(): BelongsTo
+    {
+        return $this->belongsTo(Crusade::class);
+    }
+
+    public function zone(): BelongsTo
+    {
+        return $this->belongsTo(Zone::class);
+    }
+}
