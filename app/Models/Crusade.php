@@ -12,6 +12,7 @@ class Crusade extends Model
     protected $fillable = [
         'name', 'city', 'opens_at', 'closes_at',
         'budget_total', 'pastors_target', 'awareness_target_pct',
+        'population', 'pap', 'convoy_target', 'makarios_target',
     ];
 
     protected $casts = [

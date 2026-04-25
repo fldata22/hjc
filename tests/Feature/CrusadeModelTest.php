@@ -18,4 +18,11 @@ class CrusadeModelTest extends TestCase
         $this->assertSame(80000.00, (float) $crusade->budget_total);
         $this->assertEquals('2026-05-02', $crusade->opens_at->toDateString());
     }
+
+    public function test_factory_includes_context_fields(): void
+    {
+        $c = \App\Models\Crusade::factory()->create();
+        $this->assertSame(2200000, $c->population);
+        $this->assertSame(24, $c->convoy_target);
+    }
 }

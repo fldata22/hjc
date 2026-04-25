@@ -16,6 +16,10 @@ class CrusadeFactory extends Factory
             'budget_total' => 80000,
             'pastors_target' => 1088,
             'awareness_target_pct' => 60,
+            'population' => 2200000,
+            'pap' => 1800000,
+            'convoy_target' => 24,
+            'makarios_target' => 500,
         ];
     }
 }
