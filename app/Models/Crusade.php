@@ -19,4 +19,9 @@ class Crusade extends Model
         'closes_at' => 'date',
         'budget_total' => 'decimal:2',
     ];
+
+    public function pledgeMeetings(): \Illuminate\Database\Eloquent\Relations\HasMany
+    {
+        return $this->hasMany(PledgeMeeting::class);
+    }
 }
