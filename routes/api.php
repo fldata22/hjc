@@ -39,6 +39,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::apiResource('committees', \App\Http\Controllers\Api\CommitteeController::class);
     Route::apiResource('conferences', \App\Http\Controllers\Api\ConferenceController::class);
     Route::apiResource('stakeholders', \App\Http\Controllers\Api\StakeholderController::class);
+    Route::apiResource('permits', \App\Http\Controllers\Api\PermitController::class);
     Route::get('/conferences/{conference}/registration-summary', [\App\Http\Controllers\Api\ConferenceController::class, 'registrationSummary']);
     Route::get('/conferences/{conference}/tracks', [\App\Http\Controllers\Api\ConferenceTrackController::class, 'index']);
     Route::post('/conferences/{conference}/tracks', [\App\Http\Controllers\Api\ConferenceTrackController::class, 'store']);
