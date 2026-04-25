@@ -41,4 +41,14 @@ class AuthTest extends TestCase
         $this->withHeader('Authorization', "Bearer {$token}")->postJson('/api/logout')->assertOk();
         $this->assertCount(0, $user->fresh()->tokens);
     }
+
+    public function test_login_is_rate_limited(): void
+    {
+        // Hit the login route 11 times — the 11th should be 429
+        for ($i = 0; $i < 10; $i++) {
+            $this->postJson('/api/login', ['email' => 'x@x.com', 'password' => 'wrong']);
+        }
+        $this->postJson('/api/login', ['email' => 'x@x.com', 'password' => 'wrong'])
+            ->assertStatus(429);
+    }
 }
