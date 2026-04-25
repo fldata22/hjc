@@ -34,6 +34,8 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/worker-rehearsals', [\App\Http\Controllers\Api\WorkerRehearsalController::class, 'index']);
     Route::post('/worker-rehearsals', [\App\Http\Controllers\Api\WorkerRehearsalController::class, 'store']);
     Route::patch('/worker-rehearsals/{workerRehearsal}', [\App\Http\Controllers\Api\WorkerRehearsalController::class, 'update']);
+    Route::get('/publicity-channels/awareness-spend', [\App\Http\Controllers\Api\PublicityChannelController::class, 'awarenessSpend']);
+    Route::apiResource('publicity-channels', \App\Http\Controllers\Api\PublicityChannelController::class);
     Route::apiResource('committees', \App\Http\Controllers\Api\CommitteeController::class);
     Route::apiResource('conferences', \App\Http\Controllers\Api\ConferenceController::class);
     Route::get('/conferences/{conference}/registration-summary', [\App\Http\Controllers\Api\ConferenceController::class, 'registrationSummary']);
