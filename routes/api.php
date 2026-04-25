@@ -31,4 +31,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/awareness-surveys', [\App\Http\Controllers\Api\AwarenessSurveyController::class, 'store']);
     Route::get('/awareness-surveys/trajectory', [\App\Http\Controllers\Api\AwarenessSurveyController::class, 'trajectory']);
     Route::patch('/awareness-surveys/{awarenessSurvey}', [\App\Http\Controllers\Api\AwarenessSurveyController::class, 'update']);
+    Route::get('/worker-rehearsals', [\App\Http\Controllers\Api\WorkerRehearsalController::class, 'index']);
+    Route::post('/worker-rehearsals', [\App\Http\Controllers\Api\WorkerRehearsalController::class, 'store']);
+    Route::patch('/worker-rehearsals/{workerRehearsal}', [\App\Http\Controllers\Api\WorkerRehearsalController::class, 'update']);
 });
