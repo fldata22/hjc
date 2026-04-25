@@ -43,6 +43,15 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::apiResource('budget-categories', \App\Http\Controllers\Api\BudgetCategoryController::class);
     Route::apiResource('budget-transactions', \App\Http\Controllers\Api\BudgetTransactionController::class);
     Route::get('/budget/summary', [\App\Http\Controllers\Api\BudgetSummaryController::class, 'show']);
+    Route::get('/weekly-assessments', [\App\Http\Controllers\Api\WeeklyAssessmentController::class, 'index']);
+    Route::post('/weekly-assessments', [\App\Http\Controllers\Api\WeeklyAssessmentController::class, 'store']);
+    Route::get('/weekly-assessments/latest', [\App\Http\Controllers\Api\WeeklyAssessmentController::class, 'latest']);
+    Route::get('/weekly-assessments/{weeklyAssessment}', [\App\Http\Controllers\Api\WeeklyAssessmentController::class, 'show']);
+    Route::patch('/weekly-assessments/{weeklyAssessment}', [\App\Http\Controllers\Api\WeeklyAssessmentController::class, 'update']);
+    Route::delete('/weekly-assessments/{weeklyAssessment}', [\App\Http\Controllers\Api\WeeklyAssessmentController::class, 'destroy']);
+    Route::post('/weekly-assessments/{weeklyAssessment}/submit', [\App\Http\Controllers\Api\WeeklyAssessmentController::class, 'submit']);
+    Route::put('/weekly-assessments/{weeklyAssessment}/readings', [\App\Http\Controllers\Api\WeeklyAssessmentController::class, 'replaceReadings']);
+    Route::put('/weekly-assessments/{weeklyAssessment}/risks', [\App\Http\Controllers\Api\WeeklyAssessmentController::class, 'replaceRisks']);
     Route::get('/conferences/{conference}/registration-summary', [\App\Http\Controllers\Api\ConferenceController::class, 'registrationSummary']);
     Route::get('/conferences/{conference}/tracks', [\App\Http\Controllers\Api\ConferenceTrackController::class, 'index']);
     Route::post('/conferences/{conference}/tracks', [\App\Http\Controllers\Api\ConferenceTrackController::class, 'store']);
