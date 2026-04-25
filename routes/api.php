@@ -41,4 +41,8 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/conferences/{conference}/tracks', [\App\Http\Controllers\Api\ConferenceTrackController::class, 'store']);
     Route::patch('/conference-tracks/{conferenceTrack}', [\App\Http\Controllers\Api\ConferenceTrackController::class, 'update']);
     Route::delete('/conference-tracks/{conferenceTrack}', [\App\Http\Controllers\Api\ConferenceTrackController::class, 'destroy']);
+    Route::get('/conferences/{conference}/sessions', [\App\Http\Controllers\Api\ConferenceSessionController::class, 'index']);
+    Route::post('/conferences/{conference}/sessions', [\App\Http\Controllers\Api\ConferenceSessionController::class, 'store']);
+    Route::patch('/conference-sessions/{conferenceSession}', [\App\Http\Controllers\Api\ConferenceSessionController::class, 'update']);
+    Route::delete('/conference-sessions/{conferenceSession}', [\App\Http\Controllers\Api\ConferenceSessionController::class, 'destroy']);
 });
