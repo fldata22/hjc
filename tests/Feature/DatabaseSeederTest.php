@@ -14,6 +14,9 @@ class DatabaseSeederTest extends TestCase
         $this->seed();
 
         $this->assertDatabaseCount('crusades', 1);
+        $crusade = \DB::table('crusades')->first();
+        $this->assertSame(2200000, (int) $crusade->population);
+        $this->assertSame(24, (int) $crusade->convoy_target);
         $this->assertDatabaseCount('crusade_targets', 6);
         $this->assertGreaterThanOrEqual(8, \DB::table('zones')->count());
         $this->assertGreaterThanOrEqual(15, \DB::table('churches')->count());
@@ -33,5 +36,10 @@ class DatabaseSeederTest extends TestCase
         $this->assertGreaterThanOrEqual(6, \DB::table('publicity_channels')->count());
         $this->assertGreaterThanOrEqual(6, \DB::table('stakeholders')->count());
         $this->assertGreaterThanOrEqual(3, \DB::table('permits')->count());
+        $this->assertGreaterThanOrEqual(8, \DB::table('budget_categories')->count());
+        $this->assertGreaterThanOrEqual(15, \DB::table('budget_transactions')->count());
+        $this->assertGreaterThanOrEqual(8, \DB::table('weekly_assessments')->count());
+        $this->assertGreaterThanOrEqual(14, \DB::table('weekly_assessment_readings')->count());
+        $this->assertGreaterThanOrEqual(3, \DB::table('weekly_assessment_risks')->count());
     }
 }

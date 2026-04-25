@@ -21,6 +21,11 @@ use App\Models\PublicityChannel;
 use App\Models\Reminder;
 use App\Models\Stakeholder;
 use App\Models\User;
+use App\Models\BudgetCategory;
+use App\Models\BudgetTransaction;
+use App\Models\WeeklyAssessment;
+use App\Models\WeeklyAssessmentReading;
+use App\Models\WeeklyAssessmentRisk;
 use App\Models\Zone;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\Hash;
@@ -42,6 +47,10 @@ class CrusadeSeeder extends Seeder
             'budget_total' => 80000,
             'pastors_target' => 1088,
             'awareness_target_pct' => 60,
+            'population' => 2200000,
+            'pap' => 1800000,
+            'convoy_target' => 24,
+            'makarios_target' => 500,
         ]);
 
         foreach ([['choir', 150], ['prayer', 200], ['ushers', 300], ['counsellors', 250], ['buses', 24], ['money', 80000]] as [$r, $t]) {
@@ -336,6 +345,118 @@ class CrusadeSeeder extends Seeder
                 'name' => $name, 'agency' => $agency, 'status' => $status,
                 'due_on' => $due, 'signed_on' => $signed,
             ]);
+        }
+
+        // Budget categories — 8 categories matching DW.11
+        $cats = collect();
+        foreach ([
+            ['Crusade ground & sound', 18000, 1],
+            ['Publicity (radio · print · OOH)', 16000, 2],
+            ['Conference (venue · meals · materials)', 14000, 3],
+            ['Worker training (rehearsals · transport)', 8000, 4],
+            ['Convoy & logistics (24 buses target)', 9000, 5],
+            ['Hospitality & accommodation', 7000, 6],
+            ['Counselling & follow-up', 5000, 7],
+            ['Contingency · 5%', 3000, 8],
+        ] as [$name, $alloc, $idx]) {
+            $cats->push(BudgetCategory::create([
+                'crusade_id' => $crusade->id,
+                'name' => $name, 'allocated_amount' => $alloc, 'order_index' => $idx,
+            ]));
+        }
+
+        foreach ([
+            ['Donation · BoT pool', '2026-04-08', 12000],
+            ['Donation · Faith Trust', '2026-04-12', 5000],
+            ['Donation · monthly partners', '2026-04-01', 8000],
+            ['Donation · Bishop Banda', '2026-03-25', 3500],
+            ['Donation · large gift', '2026-03-15', 25000],
+            ['Donation · pastors pool', '2026-04-18', 9000],
+        ] as [$desc, $on, $amt]) {
+            BudgetTransaction::create([
+                'crusade_id' => $crusade->id, 'budget_category_id' => null,
+                'description' => $desc, 'occurred_on' => $on,
+                'kind' => 'income', 'amount' => $amt,
+            ]);
+        }
+
+        $cgs = $cats->firstWhere('name', 'Crusade ground & sound');
+        $pub = $cats->firstWhere('name', 'Publicity (radio · print · OOH)');
+        $confCat = $cats->firstWhere('name', 'Conference (venue · meals · materials)');
+        $wt = $cats->firstWhere('name', 'Worker training (rehearsals · transport)');
+        $logi = $cats->firstWhere('name', 'Convoy & logistics (24 buses target)');
+        $hosp = $cats->firstWhere('name', 'Hospitality & accommodation');
+        $couns = $cats->firstWhere('name', 'Counselling & follow-up');
+        foreach ([
+            ['Phoenix FM · radio buy day 1', '2026-04-15', $pub->id, 1800],
+            ['Hot FM · radio buy', '2026-04-15', $pub->id, 1200],
+            ['Posters · 4,200 print', '2026-04-11', $pub->id, 980],
+            ['Bus stops · OOH install', '2026-04-10', $pub->id, 980],
+            ['SMS broadcast prep', '2026-04-12', $pub->id, 280],
+            ['ZNBC TV deposit', '2026-04-14', $pub->id, 7180],
+            ['Conference deposit · venue', '2026-04-12', $confCat->id, 2500],
+            ['Conference catering · day 1', '2026-04-20', $confCat->id, 4200],
+            ['Conference handouts print', '2026-04-08', $confCat->id, 3100],
+            ['Stage hire', '2026-04-05', $cgs->id, 6500],
+            ['Sound system rental', '2026-04-08', $cgs->id, 4700],
+            ['Rehearsal hall rent · M3', '2026-04-10', $wt->id, 450],
+            ['Rehearsal hall rent · M4', '2026-04-17', $wt->id, 450],
+            ['Worker training catering', '2026-04-12', $wt->id, 4500],
+            ['Bus deposits (4 vehicles)', '2026-04-15', $logi->id, 2200],
+            ['Bishop residence catering', '2026-04-18', $hosp->id, 1900],
+            ['Counselling booth setup', '2026-04-05', $couns->id, 800],
+        ] as [$desc, $on, $catId, $amt]) {
+            BudgetTransaction::create([
+                'crusade_id' => $crusade->id, 'budget_category_id' => $catId,
+                'description' => $desc, 'occurred_on' => $on,
+                'kind' => 'expense', 'amount' => $amt,
+            ]);
+        }
+
+        // Weekly assessments — 8 weeks. Latest (week 8) carries the DW.1/DW.12 hi-fi readings.
+        $hifiReadings = [
+            'pastors' => 78, 'awareness' => 21, 'volunteers' => 2, 'equipment' => 64,
+            'decisions' => null, 'discipleship' => null, 'donors' => 71, 'drama' => 55,
+            'events' => 38, 'pledges' => null, 'committees' => 50, 'publicity' => 30,
+            'budget' => 55, 'govt' => 70,
+        ];
+        $allPowers = \App\Models\Power::all()->keyBy('code');
+        for ($w = 1; $w <= 8; $w++) {
+            $a = WeeklyAssessment::create([
+                'crusade_id' => $crusade->id,
+                'week_number' => $w,
+                'prompted_at' => now()->subWeeks(8 - $w)->startOfWeek()->setHour(21),
+                'self_score' => $w === 8 ? 6 : fake()->numberBetween(4, 8),
+                'notes' => $w === 8 ? "Awareness still red. Volunteers stuck. But pastors and donors strong. PCM #4 next week should move volunteers." : fake()->paragraph(),
+                'decisions_needed' => $w === 8 ? "Approve \$4k extra for two more radio stations. Approve hiring 2 zonal coordinators on stipend." : null,
+                'submitted_at' => $w < 8 ? now()->subWeeks(8 - $w)->startOfWeek()->setHour(22) : null,
+            ]);
+
+            foreach ($hifiReadings as $code => $latestPct) {
+                if ($latestPct === null) continue;
+                $power = $allPowers->get($code);
+                if (! $power) continue;
+                $weekFactor = $w / 8;
+                $value = (int) max(0, min(100, round($latestPct * $weekFactor)));
+                WeeklyAssessmentReading::create([
+                    'weekly_assessment_id' => $a->id,
+                    'power_id' => $power->id,
+                    'value_pct' => $value,
+                ]);
+            }
+
+            if ($w === 8) {
+                foreach ([
+                    [1, 'critical', 'Awareness still red after radio launch'],
+                    [2, 'critical', 'Worker rehearsals not scaling beyond 11 zones'],
+                    [3, 'high', 'Crusade permit still pending — escalate to Bishop'],
+                ] as [$ord, $sev, $text]) {
+                    WeeklyAssessmentRisk::create([
+                        'weekly_assessment_id' => $a->id,
+                        'ordering' => $ord, 'severity' => $sev, 'text' => $text,
+                    ]);
+                }
+            }
         }
     }
 }
