@@ -3,6 +3,7 @@
 namespace Database\Factories;
 
 use App\Models\Crusade;
+use App\Models\Power;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
@@ -15,7 +16,7 @@ class ActivityEntryFactory extends Factory
             'user_id' => User::factory(),
             'occurred_at' => fake()->dateTimeThisMonth(),
             'description' => fake()->sentence(),
-            'power' => fake()->randomElement(['pastors', 'awareness', 'pledges', 'publicity', 'committees', 'budget', 'govt']),
+            'power_id' => Power::inRandomOrder()->first()?->id ?? Power::factory(),
             'status' => 'done',
         ];
     }

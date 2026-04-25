@@ -10,7 +10,7 @@ class ActivityEntry extends Model
 {
     use HasFactory;
 
-    protected $fillable = ['crusade_id', 'user_id', 'occurred_at', 'description', 'power', 'status'];
+    protected $fillable = ['crusade_id', 'user_id', 'occurred_at', 'description', 'power_id', 'status'];
 
     protected $casts = ['occurred_at' => 'datetime'];
 
@@ -22,5 +22,10 @@ class ActivityEntry extends Model
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
+    }
+
+    public function power(): BelongsTo
+    {
+        return $this->belongsTo(Power::class);
     }
 }

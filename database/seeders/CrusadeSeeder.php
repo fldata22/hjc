@@ -10,6 +10,7 @@ use App\Models\Pastor;
 use App\Models\PastorIdentification;
 use App\Models\Pledge;
 use App\Models\PledgeMeeting;
+use App\Models\Power;
 use App\Models\Reminder;
 use App\Models\User;
 use App\Models\Zone;
@@ -143,7 +144,7 @@ class CrusadeSeeder extends Seeder
                 'user_id' => $director->id,
                 'occurred_at' => fake()->dateTimeBetween('-7 days', 'now'),
                 'description' => fake()->sentence(8),
-                'power' => $powers[array_rand($powers)],
+                'power_id' => Power::where('code', $powers[array_rand($powers)])->first()->id,
                 'status' => 'done',
             ]);
         }
