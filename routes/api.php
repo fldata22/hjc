@@ -25,4 +25,6 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/reminders', [\App\Http\Controllers\Api\ReminderController::class, 'store']);
     Route::patch('/reminders/{reminder}', [\App\Http\Controllers\Api\ReminderController::class, 'update']);
     Route::delete('/reminders/{reminder}', [\App\Http\Controllers\Api\ReminderController::class, 'destroy']);
+    Route::get('/powers', [\App\Http\Controllers\Api\PowerController::class, 'index']);
+    Route::get('/powers/{code}', [\App\Http\Controllers\Api\PowerController::class, 'show']);
 });
