@@ -8,5 +8,5 @@ Route::post('/login', [AuthController::class, 'login']);
 
 Route::middleware('auth:sanctum')->group(function () {
     Route::post('/logout', [AuthController::class, 'logout']);
-    Route::get('/crusade', fn () => response()->json(['data' => \App\Models\Crusade::firstOrFail()]));
+    Route::get('/crusade', [\App\Http\Controllers\Api\CrusadeController::class, 'show']);
 });
