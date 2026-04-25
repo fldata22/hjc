@@ -48,4 +48,28 @@ class ReminderApiTest extends TestCase
             ->assertOk()
             ->assertJsonPath('data.completed_at', fn ($v) => $v !== null);
     }
+
+    public function test_cannot_update_another_users_reminder(): void
+    {
+        $owner = User::factory()->create();
+        $intruder = User::factory()->create();
+        $crusade = Crusade::factory()->create();
+        $r = Reminder::factory()->create(['user_id' => $owner->id, 'crusade_id' => $crusade->id]);
+
+        Sanctum::actingAs($intruder);
+        $this->patchJson("/api/reminders/{$r->id}", ['text' => 'hijacked'])
+            ->assertStatus(403);
+    }
+
+    public function test_cannot_delete_another_users_reminder(): void
+    {
+        $owner = User::factory()->create();
+        $intruder = User::factory()->create();
+        $crusade = Crusade::factory()->create();
+        $r = Reminder::factory()->create(['user_id' => $owner->id, 'crusade_id' => $crusade->id]);
+
+        Sanctum::actingAs($intruder);
+        $this->deleteJson("/api/reminders/{$r->id}")->assertStatus(403);
+        $this->assertDatabaseHas('reminders', ['id' => $r->id]);
+    }
 }

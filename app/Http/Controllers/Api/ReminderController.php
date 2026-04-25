@@ -32,6 +32,7 @@ class ReminderController extends Controller
 
     public function update(Request $request, Reminder $reminder): JsonResponse
     {
+        abort_if($reminder->user_id !== $request->user()->id, 403);
         $validated = $request->validate([
             'text' => 'sometimes|string|max:255',
             'due_on' => 'sometimes|nullable|date',
@@ -41,8 +42,9 @@ class ReminderController extends Controller
         return response()->json(['data' => $reminder]);
     }
 
-    public function destroy(Reminder $reminder): JsonResponse
+    public function destroy(Request $request, Reminder $reminder): JsonResponse
     {
+        abort_if($reminder->user_id !== $request->user()->id, 403);
         $reminder->delete();
         return response()->json(null, 204);
     }
