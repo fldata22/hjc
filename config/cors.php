@@ -21,7 +21,6 @@ return [
 
     'allowed_origins' => [
         'http://localhost:3000',
-        'https://bishops-school.vercel.app',
     ],
 
     'allowed_origins_patterns' => [],
