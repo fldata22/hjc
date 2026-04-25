@@ -41,6 +41,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::apiResource('stakeholders', \App\Http\Controllers\Api\StakeholderController::class);
     Route::apiResource('permits', \App\Http\Controllers\Api\PermitController::class);
     Route::apiResource('budget-categories', \App\Http\Controllers\Api\BudgetCategoryController::class);
+    Route::apiResource('budget-transactions', \App\Http\Controllers\Api\BudgetTransactionController::class);
     Route::get('/conferences/{conference}/registration-summary', [\App\Http\Controllers\Api\ConferenceController::class, 'registrationSummary']);
     Route::get('/conferences/{conference}/tracks', [\App\Http\Controllers\Api\ConferenceTrackController::class, 'index']);
     Route::post('/conferences/{conference}/tracks', [\App\Http\Controllers\Api\ConferenceTrackController::class, 'store']);
