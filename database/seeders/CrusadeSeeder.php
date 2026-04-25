@@ -149,6 +149,63 @@ class CrusadeSeeder extends Seeder
             ]);
         }
 
+        // Awareness surveys — 8 zones × 6 surveys, anchored to DW.2 hi-fi numbers.
+        // Hi-fi matrix (% values per survey 1-6):
+        // Z01: [10,12,28,30,35,42], Z02: [8,14,22,35,18,21], Z03: [12,26,30,61,52,68],
+        // Z04: [5,8,12,14,9,11],   Z05: [-,-,8,10,7,12],     Z06: [-,-,-,15,18,22],
+        // Z07: [14,12,22,26,8,10], Z08: [-,-,14,18,21,24]
+        $awarenessMatrix = [
+            ['Z01', [10, 12, 28, 30, 35, 42]],
+            ['Z02', [8, 14, 22, 35, 18, 21]],
+            ['Z03', [12, 26, 30, 61, 52, 68]],
+            ['Z04', [5, 8, 12, 14, 9, 11]],
+            ['Z05', [null, null, 8, 10, 7, 12]],
+            ['Z06', [null, null, null, 15, 18, 22]],
+            ['Z07', [14, 12, 22, 26, 8, 10]],
+            ['Z08', [null, null, 14, 18, 21, 24]],
+        ];
+        foreach ($awarenessMatrix as [$zoneCode, $pcts]) {
+            $z = $zones->firstWhere('code', $zoneCode);
+            if (! $z) continue;
+            foreach ($pcts as $i => $pct) {
+                if ($pct === null) continue;
+                \App\Models\AwarenessSurvey::create([
+                    'crusade_id' => $crusade->id,
+                    'zone_id' => $z->id,
+                    'survey_number' => $i + 1,
+                    'surveyed_count' => 100,
+                    'attending_yes_count' => $pct,
+                    'taken_on' => now()->subDays((6 - $i) * 7)->toDateString(),
+                ]);
+            }
+        }
+
+        // Worker rehearsals — anchored to DW.3 hi-fi numbers (matrix shows attendance counts).
+        // Hi-fi matrix (per zone, sessions R1-R7, mixed groups — we'll use 'choir' for all to keep seed simple):
+        // Z01: [94,66,82,95,12,-,-], Z02: [28,14,52,88,-,-,-], Z03: [120,96,142,155,88,-,-],
+        // Z04: [8,-,14,-,-,-,-],     Z07: [52,22,66,88,-,-,-]
+        $rehearsalMatrix = [
+            ['Z01', [94, 66, 82, 95, 12, null, null]],
+            ['Z02', [28, 14, 52, 88, null, null, null]],
+            ['Z03', [120, 96, 142, 155, 88, null, null]],
+            ['Z04', [8, null, 14, null, null, null, null]],
+            ['Z07', [52, 22, 66, 88, null, null, null]],
+        ];
+        foreach ($rehearsalMatrix as [$zoneCode, $counts]) {
+            $z = $zones->firstWhere('code', $zoneCode);
+            if (! $z) continue;
+            foreach ($counts as $i => $count) {
+                if ($count === null) continue;
+                \App\Models\WorkerRehearsal::create([
+                    'crusade_id' => $crusade->id,
+                    'zone_id' => $z->id,
+                    'group' => 'choir',
+                    'session_number' => $i + 1,
+                    'attendance_count' => $count,
+                ]);
+            }
+        }
+
         // A few open reminders
         foreach ([
             ['Submit Sunday weekly assessment', '+2 days'],
