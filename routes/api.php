@@ -65,4 +65,5 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/conferences/{conference}/registrations', [\App\Http\Controllers\Api\ConferenceRegistrationController::class, 'store']);
     Route::patch('/conference-registrations/{conferenceRegistration}', [\App\Http\Controllers\Api\ConferenceRegistrationController::class, 'update']);
     Route::delete('/conference-registrations/{conferenceRegistration}', [\App\Http\Controllers\Api\ConferenceRegistrationController::class, 'destroy']);
+    Route::get('/mission-control', [\App\Http\Controllers\Api\MissionControlController::class, 'show']);
 });
