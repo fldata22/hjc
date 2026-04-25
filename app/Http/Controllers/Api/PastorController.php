@@ -102,4 +102,14 @@ class PastorController extends Controller
         $pastor->delete();
         return response()->json(null, 204);
     }
+
+    public function pledges(Pastor $pastor): JsonResponse
+    {
+        $totals = $pastor->pledges()
+            ->selectRaw('resource, SUM(quantity) as total')
+            ->groupBy('resource')
+            ->pluck('total', 'resource')
+            ->map(fn ($v) => number_format((float) $v, 2, '.', ''));
+        return response()->json(['data' => $totals]);
+    }
 }
