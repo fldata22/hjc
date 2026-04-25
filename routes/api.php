@@ -12,4 +12,6 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/zones', [\App\Http\Controllers\Api\ZoneController::class, 'index']);
     Route::get('/churches', [\App\Http\Controllers\Api\ChurchController::class, 'index']);
     Route::apiResource('pastors', \App\Http\Controllers\Api\PastorController::class);
+    Route::get('/pastors/{pastor}/identifications', [\App\Http\Controllers\Api\PastorIdentificationController::class, 'index']);
+    Route::post('/pastors/{pastor}/identifications', [\App\Http\Controllers\Api\PastorIdentificationController::class, 'store']);
 });
