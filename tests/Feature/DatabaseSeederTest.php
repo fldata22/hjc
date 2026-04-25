@@ -25,5 +25,13 @@ class DatabaseSeederTest extends TestCase
         $this->assertGreaterThanOrEqual(35, \DB::table('awareness_surveys')->count());
         $this->assertGreaterThan(0, \DB::table('worker_rehearsals')->count());
         $this->assertSame(14, \DB::table('powers')->count());
+        $this->assertGreaterThanOrEqual(8, \DB::table('committees')->count());
+        $this->assertGreaterThanOrEqual(1, \DB::table('conferences')->count());
+        $this->assertGreaterThanOrEqual(5, \DB::table('conference_tracks')->count());
+        $this->assertGreaterThanOrEqual(5, \DB::table('conference_sessions')->count());
+        $this->assertGreaterThanOrEqual(20, \DB::table('conference_registrations')->count());
+        $this->assertGreaterThanOrEqual(6, \DB::table('publicity_channels')->count());
+        $this->assertGreaterThanOrEqual(6, \DB::table('stakeholders')->count());
+        $this->assertGreaterThanOrEqual(3, \DB::table('permits')->count());
     }
 }

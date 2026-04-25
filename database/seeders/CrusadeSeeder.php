@@ -4,14 +4,22 @@ namespace Database\Seeders;
 
 use App\Models\ActivityEntry;
 use App\Models\Church;
+use App\Models\Committee;
+use App\Models\Conference;
+use App\Models\ConferenceRegistration;
+use App\Models\ConferenceSession;
+use App\Models\ConferenceTrack;
 use App\Models\Crusade;
 use App\Models\CrusadeTarget;
 use App\Models\Pastor;
 use App\Models\PastorIdentification;
+use App\Models\Permit;
 use App\Models\Pledge;
 use App\Models\PledgeMeeting;
 use App\Models\Power;
+use App\Models\PublicityChannel;
 use App\Models\Reminder;
+use App\Models\Stakeholder;
 use App\Models\User;
 use App\Models\Zone;
 use Illuminate\Database\Seeder;
@@ -218,6 +226,115 @@ class CrusadeSeeder extends Seeder
                 'text' => $text,
                 'due_on' => date('Y-m-d', strtotime($when)),
                 'completed_at' => null,
+            ]);
+        }
+
+        // Committees
+        $committees = [
+            ['Steering', 'D. Boateng', 7, 88, 'on_track', 'today'],
+            ['Finance', 'M. Sakala', 5, 60, 'on_track', '+2 days'],
+            ['Pastoral relations', 'J. Adjei', 9, 72, 'watch', '+1 day'],
+            ['Logistics', 'P. Musonda', 6, 30, 'at_risk', '+4 days'],
+            ['Publicity', 'L. Banda', 5, 45, 'watch', '+1 day'],
+            ['Worker training', 'E. Phiri', 6, 18, 'at_risk', 'today'],
+            ['Counselling', 'R. Mwape', 4, 54, 'watch', '+5 days'],
+            ['Hospitality', 'T. Daka', 4, 80, 'on_track', '+1 day'],
+        ];
+        foreach ($committees as [$name, $chair, $members, $pct, $status, $when]) {
+            Committee::create([
+                'crusade_id' => $crusade->id,
+                'name' => $name, 'chair_name' => $chair,
+                'member_count' => $members, 'deliverables_done_pct' => $pct,
+                'status' => $status,
+                'next_meeting_on' => date('Y-m-d', strtotime($when)),
+            ]);
+        }
+
+        // Conference + tracks + sessions + registrations
+        $conf = Conference::create([
+            'crusade_id' => $crusade->id,
+            'name' => 'HJC 2026 Pastors\' Conference',
+            'starts_on' => '2026-04-30',
+            'ends_on' => '2026-05-02',
+            'capacity' => 820,
+        ]);
+        $tracks = collect();
+        foreach ([['Worship & arts', 250], ['Pastoral leadership', 200], ['Counselling', 150], ['Youth & schools', 100], ['Bishops & elders', 120]] as [$tname, $cap]) {
+            $tracks->push(ConferenceTrack::create(['conference_id' => $conf->id, 'name' => $tname, 'capacity' => $cap]));
+        }
+        $sessions = [
+            ['Day 1 — Wed', 'Identity', 'Bishop Boateng', 'plenary', null, 520],
+            ['Day 1 — Wed', 'Worship Lab', 'M. Chanda', 'track', $tracks[0]->id, 80],
+            ['Day 2 — Thu', 'PAVEDDD overview', 'J. Adjei', 'plenary', null, 480],
+            ['Day 2 — Thu', 'Counselling theology', 'R. Mwape', 'track', $tracks[2]->id, 98],
+            ['Day 3 — Fri', 'Equipping the church', 'Panel', 'plenary', null, 0],
+        ];
+        foreach ($sessions as [$day, $name, $speaker, $kind, $tid, $rsvp]) {
+            ConferenceSession::create([
+                'conference_id' => $conf->id, 'track_id' => $tid,
+                'day_label' => $day, 'name' => $name, 'speaker' => $speaker,
+                'session_kind' => $kind, 'rsvp_count' => $rsvp,
+            ]);
+        }
+        $regPastors = $pastors->random(min(25, $pastors->count()));
+        foreach ($regPastors as $p) {
+            $paid = fake()->boolean(75);
+            ConferenceRegistration::create([
+                'conference_id' => $conf->id,
+                'pastor_id' => $p->id,
+                'track_id' => $tracks->random()->id,
+                'paid_amount' => $paid ? 40 : 0,
+                'paid_in_full' => $paid,
+                'registered_at' => fake()->dateTimeBetween('-2 months', 'now'),
+            ]);
+        }
+
+        // Publicity channels
+        $publicity = [
+            ['Phoenix FM', 'radio', '620k reach', '3 spots / day · 14 days', 'live', 1800],
+            ['Hot FM', 'radio', '410k reach', '2 spots / day · 14 days', 'live', 1200],
+            ['Bus stops · 18 sites', 'ooh', 'est. 1.2M views', 'Print 60% · install 30%', 'in_progress', 980],
+            ['Posters · 4,200', 'print', null, 'Print 90% · distribute 35%', 'in_progress', 980],
+            ['SMS broadcast', 'sms', '85k recipients', 'Sender ID approved', 'scheduled', 0],
+            ['Television · ZNBC', 'tv', '1.8M reach', 'Pending mayor letter', 'blocked', 0],
+        ];
+        foreach ($publicity as [$name, $type, $reach, $notes, $status, $spend]) {
+            PublicityChannel::create([
+                'crusade_id' => $crusade->id,
+                'name' => $name, 'channel_type' => $type, 'reach_estimate' => $reach,
+                'notes' => $notes, 'status' => $status, 'spend_to_date' => $spend,
+            ]);
+        }
+
+        // Stakeholders
+        $stakeholders = [
+            ['Mayor Tembo', 'City of Lusaka', 'Mayor', 4, 'won', '2026-03-11'],
+            ['Chief Imam Sayid', 'Lusaka Mosque', 'Imam', 4, 'won', '2026-02-22'],
+            ['Bishop Banda', 'Catholic Diocese', 'Bishop', 4, 'won', '2026-03-08'],
+            ['Min. Phiri', 'Religious Affairs', 'Permitting', 2, 'engaged', null],
+            ['Chief Mukuni', 'Local council', 'Chief', 1, 'identified', null],
+            ['Police Commissioner', 'LPS', 'Security', 3, 'committed', '2026-04-20'],
+        ];
+        foreach ($stakeholders as [$name, $org, $role, $stage, $label, $contact]) {
+            Stakeholder::create([
+                'crusade_id' => $crusade->id,
+                'name' => $name, 'org' => $org, 'role' => $role,
+                'pipeline_stage' => $stage, 'status_label' => $label,
+                'last_contact_at' => $contact,
+            ]);
+        }
+
+        // Permits
+        $permits = [
+            ['Crusade ground assembly', 'Religious Affairs', 'in_review', '2026-04-28', null],
+            ['Sound clearance', 'Environmental', 'approved', null, '2026-04-09'],
+            ['Traffic & parking', 'LPS', 'approved', null, '2026-04-12'],
+        ];
+        foreach ($permits as [$name, $agency, $status, $due, $signed]) {
+            Permit::create([
+                'crusade_id' => $crusade->id,
+                'name' => $name, 'agency' => $agency, 'status' => $status,
+                'due_on' => $due, 'signed_on' => $signed,
             ]);
         }
     }
