@@ -17,4 +17,5 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/pastors/{pastor}/identifications', [\App\Http\Controllers\Api\PastorIdentificationController::class, 'store']);
     Route::apiResource('pledge-meetings', \App\Http\Controllers\Api\PledgeMeetingController::class);
     Route::post('/pledge-meetings/{pledgeMeeting}/attendances', [\App\Http\Controllers\Api\PledgeMeetingAttendanceController::class, 'store']);
+    Route::post('/pledge-meetings/{pledgeMeeting}/pledges', [\App\Http\Controllers\Api\PledgeMeetingPledgesController::class, 'store']);
 });
