@@ -82,10 +82,6 @@ export function PCMHuntDailyForm() {
     return () => { unsubscribe(); };
   }, []);
 
-  useEffect(() => {
-    setDraft((d) => ({ ...d, date: selectedDate }));
-  }, [selectedDate]);
-
   const dayEntries = useMemo(
     () => allEntries.filter((e) => e.date === selectedDate).sort((a, b) => b.time.localeCompare(a.time)),
     [allEntries, selectedDate],
@@ -120,7 +116,10 @@ export function PCMHuntDailyForm() {
                 type="button"
                 key={iso}
                 className={'day' + (selectedDate === iso ? ' on' : '')}
-                onClick={() => setSelectedDate(iso)}
+                onClick={() => {
+                  setSelectedDate(iso);
+                  setDraft((d) => ({ ...d, date: iso }));
+                }}
               >
                 <span className="dow">{dow}</span>
                 <span className="dnum">{dnum}</span>

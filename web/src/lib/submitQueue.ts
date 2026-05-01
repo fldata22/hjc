@@ -81,34 +81,42 @@ export function enqueue<T>(formSlug: string, data: T): Submission<T> {
   return submission;
 }
 
+let isProcessing = false;
+
 export async function processQueue(): Promise<void> {
+  if (isProcessing) return;
   const queue = readQueue();
   if (queue.length === 0) return;
   if (typeof navigator !== 'undefined' && navigator.onLine === false) return;
 
-  for (const item of queue) {
-    if (item.status === 'syncing' || item.status === 'synced') continue;
-    item.status = 'syncing';
-  }
-  writeQueue(queue);
-  notify();
-
-  // Simulate network round-trip (no real backend yet).
-  await new Promise((resolve) => setTimeout(resolve, 1000));
-
-  const fresh = readQueue();
-  const remaining: Submission[] = [];
-  for (const item of fresh) {
-    if (item.status === 'syncing') {
-      const records = readRecords(item.formSlug);
-      records.unshift({ id: item.id, syncedAt: new Date().toISOString(), ...(item.data as object) });
-      writeRecords(item.formSlug, records);
-    } else {
-      remaining.push(item);
+  isProcessing = true;
+  try {
+    for (const item of queue) {
+      if (item.status === 'syncing' || item.status === 'synced') continue;
+      item.status = 'syncing';
     }
+    writeQueue(queue);
+    notify();
+
+    // Simulate network round-trip (no real backend yet).
+    await new Promise((resolve) => setTimeout(resolve, 1000));
+
+    const fresh = readQueue();
+    const remaining: Submission[] = [];
+    for (const item of fresh) {
+      if (item.status === 'syncing') {
+        const records = readRecords(item.formSlug);
+        records.unshift({ id: item.id, syncedAt: new Date().toISOString(), ...(item.data as object) });
+        writeRecords(item.formSlug, records);
+      } else {
+        remaining.push(item);
+      }
+    }
+    writeQueue(remaining);
+    notify();
+  } finally {
+    isProcessing = false;
   }
-  writeQueue(remaining);
-  notify();
 }
 
 if (typeof window !== 'undefined') {

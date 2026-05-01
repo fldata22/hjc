@@ -52,36 +52,38 @@ export const FormShell = ({
 
   return (
     <>
-      <div className="form-shell-top">
-        <button type="button" className="back" onClick={() => navigate(backTo)}>Back to forms</button>
-        <div className="titlerow">
-          <h1 className="title serif">{title}</h1>
-          <span className="pillar-badge">{pillar}</span>
+      <div className="scroll">
+        <div className="form-shell-top">
+          <button type="button" className="back" onClick={() => navigate(backTo)}>Back to forms</button>
+          <div className="titlerow">
+            <h1 className="title serif">{title}</h1>
+            <span className="pillar-badge">{pillar}</span>
+          </div>
+          {saveStatus !== 'idle' && (
+            <div className={'save-status ' + statusClass(saveStatus)}>
+              {statusLabel(saveStatus, saveStatusLabel)}
+            </div>
+          )}
         </div>
-        {saveStatus !== 'idle' && (
-          <div className={'save-status ' + statusClass(saveStatus)}>
-            {statusLabel(saveStatus, saveStatusLabel)}
+
+        {steps && steps.length > 1 && (
+          <div className="stepper">
+            {steps.map((s, i) => {
+              const isDone = i < currentStepIndex;
+              const isActive = i === currentStepIndex;
+              return (
+                <div
+                  key={s.id}
+                  className={'st' + (isDone ? ' done' : '') + (isActive ? ' active' : '')}
+                  title={s.label}
+                />
+              );
+            })}
           </div>
         )}
+
+        {children}
       </div>
-
-      {steps && steps.length > 1 && (
-        <div className="stepper">
-          {steps.map((s, i) => {
-            const isDone = i < currentStepIndex;
-            const isActive = i === currentStepIndex;
-            return (
-              <div
-                key={s.id}
-                className={'st' + (isDone ? ' done' : '') + (isActive ? ' active' : '')}
-                title={s.label}
-              />
-            );
-          })}
-        </div>
-      )}
-
-      {children}
 
       <div className="action-bar">
         {secondaryAction && (

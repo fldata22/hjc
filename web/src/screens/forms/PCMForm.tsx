@@ -86,6 +86,7 @@ export function PCMForm() {
   useEffect(() => {
     const restored = loadDraft<DraftState>(FORM_SLUG, draftId);
     if (restored) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setData(restored.data);
       setStepId(restored.stepId);
     }
@@ -102,6 +103,7 @@ export function PCMForm() {
   useEffect(() => {
     if (!hasRestored) return;
     persist(data, stepId);
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setSaveStatus('saving');
   }, [data, stepId, persist, hasRestored]);
 
@@ -109,8 +111,9 @@ export function PCMForm() {
     setData((d) => ({ ...d, [key]: value }));
     setErrors((e) => {
       if (!e[key as string]) return e;
-      const { [key as string]: _removed, ...rest } = e;
-      return rest;
+      const next = { ...e };
+      delete next[key as string];
+      return next;
     });
   };
 
