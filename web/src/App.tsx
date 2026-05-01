@@ -13,6 +13,7 @@ import { PCMListScreen } from './screens/forms/PCMListScreen';
 import { PCMForm } from './screens/forms/PCMForm';
 import { CPCForm } from './screens/forms/CPCForm';
 import { DailyExpensesForm } from './screens/forms/DailyExpensesForm';
+import { AwarenessSurveyForm } from './screens/forms/AwarenessSurveyForm';
 
 export default function App() {
   return (
@@ -28,6 +29,7 @@ export default function App() {
       <Route path="/forms/pcm/new" element={<RequireAuth><PCMForm /></RequireAuth>} />
       <Route path="/forms/cpc" element={<RequireAuth><CPCForm /></RequireAuth>} />
       <Route path="/forms/daily-expenses" element={<RequireAuth><DailyExpensesForm /></RequireAuth>} />
+      <Route path="/forms/awareness-survey" element={<RequireAuth><AwarenessSurveyForm /></RequireAuth>} />
       <Route path="/forms/:slug" element={<RequireAuth><Placeholder title="Form" /></RequireAuth>} />
       <Route path="/pillars" element={<RequireAuth><PillarsScreen /></RequireAuth>} />
       <Route path="/weekly" element={<RequireAuth><WeeklyScreen /></RequireAuth>} />
