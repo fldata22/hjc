@@ -1,0 +1,1190 @@
+/* ============================================================
+   HJC Director · Phone-first hi-fi
+   Editorial Mission Control aesthetic — Playfair + Montserrat,
+   white/red/black, 1px hairlines.
+   Scoped under .app-root so existing styles aren't disturbed.
+   ============================================================ */
+
+.app-root {
+  --bg: #ffffff;
+  --bg-2: #f4f4f4;
+  --bg-3: #e8e8e8;
+  --ink: #0a0a0a;
+  --ink-2: #2a2a2a;
+  --ink-3: #707070;
+  --ink-4: #a8a8a8;
+  --line: #e4e4e4;
+  --line-2: #cfcfcf;
+  --accent: #d71921;
+  --accent-soft: #f28a8f;
+  --accent-bg: #fbe5e6;
+
+  width: 100%;
+  min-height: 100dvh;
+  background: var(--bg-2);
+  color: var(--ink);
+  font-family: 'Montserrat', -apple-system, system-ui, sans-serif;
+  font-size: 14px;
+  line-height: 1.55;
+  letter-spacing: -0.005em;
+  -webkit-font-smoothing: antialiased;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.app-root *,
+.app-root *::before,
+.app-root *::after { box-sizing: border-box; }
+
+.app-root .serif { font-family: 'Playfair Display', Georgia, serif; font-weight: 400; letter-spacing: -0.02em; }
+.app-root .mono  { font-family: 'JetBrains Mono', ui-monospace, monospace; font-feature-settings: "tnum"; }
+
+/* Phone container — fills viewport on phones, capped on wider screens */
+.app-root .phone {
+  width: 100%;
+  max-width: 480px;
+  min-height: 100dvh;
+  background: var(--bg);
+  display: flex;
+  flex-direction: column;
+  font-family: 'Montserrat', sans-serif;
+  color: var(--ink);
+  overflow: hidden;
+  position: relative;
+  font-size: 13px;
+  line-height: 1.45;
+}
+
+@media (min-width: 481px) {
+  .app-root .phone {
+    border-left: 1px solid var(--line);
+    border-right: 1px solid var(--line);
+  }
+}
+
+/* iOS status bar */
+.app-root .statusbar {
+  flex-shrink: 0;
+  height: 44px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0 28px;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--ink);
+  font-family: -apple-system, system-ui, sans-serif;
+  letter-spacing: -0.01em;
+}
+.app-root .statusbar .icons { display: inline-flex; align-items: center; gap: 5px; }
+.app-root .sb-signal { display: inline-flex; align-items: end; gap: 1.5px; height: 10px; }
+.app-root .sb-signal i { width: 2.5px; background: var(--ink); border-radius: 0.5px; }
+.app-root .sb-signal i:nth-child(1) { height: 30%; }
+.app-root .sb-signal i:nth-child(2) { height: 55%; }
+.app-root .sb-signal i:nth-child(3) { height: 80%; }
+.app-root .sb-signal i:nth-child(4) { height: 100%; }
+.app-root .sb-batt {
+  width: 24px; height: 11px;
+  border: 1px solid var(--ink);
+  border-radius: 2.5px;
+  position: relative;
+  padding: 1px;
+}
+.app-root .sb-batt::after {
+  content: "";
+  position: absolute;
+  right: -3px; top: 3px;
+  width: 1.5px; height: 4px;
+  background: var(--ink);
+  border-radius: 0 1px 1px 0;
+}
+.app-root .sb-batt i {
+  display: block;
+  height: 100%;
+  width: 70%;
+  background: var(--ink);
+  border-radius: 1px;
+}
+
+/* App top bar */
+.app-root .app-bar {
+  flex-shrink: 0;
+  padding: 8px 20px 16px;
+  border-bottom: 1px solid var(--line);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+}
+.app-root .app-bar .left { display: flex; align-items: center; gap: 12px; min-width: 0; }
+.app-root .app-bar .menu {
+  width: 36px; height: 36px;
+  display: grid;
+  place-items: center;
+  margin-left: -8px;
+  background: transparent;
+  border: 0;
+  cursor: pointer;
+}
+.app-root .app-bar .menu i {
+  width: 18px; height: 1.5px;
+  background: var(--ink);
+  position: relative;
+  display: block;
+}
+.app-root .app-bar .menu i::before,
+.app-root .app-bar .menu i::after {
+  content: "";
+  position: absolute;
+  left: 0; width: 18px; height: 1.5px;
+  background: var(--ink);
+}
+.app-root .app-bar .menu i::before { top: -6px; }
+.app-root .app-bar .menu i::after  { top: 6px; }
+.app-root .app-bar .crumb {
+  font-size: 10px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--ink-3);
+  font-weight: 500;
+}
+.app-root .app-bar .crumb b { color: var(--ink); font-weight: 500; }
+.app-root .app-bar .actions { display: flex; gap: 6px; }
+.app-root .app-bar .icon-btn {
+  width: 36px; height: 36px;
+  display: grid;
+  place-items: center;
+  border: 1px solid var(--line);
+  background: var(--bg);
+  border-radius: 999px;
+  color: var(--ink);
+  font-size: 14px;
+  position: relative;
+  cursor: pointer;
+}
+.app-root .app-bar .icon-btn .dot {
+  position: absolute;
+  top: 7px; right: 7px;
+  width: 6px; height: 6px;
+  border-radius: 50%;
+  background: var(--accent);
+}
+.app-root .app-bar .avatar {
+  width: 32px; height: 32px;
+  border-radius: 50%;
+  background: var(--ink);
+  color: var(--bg);
+  display: grid;
+  place-items: center;
+  font-family: 'Playfair Display', serif;
+  font-size: 13px;
+  font-weight: 400;
+}
+
+/* Body scroll */
+.app-root .scroll {
+  flex: 1;
+  overflow-y: auto;
+  overflow-x: hidden;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* Section header */
+.app-root .sec {
+  padding: 24px 20px 14px;
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+}
+.app-root .sec.tight { padding-top: 14px; }
+.app-root .sec h2 {
+  font-family: 'Playfair Display', serif;
+  font-size: 22px;
+  font-weight: 300;
+  letter-spacing: -0.025em;
+  color: var(--ink);
+  line-height: 1;
+}
+.app-root .sec h2 em { font-style: italic; color: var(--ink-3); }
+.app-root .sec .more {
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.14em;
+  color: var(--ink-3);
+  font-weight: 500;
+}
+
+/* Hairline divider */
+.app-root .hr { height: 1px; background: var(--line); margin: 0 20px; }
+.app-root .hr.full { margin: 0; }
+
+/* ============================================================
+   HOME — hero + composite + due forms + pillars + activity
+   ============================================================ */
+.app-root .greet { padding: 20px 20px 24px; }
+.app-root .greet .eyebrow {
+  font-size: 10px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--ink-3);
+  font-weight: 500;
+  margin-bottom: 12px;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+.app-root .greet .eyebrow::before {
+  content: "";
+  width: 6px; height: 6px; border-radius: 50%;
+  background: var(--accent);
+}
+.app-root .greet h1 {
+  font-family: 'Playfair Display', serif;
+  font-size: 34px;
+  line-height: 1.02;
+  letter-spacing: -0.035em;
+  font-weight: 300;
+  color: var(--ink);
+  margin-bottom: 10px;
+}
+.app-root .greet h1 em {
+  font-style: italic;
+  color: var(--ink-3);
+  font-weight: 300;
+}
+.app-root .greet .summary {
+  font-size: 13px;
+  color: var(--ink-2);
+  line-height: 1.55;
+}
+.app-root .greet .summary b { color: var(--ink); font-weight: 600; }
+
+/* Composite readiness — large editorial number */
+.app-root .composite {
+  padding: 28px 20px;
+  border-top: 1px solid var(--line);
+  border-bottom: 1px solid var(--line);
+  background: var(--bg);
+}
+.app-root .composite .label {
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.16em;
+  color: var(--ink-3);
+  font-weight: 500;
+  margin-bottom: 14px;
+}
+.app-root .composite .row {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  margin-bottom: 16px;
+}
+.app-root .composite .num {
+  font-family: 'Playfair Display', serif;
+  font-size: 84px;
+  font-weight: 300;
+  letter-spacing: -0.04em;
+  line-height: 0.85;
+  color: var(--accent);
+}
+.app-root .composite .num small {
+  font-size: 30px;
+  color: var(--ink-3);
+  letter-spacing: -0.02em;
+  margin-left: 2px;
+  font-weight: 300;
+}
+.app-root .composite .delta {
+  text-align: right;
+  font-size: 11px;
+  color: var(--ink-3);
+  letter-spacing: 0.04em;
+}
+.app-root .composite .delta b {
+  display: block;
+  font-family: 'Playfair Display', serif;
+  font-size: 22px;
+  color: var(--ink);
+  letter-spacing: -0.02em;
+  font-weight: 300;
+  margin-bottom: 4px;
+}
+.app-root .composite .track {
+  height: 4px;
+  background: var(--bg-2);
+  position: relative;
+}
+.app-root .composite .track > i {
+  position: absolute;
+  left: 0; top: 0; bottom: 0;
+  background: var(--accent);
+}
+
+/* Pillar strip */
+.app-root .pillar-strip { padding: 0 20px 24px; }
+.app-root .pillar-strip .lab {
+  font-size: 10px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--ink-3);
+  font-weight: 500;
+  margin: 18px 0 10px;
+  display: flex;
+  justify-content: space-between;
+}
+.app-root .pillar-strip .grid {
+  display: grid;
+  grid-template-columns: repeat(13, 1fr);
+  gap: 2px;
+}
+.app-root .pillar-strip .chip {
+  height: 32px;
+  background: var(--bg-2);
+  position: relative;
+  display: grid;
+  place-items: center;
+  font-family: 'Playfair Display', serif;
+  font-size: 13px;
+  color: var(--ink);
+  overflow: hidden;
+}
+.app-root .pillar-strip .chip::before {
+  content: "";
+  position: absolute; inset: 0;
+  background: var(--ink);
+  transform: scaleY(var(--f, 0));
+  transform-origin: bottom;
+}
+.app-root .pillar-strip .chip.acc::before { background: var(--accent); }
+.app-root .pillar-strip .chip span {
+  position: relative; z-index: 1;
+  mix-blend-mode: difference;
+  color: #fff;
+}
+
+/* Form row card list */
+.app-root .form-list { padding: 0 20px 8px; }
+.app-root .form-row {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 12px;
+  padding: 16px 0;
+  border-bottom: 1px solid var(--line);
+  align-items: center;
+}
+.app-root .form-row:last-child { border-bottom: none; }
+.app-root .form-row .name {
+  font-size: 14px;
+  color: var(--ink);
+  font-weight: 500;
+  letter-spacing: -0.005em;
+  margin-bottom: 4px;
+}
+.app-root .form-row .meta {
+  font-size: 11px;
+  color: var(--ink-3);
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+.app-root .form-row .meta .d { color: var(--ink-4); }
+.app-root .form-row .pillar {
+  font-family: 'Playfair Display', serif;
+  font-size: 14px;
+  color: var(--ink);
+  font-weight: 400;
+}
+.app-root .form-row .right {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 6px;
+}
+.app-root .form-row .due {
+  font-size: 10px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  font-weight: 600;
+  font-family: 'JetBrains Mono', monospace;
+}
+.app-root .form-row .due.urgent { color: var(--accent); }
+.app-root .form-row .due.warn { color: var(--ink); }
+.app-root .form-row .due.ok { color: var(--ink-3); }
+.app-root .form-row .arr {
+  color: var(--ink-3);
+  font-size: 18px;
+  line-height: 1;
+}
+
+/* Activity items */
+.app-root .activity { padding: 0 20px 24px; }
+.app-root .activity-item {
+  display: grid;
+  grid-template-columns: 56px 1fr;
+  gap: 14px;
+  padding: 14px 0;
+  border-bottom: 1px solid var(--line);
+}
+.app-root .activity-item:last-child { border-bottom: none; }
+.app-root .activity-item .when {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px;
+  color: var(--ink-3);
+  letter-spacing: 0.04em;
+  padding-top: 2px;
+  text-transform: uppercase;
+}
+.app-root .activity-item .what {
+  font-size: 13px;
+  color: var(--ink-2);
+  line-height: 1.5;
+}
+.app-root .activity-item .what b { color: var(--ink); font-weight: 600; }
+.app-root .activity-item .what .tag {
+  display: inline-block;
+  margin-top: 4px;
+  font-size: 9px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--ink-3);
+  font-weight: 500;
+}
+
+/* ============================================================
+   FORMS HUB
+   ============================================================ */
+.app-root .search {
+  margin: 12px 20px 0;
+  height: 40px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  padding: 0 16px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 13px;
+  color: var(--ink-3);
+}
+.app-root .search .ic {
+  width: 14px; height: 14px;
+  border: 1.5px solid var(--ink-3);
+  border-radius: 50%;
+  position: relative;
+  flex-shrink: 0;
+}
+.app-root .search .ic::after {
+  content: "";
+  position: absolute;
+  bottom: -4px; right: -4px;
+  width: 6px; height: 1.5px;
+  background: var(--ink-3);
+  transform: rotate(45deg);
+  transform-origin: left;
+}
+
+.app-root .tabs {
+  margin: 16px 0 8px;
+  padding: 0 20px;
+  display: flex;
+  gap: 0;
+  overflow-x: auto;
+  scrollbar-width: none;
+  border-bottom: 1px solid var(--line);
+}
+.app-root .tabs::-webkit-scrollbar { display: none; }
+.app-root .tabs .tab {
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--ink-3);
+  padding: 12px 0;
+  margin-right: 22px;
+  white-space: nowrap;
+  border-bottom: 2px solid transparent;
+  letter-spacing: -0.005em;
+  flex-shrink: 0;
+  cursor: pointer;
+}
+.app-root .tabs .tab.on {
+  color: var(--ink);
+  border-bottom-color: var(--accent);
+  font-weight: 600;
+}
+.app-root .tabs .tab .n {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px;
+  color: var(--ink-4);
+  margin-left: 4px;
+}
+.app-root .tabs .tab.on .n { color: var(--accent); }
+
+.app-root .cat-group { padding: 0 20px; }
+.app-root .cat-head {
+  font-size: 10px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--ink-3);
+  font-weight: 500;
+  padding: 22px 0 8px;
+  border-bottom: 1px solid var(--line);
+  margin-bottom: 4px;
+  display: flex;
+  justify-content: space-between;
+}
+
+/* ============================================================
+   FORM FILL (stepper / inputs)
+   ============================================================ */
+.app-root .stepper {
+  display: flex;
+  gap: 6px;
+  padding: 12px 20px 16px;
+  border-bottom: 1px solid var(--line);
+}
+.app-root .stepper .st {
+  flex: 1;
+  height: 3px;
+  background: var(--bg-2);
+  position: relative;
+}
+.app-root .stepper .st.done { background: var(--ink); }
+.app-root .stepper .st.active { background: var(--accent); }
+
+.app-root .step-meta {
+  padding: 18px 20px 6px;
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+}
+.app-root .step-meta .name {
+  font-family: 'Playfair Display', serif;
+  font-size: 14px;
+  color: var(--ink);
+  font-style: italic;
+  font-weight: 400;
+}
+.app-root .step-meta .num {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  color: var(--ink-3);
+  letter-spacing: 0.06em;
+}
+
+.app-root .form-title { padding: 0 20px 8px; }
+.app-root .form-title h1 {
+  font-family: 'Playfair Display', serif;
+  font-size: 30px;
+  font-weight: 300;
+  letter-spacing: -0.03em;
+  line-height: 1.05;
+  color: var(--ink);
+}
+.app-root .form-title h1 em { font-style: italic; color: var(--ink-3); font-weight: 300; }
+.app-root .form-title p {
+  font-size: 12px;
+  color: var(--ink-3);
+  margin-top: 8px;
+  line-height: 1.5;
+}
+
+.app-root .fields { padding: 16px 20px 24px; }
+.app-root .field {
+  padding: 14px 0;
+  border-bottom: 1px solid var(--line);
+}
+.app-root .field:last-child { border-bottom: none; }
+.app-root .field .lbl {
+  font-size: 10px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--ink-3);
+  font-weight: 500;
+  margin-bottom: 8px;
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+}
+.app-root .field .lbl .req { color: var(--accent); }
+.app-root .field .input {
+  border: none;
+  background: transparent;
+  font-size: 16px;
+  color: var(--ink);
+  width: 100%;
+  font-family: inherit;
+  letter-spacing: -0.005em;
+  outline: none;
+  font-weight: 500;
+  padding: 4px 0;
+}
+.app-root .field .input.ph {
+  color: var(--ink-4);
+  font-weight: 400;
+}
+.app-root .field .input.area {
+  resize: none;
+  min-height: 60px;
+  line-height: 1.5;
+  font-size: 14px;
+}
+.app-root .field .seg {
+  display: flex;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  padding: 3px;
+  margin-top: 4px;
+  background: var(--bg);
+}
+.app-root .field .seg span {
+  flex: 1;
+  text-align: center;
+  font-size: 12px;
+  padding: 8px 6px;
+  color: var(--ink-3);
+  font-weight: 500;
+  border-radius: 999px;
+  letter-spacing: -0.005em;
+  cursor: pointer;
+}
+.app-root .field .seg span.on {
+  background: var(--ink);
+  color: var(--bg);
+}
+
+/* Bottom action bar */
+.app-root .action-bar {
+  flex-shrink: 0;
+  padding: 14px 20px;
+  border-top: 1px solid var(--line);
+  background: var(--bg);
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+.app-root .action-bar .save-status {
+  font-size: 10px;
+  color: var(--ink-3);
+  letter-spacing: 0.06em;
+  flex: 1;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.app-root .action-bar .save-status::before {
+  content: "";
+  width: 6px; height: 6px;
+  border-radius: 50%;
+  background: var(--accent);
+}
+.app-root .action-bar .btn {
+  padding: 12px 22px;
+  font-size: 13px;
+  font-weight: 500;
+  border-radius: 999px;
+  border: 1px solid var(--ink);
+  background: var(--bg);
+  color: var(--ink);
+  font-family: inherit;
+  letter-spacing: -0.005em;
+  cursor: pointer;
+}
+.app-root .action-bar .btn.primary {
+  background: var(--ink);
+  color: var(--bg);
+}
+
+/* ============================================================
+   PILLARS DRILL-DOWN
+   ============================================================ */
+.app-root .pillar-row {
+  display: grid;
+  grid-template-columns: 32px 1fr auto;
+  gap: 14px;
+  padding: 18px 20px;
+  border-bottom: 1px solid var(--line);
+  align-items: center;
+}
+.app-root .pillar-row .L {
+  font-family: 'Playfair Display', serif;
+  font-size: 22px;
+  font-weight: 300;
+  color: var(--ink);
+  line-height: 1;
+  letter-spacing: -0.03em;
+}
+.app-root .pillar-row .nm {
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--ink);
+  margin-bottom: 6px;
+  letter-spacing: -0.005em;
+}
+.app-root .pillar-row .bar {
+  height: 3px;
+  background: var(--bg-2);
+  position: relative;
+}
+.app-root .pillar-row .bar > i {
+  position: absolute;
+  left: 0; top: 0; bottom: 0;
+  background: var(--ink);
+}
+.app-root .pillar-row .bar > i.acc { background: var(--accent); }
+.app-root .pillar-row .pct {
+  font-family: 'Playfair Display', serif;
+  font-size: 22px;
+  font-weight: 300;
+  color: var(--ink);
+  letter-spacing: -0.03em;
+}
+.app-root .pillar-row .pct.acc { color: var(--accent); }
+.app-root .pillar-row .pct small {
+  font-size: 11px;
+  color: var(--ink-3);
+  font-weight: 400;
+  letter-spacing: 0;
+}
+
+.app-root .pillar-meta {
+  font-size: 11px;
+  color: var(--ink-3);
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+.app-root .pillar-meta .d { color: var(--ink-4); }
+.app-root .pillar-meta .delta-up { color: var(--ink); }
+.app-root .pillar-meta .delta-down { color: var(--accent); }
+
+/* Status filter chips */
+.app-root .chips {
+  padding: 12px 20px 0;
+  display: flex;
+  gap: 6px;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+.app-root .chips::-webkit-scrollbar { display: none; }
+.app-root .chips .chip {
+  flex-shrink: 0;
+  padding: 7px 14px;
+  font-size: 12px;
+  border-radius: 999px;
+  border: 1px solid var(--line);
+  background: var(--bg);
+  color: var(--ink-3);
+  font-weight: 500;
+  letter-spacing: -0.005em;
+  cursor: pointer;
+}
+.app-root .chips .chip.on {
+  background: var(--ink);
+  color: var(--bg);
+  border-color: var(--ink);
+}
+.app-root .chips .chip .n {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px;
+  margin-left: 4px;
+  color: var(--ink-4);
+}
+.app-root .chips .chip.on .n { color: rgba(255,255,255,0.5); }
+
+/* ============================================================
+   WEEKLY ASSESSMENT
+   ============================================================ */
+.app-root .weekly-head {
+  padding: 20px 20px 24px;
+  border-bottom: 1px solid var(--line);
+}
+.app-root .weekly-head .week {
+  font-family: 'Playfair Display', serif;
+  font-size: 30px;
+  font-weight: 300;
+  letter-spacing: -0.03em;
+  margin-bottom: 4px;
+  color: var(--ink);
+}
+.app-root .weekly-head .week em { font-style: italic; color: var(--ink-3); font-weight: 300; }
+.app-root .weekly-head .progress {
+  margin-top: 14px;
+  display: flex;
+  justify-content: space-between;
+  font-size: 11px;
+  color: var(--ink-3);
+  font-family: 'JetBrains Mono', monospace;
+  letter-spacing: 0.04em;
+}
+.app-root .weekly-head .progress b { color: var(--ink); font-weight: 500; }
+.app-root .weekly-head .ptrack {
+  margin-top: 6px;
+  height: 3px;
+  background: var(--bg-2);
+}
+.app-root .weekly-head .ptrack > i {
+  display: block;
+  height: 100%;
+  background: var(--accent);
+}
+
+.app-root .rate-card {
+  padding: 22px 20px;
+  border-bottom: 1px solid var(--line);
+}
+.app-root .rate-card .top {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  margin-bottom: 4px;
+}
+.app-root .rate-card .L {
+  font-family: 'Playfair Display', serif;
+  font-size: 13px;
+  color: var(--ink-3);
+  font-style: italic;
+  font-weight: 400;
+  margin-right: 8px;
+}
+.app-root .rate-card .nm {
+  font-size: 15px;
+  font-weight: 500;
+  letter-spacing: -0.005em;
+  color: var(--ink);
+  flex: 1;
+}
+.app-root .rate-card .last {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  color: var(--ink-3);
+  letter-spacing: 0.04em;
+}
+.app-root .rate-card .last b { color: var(--ink); font-weight: 500; }
+.app-root .rate-card .scale {
+  margin-top: 16px;
+  display: grid;
+  grid-template-columns: repeat(11, 1fr);
+  gap: 3px;
+}
+.app-root .rate-card .scale span {
+  height: 36px;
+  display: grid;
+  place-items: center;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  color: var(--ink-3);
+  background: var(--bg-2);
+  border-radius: 4px;
+  font-weight: 500;
+  cursor: pointer;
+  user-select: none;
+}
+.app-root .rate-card .scale span.on {
+  background: var(--accent);
+  color: var(--bg);
+}
+.app-root .rate-card .delta {
+  margin-top: 10px;
+  font-size: 11px;
+  letter-spacing: 0.04em;
+  color: var(--ink-3);
+  font-family: 'JetBrains Mono', monospace;
+  display: flex;
+  justify-content: space-between;
+}
+.app-root .rate-card .delta b { color: var(--ink); font-weight: 500; }
+.app-root .rate-card .delta .up { color: var(--ink); }
+.app-root .rate-card .delta .down { color: var(--accent); }
+
+/* ============================================================
+   ACTIVITY LOG
+   ============================================================ */
+.app-root .activity-log .day-head {
+  padding: 16px 20px 8px;
+  font-size: 10px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--ink-3);
+  font-weight: 500;
+  background: var(--bg-2);
+  display: flex;
+  justify-content: space-between;
+}
+.app-root .activity-log .day-head b { color: var(--ink); font-weight: 600; }
+
+.app-root .act-row {
+  display: grid;
+  grid-template-columns: 48px 1fr;
+  gap: 12px;
+  padding: 16px 20px;
+  border-bottom: 1px solid var(--line);
+  align-items: start;
+}
+.app-root .act-row .time {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  color: var(--ink-3);
+  letter-spacing: 0.04em;
+  padding-top: 2px;
+}
+.app-root .act-row .body {
+  display: grid;
+  gap: 4px;
+}
+.app-root .act-row .what {
+  font-size: 13px;
+  color: var(--ink);
+  line-height: 1.45;
+  font-weight: 500;
+}
+.app-root .act-row .meta {
+  font-size: 11px;
+  color: var(--ink-3);
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+.app-root .act-row .meta .d { color: var(--ink-4); }
+.app-root .act-row .impact {
+  font-size: 10px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--accent);
+  font-weight: 600;
+  font-family: 'JetBrains Mono', monospace;
+}
+
+/* ============================================================
+   BOTTOM TAB BAR
+   ============================================================ */
+.app-root .tabbar {
+  flex-shrink: 0;
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  border-top: 1px solid var(--line);
+  background: var(--bg);
+  padding: 6px 0 16px;
+}
+.app-root .tabbar .tabbtn {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  padding: 6px 4px;
+  color: var(--ink-3);
+  font-size: 9px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  font-weight: 500;
+  position: relative;
+  cursor: pointer;
+  background: transparent;
+  border: 0;
+  font-family: inherit;
+}
+.app-root .tabbar .tabbtn.on { color: var(--ink); }
+.app-root .tabbar .tabbtn .ico {
+  width: 24px; height: 24px;
+  display: grid;
+  place-items: center;
+  position: relative;
+}
+.app-root .tabbar .tabbtn.on::before {
+  content: "";
+  position: absolute;
+  top: 0; left: 50%;
+  transform: translateX(-50%);
+  width: 16px; height: 2px;
+  background: var(--accent);
+}
+.app-root .tabbar .badge {
+  position: absolute;
+  top: 2px; right: 22%;
+  background: var(--accent);
+  color: var(--bg);
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 9px;
+  border-radius: 999px;
+  padding: 1px 5px;
+  font-weight: 600;
+  line-height: 1.3;
+}
+
+/* Icon glyphs (drawn with CSS) */
+.app-root .gl-home {
+  width: 18px; height: 16px;
+  border: 1.5px solid currentColor;
+  border-top: none;
+  margin-top: 6px;
+  position: relative;
+  display: inline-block;
+}
+.app-root .gl-home::before {
+  content: "";
+  position: absolute;
+  top: -7px; left: 50%;
+  width: 14px; height: 14px;
+  background: currentColor;
+  transform: translateX(-50%) rotate(45deg);
+  -webkit-mask: linear-gradient(45deg, #000 50%, transparent 50%);
+  mask: linear-gradient(45deg, #000 50%, transparent 50%);
+}
+.app-root .gl-doc {
+  width: 14px; height: 18px;
+  border: 1.5px solid currentColor;
+  border-radius: 1px;
+  margin: 2px auto 0;
+  position: relative;
+  display: inline-block;
+  background:
+    linear-gradient(currentColor, currentColor) center 5px / 7px 1.2px no-repeat,
+    linear-gradient(currentColor, currentColor) center 8px / 7px 1.2px no-repeat,
+    linear-gradient(currentColor, currentColor) center 11px / 7px 1.2px no-repeat;
+}
+.app-root .gl-pillars {
+  width: 18px; height: 16px;
+  display: flex;
+  align-items: end;
+  gap: 2px;
+  margin: 4px auto 0;
+}
+.app-root .gl-pillars i {
+  flex: 1;
+  background: currentColor;
+}
+.app-root .gl-pillars i:nth-child(1) { height: 50%; }
+.app-root .gl-pillars i:nth-child(2) { height: 75%; }
+.app-root .gl-pillars i:nth-child(3) { height: 100%; }
+.app-root .gl-pillars i:nth-child(4) { height: 60%; }
+.app-root .gl-cal {
+  width: 18px; height: 16px;
+  border: 1.5px solid currentColor;
+  border-radius: 1px;
+  margin: 4px auto 0;
+  position: relative;
+  display: inline-block;
+}
+.app-root .gl-cal::before {
+  content: "";
+  position: absolute;
+  top: -3px; left: 0; right: 0;
+  height: 4px;
+  border-left: 2px solid currentColor;
+  border-right: 2px solid currentColor;
+}
+.app-root .gl-cal::after {
+  content: "";
+  position: absolute;
+  top: 4px; left: 0; right: 0;
+  height: 1.5px;
+  background: currentColor;
+}
+.app-root .gl-list {
+  width: 16px; height: 14px;
+  margin: 5px auto 0;
+  display: inline-block;
+  background:
+    linear-gradient(currentColor, currentColor) 0 0 / 3px 3px no-repeat,
+    linear-gradient(currentColor, currentColor) 5px 1px / 11px 1.5px no-repeat,
+    linear-gradient(currentColor, currentColor) 0 5.5px / 3px 3px no-repeat,
+    linear-gradient(currentColor, currentColor) 5px 6.5px / 11px 1.5px no-repeat,
+    linear-gradient(currentColor, currentColor) 0 11px / 3px 3px no-repeat,
+    linear-gradient(currentColor, currentColor) 5px 12px / 11px 1.5px no-repeat;
+}
+
+/* ============================================================
+   DRAWER NAVIGATION
+   ============================================================ */
+.app-root .drawer-overlay {
+  position: absolute;
+  inset: 0;
+  background: rgba(0,0,0,0.4);
+  z-index: 5;
+}
+.app-root .drawer {
+  position: absolute;
+  top: 0; bottom: 0; left: 0;
+  width: 86%;
+  background: var(--bg);
+  z-index: 6;
+  display: flex;
+  flex-direction: column;
+  border-right: 1px solid var(--line);
+}
+.app-root .drawer-head {
+  padding: 56px 24px 24px;
+  border-bottom: 1px solid var(--line);
+}
+.app-root .drawer-head .crusade-eyebrow {
+  font-size: 10px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--ink-3);
+  font-weight: 500;
+  margin-bottom: 8px;
+}
+.app-root .drawer-head h2 {
+  font-family: 'Playfair Display', serif;
+  font-size: 28px;
+  font-weight: 300;
+  letter-spacing: -0.03em;
+  line-height: 1;
+  margin-bottom: 6px;
+}
+.app-root .drawer-head .day {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  color: var(--ink-3);
+}
+.app-root .drawer-head .day b { color: var(--accent); }
+.app-root .drawer-section {
+  padding: 16px 24px 6px;
+  font-size: 10px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--ink-3);
+  font-weight: 500;
+}
+.app-root .drawer-item {
+  padding: 12px 24px;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  font-size: 14px;
+  color: var(--ink-2);
+  font-weight: 500;
+  letter-spacing: -0.005em;
+  cursor: pointer;
+  background: transparent;
+  border: 0;
+  text-align: left;
+  width: 100%;
+  font-family: inherit;
+}
+.app-root .drawer-item.on {
+  color: var(--ink);
+  background: var(--bg-2);
+  border-left: 2px solid var(--accent);
+  padding-left: 22px;
+}
+.app-root .drawer-item .ico {
+  width: 22px; height: 22px;
+  display: grid;
+  place-items: center;
+  color: var(--ink-3);
+}
+.app-root .drawer-item.on .ico { color: var(--ink); }
+.app-root .drawer-item .badge {
+  margin-left: auto;
+  background: var(--accent);
+  color: var(--bg);
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px;
+  padding: 1px 7px;
+  border-radius: 999px;
+  font-weight: 600;
+}
+
+/* spacer at bottom of scroll body */
+.app-root .bot-pad { height: 32px; }

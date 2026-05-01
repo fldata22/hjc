@@ -10,6 +10,11 @@ import { PastorProfileMobile } from './screens/mobile/PastorProfileMobile';
 import { QuickLogMobile } from './screens/mobile/QuickLogMobile';
 import { WeeklyAssessmentMobile } from './screens/mobile/WeeklyAssessmentMobile';
 import { ActivityLogMobile } from './screens/mobile/ActivityLogMobile';
+import { HomeScreen as DirectorHome } from './screens/app/HomeScreen';
+import { FormsScreen as DirectorForms } from './screens/app/FormsScreen';
+import { PillarsScreen as DirectorPillars } from './screens/app/PillarsScreen';
+import { WeeklyScreen as DirectorWeekly } from './screens/app/WeeklyScreen';
+import { ActivityScreen as DirectorActivity } from './screens/app/ActivityScreen';
 import { MaybeMobileRedirect } from './components/MaybeMobileRedirect';
 
 function PlaceholderScreen({ title }: { title: string }) {
@@ -48,6 +53,12 @@ export default function App() {
       <Route path="/m/assessment" element={<RequireAuth><WeeklyAssessmentMobile /></RequireAuth>} />
       <Route path="/m/activity" element={<RequireAuth><ActivityLogMobile /></RequireAuth>} />
       <Route path="/m/more" element={<RequireAuth><div style={{ padding: 40 }}>More — coming soon</div></RequireAuth>} />
+      {/* Director (phone-first hi-fi from director-app.html design) */}
+      <Route path="/d/" element={<RequireAuth><DirectorHome /></RequireAuth>} />
+      <Route path="/d/forms" element={<RequireAuth><DirectorForms /></RequireAuth>} />
+      <Route path="/d/pillars" element={<RequireAuth><DirectorPillars /></RequireAuth>} />
+      <Route path="/d/weekly" element={<RequireAuth><DirectorWeekly /></RequireAuth>} />
+      <Route path="/d/activity" element={<RequireAuth><DirectorActivity /></RequireAuth>} />
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>
   );
