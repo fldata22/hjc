@@ -7,6 +7,7 @@ import { PillarsScreen } from './screens/app/PillarsScreen';
 import { WeeklyScreen } from './screens/app/WeeklyScreen';
 import { ActivityScreen } from './screens/app/ActivityScreen';
 import { BudgetScreen } from './screens/app/BudgetScreen';
+import { PeopleScreen } from './screens/app/PeopleScreen';
 import { Placeholder } from './screens/app/Placeholder';
 import { BOTForm } from './screens/forms/BOTForm';
 import { PCMHuntDailyForm } from './screens/forms/PCMHuntDailyForm';
@@ -43,7 +44,7 @@ export default function App() {
       <Route path="/pillars/:code" element={<RequireAuth><Placeholder title="Pillar detail" /></RequireAuth>} />
 
       {/* Sidebar destinations */}
-      <Route path="/people" element={<RequireAuth><Placeholder title="People" /></RequireAuth>} />
+      <Route path="/people" element={<RequireAuth><PeopleScreen /></RequireAuth>} />
       <Route path="/budget" element={<RequireAuth><BudgetScreen /></RequireAuth>} />
       <Route path="/documents" element={<RequireAuth><Placeholder title="Documents" /></RequireAuth>} />
       <Route path="/settings" element={<RequireAuth><Placeholder title="Settings" /></RequireAuth>} />
