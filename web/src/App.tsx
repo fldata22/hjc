@@ -11,6 +11,7 @@ import { BOTForm } from './screens/forms/BOTForm';
 import { PCMHuntDailyForm } from './screens/forms/PCMHuntDailyForm';
 import { PCMListScreen } from './screens/forms/PCMListScreen';
 import { PCMForm } from './screens/forms/PCMForm';
+import { CPCForm } from './screens/forms/CPCForm';
 
 export default function App() {
   return (
@@ -24,6 +25,7 @@ export default function App() {
       <Route path="/forms/pcm-hunt-daily" element={<RequireAuth><PCMHuntDailyForm /></RequireAuth>} />
       <Route path="/forms/pcm" element={<RequireAuth><PCMListScreen /></RequireAuth>} />
       <Route path="/forms/pcm/new" element={<RequireAuth><PCMForm /></RequireAuth>} />
+      <Route path="/forms/cpc" element={<RequireAuth><CPCForm /></RequireAuth>} />
       <Route path="/forms/:slug" element={<RequireAuth><Placeholder title="Form" /></RequireAuth>} />
       <Route path="/pillars" element={<RequireAuth><PillarsScreen /></RequireAuth>} />
       <Route path="/weekly" element={<RequireAuth><WeeklyScreen /></RequireAuth>} />
