@@ -20,7 +20,7 @@
   --accent-bg: #fbe5e6;
 
   width: 100%;
-  min-height: 100dvh;
+  height: 100dvh;
   background: var(--bg-2);
   color: var(--ink);
   font-family: 'Montserrat', -apple-system, system-ui, sans-serif;
@@ -31,6 +31,7 @@
   display: flex;
   flex-direction: column;
   align-items: center;
+  overflow: hidden;
 }
 
 .app-root *,
@@ -40,11 +41,12 @@
 .app-root .serif { font-family: 'Playfair Display', Georgia, serif; font-weight: 400; letter-spacing: -0.02em; }
 .app-root .mono  { font-family: 'JetBrains Mono', ui-monospace, monospace; font-feature-settings: "tnum"; }
 
-/* Phone container — fills viewport on phones, capped on wider screens */
+/* Phone container — pinned to viewport on phones (so .scroll scrolls
+   internally and the bottom tab bar stays sticky), capped on wider screens */
 .app-root .phone {
   width: 100%;
   max-width: 480px;
-  min-height: 100dvh;
+  height: 100dvh;
   background: var(--bg);
   display: flex;
   flex-direction: column;

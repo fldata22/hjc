@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { AppBar, Drawer, ResponsiveShell, StatusBar, TabBar } from './Shell';
+import { AppBar, Drawer, ResponsiveShell, TabBar } from './Shell';
 import './app.css';
 
 export function ActivityScreen() {
@@ -17,7 +17,6 @@ export function ActivityScreen() {
 
   return (
     <ResponsiveShell active="activity">
-      <StatusBar/>
       <AppBar onMenu={() => setDrawer(true)}/>
       <div className="scroll">
         <div className="activity-hero" style={{ padding: '20px 20px 24px' }}>

@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { AppBar, Drawer, ResponsiveShell, PILLARS, StatusBar, TabBar } from './Shell';
+import { AppBar, Drawer, ResponsiveShell, PILLARS, TabBar } from './Shell';
 import './app.css';
 
 type Filter = 'all' | 'risk' | 'hold' | 'track';
@@ -11,7 +11,6 @@ export function PillarsScreen() {
 
   return (
     <ResponsiveShell active="pillars">
-      <StatusBar/>
       <AppBar onMenu={() => setDrawer(true)}/>
       <div className="scroll">
         <div className="pillars-hero" style={{ padding: '20px 20px 0' }}>

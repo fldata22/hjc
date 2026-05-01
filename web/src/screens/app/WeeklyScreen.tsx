@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { AppBar, Drawer, ResponsiveShell, PILLARS, StatusBar } from './Shell';
+import { AppBar, Drawer, ResponsiveShell, PILLARS } from './Shell';
 import './app.css';
 
 export function WeeklyScreen() {
@@ -26,7 +26,6 @@ export function WeeklyScreen() {
 
   return (
     <ResponsiveShell active="weekly">
-      <StatusBar/>
       <AppBar onMenu={() => setDrawer(true)}/>
       <div className="scroll">
         <div className="weekly-head">

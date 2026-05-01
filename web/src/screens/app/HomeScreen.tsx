@@ -1,12 +1,11 @@
 import { useState } from 'react';
-import { AppBar, Drawer, ResponsiveShell, PILLARS, StatusBar, TabBar } from './Shell';
+import { AppBar, Drawer, ResponsiveShell, PILLARS, TabBar } from './Shell';
 import './app.css';
 
 export function HomeScreen() {
   const [drawer, setDrawer] = useState(false);
   return (
     <ResponsiveShell active="home">
-      <StatusBar/>
       <AppBar onMenu={() => setDrawer(true)}/>
 
       <div className="scroll">
