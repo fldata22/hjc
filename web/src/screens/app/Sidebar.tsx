@@ -44,7 +44,7 @@ export const Sidebar = ({ active }: { active: TabKey }) => {
         aria-current={active === 'pillars' ? 'page' : undefined}
         onClick={goto('pillars')}
       >
-        <span className="ico"><span className="gl-pillars"/></span>Pillars
+        <span className="ico"><span className="gl-pillars"><i/><i/><i/><i/></span></span>Pillars
       </button>
       <button
         type="button"
@@ -64,7 +64,9 @@ export const Sidebar = ({ active }: { active: TabKey }) => {
       </button>
       <div className="sidebar-section">Crusade</div>
       <div className="sidebar-item"><span className="ico">◐</span>People</div>
-      <div className="sidebar-item"><span className="ico">◇</span>Budget</div>
+      <button type="button" className="sidebar-item" onClick={() => navigate('/budget')}>
+        <span className="ico">◇</span>Budget
+      </button>
       <div className="sidebar-item"><span className="ico">⊟</span>Documents</div>
       <div className="sidebar-section" style={{ marginTop: 'auto' }}>Account</div>
       <div className="sidebar-item"><span className="ico">⊙</span>Settings</div>

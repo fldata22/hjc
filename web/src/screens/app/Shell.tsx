@@ -66,7 +66,7 @@ export const TabBar = ({ active = 'home' }: { active?: TabKey }) => {
         <span className="badge">3</span>
       </button>
       <button type="button" className={'tabbtn' + (active === 'pillars' ? ' on' : '')} onClick={go('pillars')}>
-        <span className="ico"><span className="gl-pillars"/></span>
+        <span className="ico"><span className="gl-pillars"><i/><i/><i/><i/></span></span>
         Pillars
       </button>
       <button type="button" className={'tabbtn' + (active === 'weekly' ? ' on' : '')} onClick={go('weekly')}>
@@ -128,7 +128,7 @@ export const Drawer = ({
           <span className="ico"><span className="gl-doc"/></span>Forms<span className="badge">3</span>
         </button>
         <button type="button" className={'drawer-item' + (active === 'pillars' ? ' on' : '')} onClick={goto('pillars')}>
-          <span className="ico"><span className="gl-pillars"/></span>Pillars
+          <span className="ico"><span className="gl-pillars"><i/><i/><i/><i/></span></span>Pillars
         </button>
         <button type="button" className={'drawer-item' + (active === 'weekly' ? ' on' : '')} onClick={goto('weekly')}>
           <span className="ico"><span className="gl-cal"/></span>Weekly
@@ -138,7 +138,9 @@ export const Drawer = ({
         </button>
         <div className="drawer-section">Crusade</div>
         <div className="drawer-item"><span className="ico">◐</span>People</div>
-        <div className="drawer-item"><span className="ico">◇</span>Budget</div>
+        <button type="button" className="drawer-item" onClick={() => { onClose(); navigate('/budget'); }}>
+          <span className="ico">◇</span>Budget
+        </button>
         <div className="drawer-item"><span className="ico">⊟</span>Documents</div>
         <div className="drawer-section" style={{ marginTop: 12 }}>Account</div>
         <div className="drawer-item"><span className="ico">⊙</span>Settings</div>
