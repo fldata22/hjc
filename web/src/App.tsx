@@ -8,6 +8,7 @@ import { WeeklyScreen } from './screens/app/WeeklyScreen';
 import { ActivityScreen } from './screens/app/ActivityScreen';
 import { Placeholder } from './screens/app/Placeholder';
 import { BOTForm } from './screens/forms/BOTForm';
+import { PCMHuntDailyForm } from './screens/forms/PCMHuntDailyForm';
 
 export default function App() {
   return (
@@ -18,6 +19,7 @@ export default function App() {
       <Route path="/" element={<RequireAuth><HomeScreen /></RequireAuth>} />
       <Route path="/forms" element={<RequireAuth><FormsScreen /></RequireAuth>} />
       <Route path="/forms/bot" element={<RequireAuth><BOTForm /></RequireAuth>} />
+      <Route path="/forms/pcm-hunt-daily" element={<RequireAuth><PCMHuntDailyForm /></RequireAuth>} />
       <Route path="/pillars" element={<RequireAuth><PillarsScreen /></RequireAuth>} />
       <Route path="/weekly" element={<RequireAuth><WeeklyScreen /></RequireAuth>} />
       <Route path="/activity" element={<RequireAuth><ActivityScreen /></RequireAuth>} />
