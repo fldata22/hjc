@@ -137,7 +137,9 @@ export const Drawer = ({
           <span className="ico"><span className="gl-list"/></span>Activity log
         </button>
         <div className="drawer-section">Crusade</div>
-        <div className="drawer-item"><span className="ico">◐</span>People</div>
+        <button type="button" className="drawer-item" onClick={() => { onClose(); navigate('/people'); }}>
+          <span className="ico">◐</span>People
+        </button>
         <button type="button" className="drawer-item" onClick={() => { onClose(); navigate('/budget'); }}>
           <span className="ico">◇</span>Budget
         </button>

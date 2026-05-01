@@ -63,7 +63,9 @@ export const Sidebar = ({ active }: { active: TabKey }) => {
         <span className="ico"><span className="gl-list"/></span>Activity log
       </button>
       <div className="sidebar-section">Crusade</div>
-      <div className="sidebar-item"><span className="ico">◐</span>People</div>
+      <button type="button" className="sidebar-item" onClick={() => navigate('/people')}>
+        <span className="ico">◐</span>People
+      </button>
       <button type="button" className="sidebar-item" onClick={() => navigate('/budget')}>
         <span className="ico">◇</span>Budget
       </button>
