@@ -136,6 +136,7 @@ export function WeeklyScreen() {
         <div className="bot-pad"/>
       </div>
 
+      {/* Weekly omits <TabBar/>: action-bar (Save/Submit) is the primary CTA at phone width. Full nav is via the hamburger drawer. */}
       <div className="action-bar">
         <div className="save-status">Auto-saved 12s ago</div>
         <button type="button" className="btn">Save</button>
