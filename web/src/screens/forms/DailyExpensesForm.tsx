@@ -1,9 +1,11 @@
-import { useEffect, useMemo, useState } from 'react';
+import { type ChangeEvent, useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ResponsiveShell } from '../app/Shell';
 import { FormShell } from './FormShell';
 import { TextField, TextareaField, SelectField, CurrencyField, DateField } from './fields';
 import { enqueue, getRecords, subscribe } from '../../lib/submitQueue';
+import { compressImage } from '../../lib/imageCompress';
+import { ReceiptModal } from './ReceiptModal';
 import { todayISO, nowHHMM, last14Days, formatDayLabel } from '../../lib/dateHelpers';
 import './forms.css';
 
@@ -17,6 +19,7 @@ type ExpenseEntry = {
   receiptNumber: string;
   approvedBy: string;
   notes: string;
+  receiptPhoto: string | null;
 };
 
 const FORM_SLUG = 'daily-expenses';
@@ -34,9 +37,9 @@ const CATEGORIES = [
 const STATIC_BUDGET = 84000;
 
 const SEED: ExpenseEntry[] = [
-  { date: todayISO(), time: '09:30', vendor: 'Wa Stadium permit office', category: 'permits', amount: 800, receiptNumber: 'R-2401', approvedBy: 'Director', notes: 'Stage permit fee' },
-  { date: todayISO(), time: '11:15', vendor: 'Newprint Press', category: 'printing', amount: 320, receiptNumber: 'R-2402', approvedBy: 'Director', notes: '500 posters batch 2' },
-  { date: todayISO(), time: '14:00', vendor: 'Sahel Transport', category: 'transport', amount: 140, receiptNumber: 'R-2403', approvedBy: 'Director', notes: 'PCM hunt day, 4 visits' },
+  { date: todayISO(), time: '09:30', vendor: 'Wa Stadium permit office', category: 'permits', amount: 800, receiptNumber: 'R-2401', approvedBy: 'Director', notes: 'Stage permit fee', receiptPhoto: null },
+  { date: todayISO(), time: '11:15', vendor: 'Newprint Press', category: 'printing', amount: 320, receiptNumber: 'R-2402', approvedBy: 'Director', notes: '500 posters batch 2', receiptPhoto: null },
+  { date: todayISO(), time: '14:00', vendor: 'Sahel Transport', category: 'transport', amount: 140, receiptNumber: 'R-2403', approvedBy: 'Director', notes: 'PCM hunt day, 4 visits', receiptPhoto: null },
 ];
 
 const emptyEntry = (date: string): ExpenseEntry => ({
@@ -48,6 +51,7 @@ const emptyEntry = (date: string): ExpenseEntry => ({
   receiptNumber: '',
   approvedBy: '',
   notes: '',
+  receiptPhoto: null,
 });
 
 export function DailyExpensesForm() {
@@ -59,6 +63,8 @@ export function DailyExpensesForm() {
   const [selectedDate, setSelectedDate] = useState<string>(todayISO());
   const [showForm, setShowForm] = useState(false);
   const [draft, setDraft] = useState<ExpenseEntry>(emptyEntry(todayISO()));
+  const [capturing, setCapturing] = useState(false);
+  const [openReceipt, setOpenReceipt] = useState<string | null>(null);
 
   useEffect(() => {
     const unsubscribe = subscribe(() => {
@@ -95,6 +101,23 @@ export function DailyExpensesForm() {
     enqueue<ExpenseEntry>(FORM_SLUG, draft);
     setDraft(emptyEntry(selectedDate));
     // Keep form open for rapid-fire entries.
+  };
+
+  const handleReceiptChange = async (e: ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    // Reset input value so the same file can be re-selected after Remove.
+    e.target.value = '';
+    if (!file) return;
+    setCapturing(true);
+    try {
+      const dataUrl = await compressImage(file);
+      setDraft((d) => ({ ...d, receiptPhoto: dataUrl }));
+    } catch (err) {
+      console.error('Receipt compression failed:', err);
+      alert('Could not load that image. Try a different file.');
+    } finally {
+      setCapturing(false);
+    }
   };
 
   const days = last14Days();
@@ -150,7 +173,19 @@ export function DailyExpensesForm() {
               <div key={e.id ?? `${e.time}-${i}`} className="form-list-row">
                 <div>
                   <div className="name">{e.vendor}</div>
-                  <div className="sub">{categoryLabel}{e.receiptNumber && ` · ${e.receiptNumber}`}</div>
+                  <div className="sub" style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}>
+                    <span>{categoryLabel}{e.receiptNumber && ` · ${e.receiptNumber}`}</span>
+                    {e.receiptPhoto && (
+                      <button
+                        type="button"
+                        onClick={(ev) => { ev.stopPropagation(); setOpenReceipt(e.receiptPhoto ?? null); }}
+                        aria-label="View receipt"
+                        style={{ background: 'transparent', border: 0, padding: 0, fontSize: 14, cursor: 'pointer', lineHeight: 1 }}
+                      >
+                        📷
+                      </button>
+                    )}
+                  </div>
                 </div>
                 <div className="right">
                   <div style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: 13, fontWeight: 600, color: 'var(--ink)' }}>
@@ -185,6 +220,52 @@ export function DailyExpensesForm() {
               <TextField label="Receipt #" value={draft.receiptNumber} onChange={(v) => setDraft({ ...draft, receiptNumber: v })}/>
               <TextField label="Approved by" value={draft.approvedBy} onChange={(v) => setDraft({ ...draft, approvedBy: v })}/>
               <TextareaField label="Notes" value={draft.notes} onChange={(v) => setDraft({ ...draft, notes: v })}/>
+
+              <div className="field">
+                <div className="lbl"><span>Receipt photo</span></div>
+                {draft.receiptPhoto ? (
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '8px 0' }}>
+                    <img
+                      src={draft.receiptPhoto}
+                      alt="Receipt"
+                      style={{ width: 60, height: 60, objectFit: 'cover', borderRadius: 6, border: '1px solid var(--line)' }}
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setDraft({ ...draft, receiptPhoto: null })}
+                      style={{ background: 'transparent', border: 0, color: 'var(--accent)', cursor: 'pointer', fontSize: 12, fontFamily: 'inherit' }}
+                    >
+                      Remove
+                    </button>
+                  </div>
+                ) : (
+                  <label
+                    style={{
+                      display: 'inline-block',
+                      padding: '10px 16px',
+                      fontSize: 13,
+                      fontWeight: 500,
+                      borderRadius: 999,
+                      border: '1px solid var(--ink)',
+                      background: 'var(--bg)',
+                      color: 'var(--ink)',
+                      cursor: capturing ? 'not-allowed' : 'pointer',
+                      opacity: capturing ? 0.5 : 1,
+                      marginTop: 4,
+                    }}
+                  >
+                    <input
+                      type="file"
+                      accept="image/*"
+                      capture="environment"
+                      style={{ display: 'none' }}
+                      onChange={handleReceiptChange}
+                      disabled={capturing}
+                    />
+                    {capturing ? 'Processing…' : '+ Add receipt'}
+                  </label>
+                )}
+              </div>
             </div>
             <div className="row">
               <button type="button" className="btn" onClick={() => setDraft(emptyEntry(selectedDate))}>Clear</button>
@@ -194,6 +275,7 @@ export function DailyExpensesForm() {
         )}
         <div className="bot-pad"/>
       </FormShell>
+      {openReceipt && <ReceiptModal photo={openReceipt} onClose={() => setOpenReceipt(null)}/>}
     </ResponsiveShell>
   );
 }
