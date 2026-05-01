@@ -1,0 +1,300 @@
+/* Form-specific layout. Inherits .field, .input, .seg, .action-bar, .stepper
+   from app.css. Scoped under .app-root same as the rest of the app. */
+
+.app-root .form-shell-top {
+  padding: 16px 20px 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.app-root .form-shell-top .back {
+  background: transparent;
+  border: 0;
+  padding: 0;
+  font-size: 14px;
+  color: var(--ink-3);
+  cursor: pointer;
+  font-family: inherit;
+  letter-spacing: -0.005em;
+  align-self: flex-start;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+.app-root .form-shell-top .back::before {
+  content: '←';
+  font-size: 16px;
+}
+.app-root .form-shell-top .titlerow {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+}
+.app-root .form-shell-top .title {
+  font-family: 'Playfair Display', serif;
+  font-size: 28px;
+  font-weight: 300;
+  letter-spacing: -0.03em;
+  line-height: 1.05;
+  color: var(--ink);
+}
+.app-root .form-shell-top .title em {
+  font-style: italic;
+  color: var(--ink-3);
+}
+.app-root .form-shell-top .pillar-badge {
+  font-family: 'Playfair Display', serif;
+  font-size: 14px;
+  color: var(--ink);
+  border: 1px solid var(--line);
+  padding: 2px 10px;
+  border-radius: 999px;
+}
+.app-root .form-shell-top .save-status {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px;
+  color: var(--ink-3);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+.app-root .form-shell-top .save-status.synced { color: var(--ink); }
+.app-root .form-shell-top .save-status.pending { color: var(--accent); }
+
+.app-root .field-error {
+  font-size: 11px;
+  color: var(--accent);
+  margin-top: 4px;
+  letter-spacing: 0.02em;
+}
+.app-root .field.has-error .input,
+.app-root .field.has-error textarea.input {
+  border-bottom: 1px solid var(--accent);
+}
+.app-root .field .input.bordered {
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  padding: 10px 12px;
+  font-size: 14px;
+}
+.app-root .field .input.bordered:focus {
+  border-color: var(--ink);
+}
+
+.app-root .checklist {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: 4px;
+}
+.app-root .checklist .item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 10px;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 13px;
+  color: var(--ink);
+  background: var(--bg);
+  user-select: none;
+}
+.app-root .checklist .item.on {
+  border-color: var(--ink);
+  background: var(--bg-2);
+}
+.app-root .checklist .item .box {
+  width: 18px; height: 18px;
+  border: 1.5px solid var(--ink-3);
+  border-radius: 4px;
+  display: grid;
+  place-items: center;
+  font-size: 12px;
+  color: var(--bg);
+  flex-shrink: 0;
+}
+.app-root .checklist .item.on .box {
+  background: var(--ink);
+  border-color: var(--ink);
+}
+.app-root .checklist .item.on .box::after { content: '✓'; }
+
+.app-root .form-list-row {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 12px;
+  padding: 14px 0;
+  border-bottom: 1px solid var(--line);
+  align-items: center;
+}
+.app-root .form-list-row:last-child { border-bottom: none; }
+.app-root .form-list-row .name {
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--ink);
+}
+.app-root .form-list-row .sub {
+  font-size: 11px;
+  color: var(--ink-3);
+  margin-top: 4px;
+}
+.app-root .form-list-row .right {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 4px;
+}
+.app-root .form-list-row .status {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  font-weight: 600;
+}
+.app-root .form-list-row .status.confirmed { color: var(--ink); }
+.app-root .form-list-row .status.pending   { color: var(--accent); }
+.app-root .form-list-row .status.declined  { color: var(--ink-3); }
+
+.app-root .stat-strip {
+  display: flex;
+  align-items: baseline;
+  gap: 14px;
+  padding: 16px 20px;
+  border-bottom: 1px solid var(--line);
+}
+.app-root .stat-strip .num {
+  font-family: 'Playfair Display', serif;
+  font-size: 36px;
+  font-weight: 300;
+  letter-spacing: -0.03em;
+  color: var(--ink);
+  line-height: 1;
+}
+.app-root .stat-strip .lbl {
+  font-size: 11px;
+  color: var(--ink-3);
+  letter-spacing: 0.04em;
+}
+.app-root .stat-strip .lbl b { color: var(--ink); font-weight: 500; }
+
+.app-root .date-strip {
+  display: flex;
+  gap: 6px;
+  overflow-x: auto;
+  scrollbar-width: none;
+  padding: 12px 20px;
+  border-bottom: 1px solid var(--line);
+}
+.app-root .date-strip::-webkit-scrollbar { display: none; }
+.app-root .date-strip .day {
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 8px 12px;
+  border-radius: 8px;
+  cursor: pointer;
+  background: transparent;
+  border: 0;
+  font-family: inherit;
+  min-width: 52px;
+}
+.app-root .date-strip .day .dow {
+  font-size: 9px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--ink-3);
+}
+.app-root .date-strip .day .dnum {
+  font-family: 'Playfair Display', serif;
+  font-size: 22px;
+  font-weight: 300;
+  color: var(--ink);
+  margin-top: 2px;
+}
+.app-root .date-strip .day.on {
+  background: var(--bg-2);
+}
+.app-root .date-strip .day.on::after {
+  content: '';
+  display: block;
+  width: 16px;
+  height: 2px;
+  background: var(--accent);
+  margin-top: 4px;
+}
+
+.app-root .add-toggle {
+  display: block;
+  width: 100%;
+  padding: 12px 20px;
+  background: var(--bg-2);
+  border: 0;
+  border-top: 1px solid var(--line);
+  border-bottom: 1px solid var(--line);
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--ink);
+  letter-spacing: -0.005em;
+  cursor: pointer;
+  text-align: left;
+}
+.app-root .add-toggle::before {
+  content: '+ ';
+  color: var(--accent);
+  font-weight: 600;
+}
+
+.app-root .inline-form {
+  padding: 8px 20px 16px;
+  background: var(--bg-2);
+  border-bottom: 1px solid var(--line);
+}
+.app-root .inline-form .row {
+  display: flex;
+  gap: 10px;
+  margin-top: 12px;
+}
+.app-root .inline-form .row .btn {
+  padding: 10px 16px;
+  font-size: 13px;
+  font-weight: 500;
+  border-radius: 999px;
+  border: 1px solid var(--ink);
+  background: var(--bg);
+  color: var(--ink);
+  font-family: inherit;
+  cursor: pointer;
+}
+.app-root .inline-form .row .btn.primary {
+  background: var(--ink);
+  color: var(--bg);
+}
+.app-root .inline-form .row .btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+@media (min-width: 1024px) {
+  .app-root .form-shell-top {
+    max-width: 760px;
+    margin: 0 auto;
+    padding: 32px 48px 16px;
+  }
+  .app-root .form-shell-top .title { font-size: 36px; }
+  .app-root .stepper {
+    max-width: 760px;
+    margin: 0 auto;
+  }
+  .app-root .fields,
+  .app-root .stat-strip,
+  .app-root .date-strip,
+  .app-root .add-toggle,
+  .app-root .inline-form {
+    max-width: 760px;
+    margin-left: auto;
+    margin-right: auto;
+  }
+}
