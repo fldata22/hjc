@@ -24,6 +24,7 @@ export default function App() {
       <Route path="/forms/pcm-hunt-daily" element={<RequireAuth><PCMHuntDailyForm /></RequireAuth>} />
       <Route path="/forms/pcm" element={<RequireAuth><PCMListScreen /></RequireAuth>} />
       <Route path="/forms/pcm/new" element={<RequireAuth><PCMForm /></RequireAuth>} />
+      <Route path="/forms/:slug" element={<RequireAuth><Placeholder title="Form" /></RequireAuth>} />
       <Route path="/pillars" element={<RequireAuth><PillarsScreen /></RequireAuth>} />
       <Route path="/weekly" element={<RequireAuth><WeeklyScreen /></RequireAuth>} />
       <Route path="/activity" element={<RequireAuth><ActivityScreen /></RequireAuth>} />
