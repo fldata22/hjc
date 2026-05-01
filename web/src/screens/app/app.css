@@ -1315,3 +1315,93 @@
     position: relative;
   }
 }
+
+/* ============================================================
+   HOME — desktop reflow (>=1024px)
+   ============================================================ */
+@media (min-width: 1024px) {
+  .app-root .home-hero {
+    display: grid;
+    grid-template-columns: 1.4fr 1fr;
+    gap: 48px;
+    padding: 8px 48px 24px;
+    border-bottom: 1px solid var(--line);
+    align-items: center;
+  }
+  .app-root .home-hero .greet { padding: 32px 0 16px; }
+  .app-root .home-hero .greet h1 { font-size: 56px; }
+  .app-root .home-hero .composite {
+    border-top: none;
+    border-bottom: none;
+    padding: 16px 0 32px;
+  }
+  .app-root .home-hero .composite .num { font-size: 120px; }
+  .app-root .home-hero .composite .num small { font-size: 42px; }
+  .app-root .home-hero-r {
+    align-self: stretch;
+    display: flex;
+    align-items: center;
+  }
+  .app-root .home-hero-r .pillar-strip {
+    padding: 0;
+    width: 100%;
+  }
+  .app-root .home-hero-r .pillar-strip .grid {
+    gap: 4px;
+  }
+  .app-root .home-hero-r .pillar-strip .chip {
+    height: 80px;
+    font-size: 22px;
+  }
+
+  .app-root .home-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 32px;
+    padding: 32px 48px 48px;
+  }
+  .app-root .home-grid .home-card {
+    border: 1px solid var(--line);
+    background: var(--bg);
+  }
+  .app-root .home-grid .home-card .sec {
+    padding: 20px 24px 12px;
+  }
+  .app-root .home-grid .home-card .form-list,
+  .app-root .home-grid .home-card .activity,
+  .app-root .home-grid .home-card .at-risk {
+    padding: 0 24px 20px;
+  }
+
+  .app-root .at-risk-row {
+    display: grid;
+    grid-template-columns: 24px 1fr auto;
+    gap: 12px;
+    padding: 14px 0;
+    border-bottom: 1px solid var(--line);
+    align-items: center;
+  }
+  .app-root .at-risk-row:last-child { border-bottom: none; }
+  .app-root .at-risk-row .L {
+    font-family: 'Playfair Display', serif;
+    font-size: 18px;
+    color: var(--ink-3);
+  }
+  .app-root .at-risk-row .nm {
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--ink);
+  }
+  .app-root .at-risk-row .pct {
+    font-family: 'Playfair Display', serif;
+    font-size: 22px;
+    font-weight: 300;
+    color: var(--accent);
+    letter-spacing: -0.03em;
+  }
+  .app-root .at-risk-row .pct small {
+    font-size: 11px;
+    color: var(--ink-3);
+    font-weight: 400;
+  }
+}
