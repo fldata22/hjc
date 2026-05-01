@@ -3,6 +3,7 @@ import { ResponsiveShell } from '../app/Shell';
 import { FormShell } from './FormShell';
 import { TextField, PhoneField, SegmentedField, TextareaField, NumberField, CurrencyField, DateField } from './fields';
 import { enqueue, getRecords, subscribe } from '../../lib/submitQueue';
+import { todayISO, nowHHMM, last14Days, formatDayLabel } from '../../lib/dateHelpers';
 import './forms.css';
 
 type HuntEntry = {
@@ -24,34 +25,6 @@ const SEED: HuntEntry[] = [
   { date: todayISO(), time: '11:42', location: 'Wa Pastors\' Fellowship', contactName: 'Pst. Kofi Adjei', contactPhone: '+233 24 555 1001', outcome: 'won', leadsGenerated: 2, expense: 45, notes: 'Confirmed for PCM. Following up Tue.' },
   { date: todayISO(), time: '09:14', location: 'Christ Apostolic Wa', contactName: 'Rev. Mensah', contactPhone: '+233 24 555 1002', outcome: 'met', leadsGenerated: 1, expense: 30, notes: '' },
 ];
-
-function todayISO(): string {
-  return new Date().toISOString().slice(0, 10);
-}
-
-function nowHHMM(): string {
-  const d = new Date();
-  return `${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`;
-}
-
-function last14Days(): string[] {
-  const out: string[] = [];
-  const today = new Date();
-  for (let i = 0; i < 14; i++) {
-    const d = new Date(today);
-    d.setDate(d.getDate() - i);
-    out.push(d.toISOString().slice(0, 10));
-  }
-  return out;
-}
-
-function formatDayLabel(iso: string): { dow: string; dnum: string } {
-  const d = new Date(iso + 'T00:00:00');
-  return {
-    dow: d.toLocaleDateString('en-GB', { weekday: 'short' }).toUpperCase(),
-    dnum: String(d.getDate()),
-  };
-}
 
 const emptyEntry = (date: string): HuntEntry => ({
   date,
