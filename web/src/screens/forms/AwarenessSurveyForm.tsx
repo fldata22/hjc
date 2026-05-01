@@ -123,17 +123,20 @@ export function AwarenessSurveyForm() {
         </div>
 
         <div style={{ padding: '0 20px' }}>
-          {responses.slice(0, 10).map((r, i) => (
-            <div key={r.id ?? `${r.respondentName}-${i}`} className="form-list-row">
-              <div>
-                <div className="name">{r.respondentName.trim() || 'Anon'}</div>
-                <div className="sub">{r.ageRange || '—'} · {awarenessSummary(r)}</div>
+          {responses.slice(0, 10).map((r, i) => {
+            const zoneLabel = ZONES.find((z) => z.value === r.zone)?.label ?? r.zone;
+            return (
+              <div key={r.id ?? `${r.respondentName}-${i}`} className="form-list-row">
+                <div>
+                  <div className="name">{r.respondentName.trim() || 'Anon'}</div>
+                  <div className="sub">{r.ageRange || '—'} · {awarenessSummary(r)}</div>
+                </div>
+                <div className="right">
+                  <div style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: 11, color: 'var(--ink-3)' }}>{zoneLabel || '—'}</div>
+                </div>
               </div>
-              <div className="right">
-                <div style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: 11, color: 'var(--ink-3)' }}>{r.zone || '—'}</div>
-              </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
 
         <button type="button" className="add-toggle" onClick={() => setShowForm((s) => !s)}>
