@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ResponsiveShell, AppBar, TabBar, Drawer } from './Shell';
 import { getRecords, subscribe } from '../../lib/submitQueue';
+import { ReceiptModal } from '../forms/ReceiptModal';
 import './app.css';
 
 type ExpenseEntry = {
@@ -14,6 +15,7 @@ type ExpenseEntry = {
   receiptNumber: string;
   approvedBy: string;
   notes: string;
+  receiptPhoto?: string | null;
 };
 
 const FORM_SLUG = 'daily-expenses';
@@ -51,6 +53,7 @@ function formatRelativeDate(iso: string): string {
 export function BudgetScreen() {
   const navigate = useNavigate();
   const [drawer, setDrawer] = useState(false);
+  const [openReceipt, setOpenReceipt] = useState<string | null>(null);
   const [allEntries, setAllEntries] = useState<ExpenseEntry[]>(() =>
     getRecords<ExpenseEntry>(FORM_SLUG),
   );
@@ -251,7 +254,19 @@ export function BudgetScreen() {
                   <div key={e.id ?? `${e.date}-${e.time}-${i}`} className="form-list-row">
                     <div>
                       <div className="name">{e.vendor}</div>
-                      <div className="sub">{categoryLabel}{e.receiptNumber && ` · ${e.receiptNumber}`}</div>
+                      <div className="sub" style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}>
+                        <span>{categoryLabel}{e.receiptNumber && ` · ${e.receiptNumber}`}</span>
+                        {e.receiptPhoto && (
+                          <button
+                            type="button"
+                            onClick={(ev) => { ev.stopPropagation(); setOpenReceipt(e.receiptPhoto ?? null); }}
+                            aria-label="View receipt"
+                            style={{ background: 'transparent', border: 0, padding: 0, fontSize: 14, cursor: 'pointer', lineHeight: 1 }}
+                          >
+                            📷
+                          </button>
+                        )}
+                      </div>
                     </div>
                     <div className="right">
                       <div style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: 13, fontWeight: 600, color: 'var(--ink)' }}>
@@ -294,6 +309,7 @@ export function BudgetScreen() {
       </div>
       <TabBar active="home"/>
       {drawer && <Drawer active="home" onClose={() => setDrawer(false)}/>}
+      {openReceipt && <ReceiptModal photo={openReceipt} onClose={() => setOpenReceipt(null)}/>}
     </ResponsiveShell>
   );
 }
