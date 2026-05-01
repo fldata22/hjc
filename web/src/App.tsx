@@ -6,6 +6,7 @@ import { FormsScreen } from './screens/app/FormsScreen';
 import { PillarsScreen } from './screens/app/PillarsScreen';
 import { WeeklyScreen } from './screens/app/WeeklyScreen';
 import { ActivityScreen } from './screens/app/ActivityScreen';
+import { BudgetScreen } from './screens/app/BudgetScreen';
 import { Placeholder } from './screens/app/Placeholder';
 import { BOTForm } from './screens/forms/BOTForm';
 import { PCMHuntDailyForm } from './screens/forms/PCMHuntDailyForm';
@@ -43,7 +44,7 @@ export default function App() {
 
       {/* Sidebar destinations */}
       <Route path="/people" element={<RequireAuth><Placeholder title="People" /></RequireAuth>} />
-      <Route path="/budget" element={<RequireAuth><Placeholder title="Budget" /></RequireAuth>} />
+      <Route path="/budget" element={<RequireAuth><BudgetScreen /></RequireAuth>} />
       <Route path="/documents" element={<RequireAuth><Placeholder title="Documents" /></RequireAuth>} />
       <Route path="/settings" element={<RequireAuth><Placeholder title="Settings" /></RequireAuth>} />
 
