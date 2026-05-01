@@ -25,3 +25,14 @@ export function formatDayLabel(iso: string): { dow: string; dnum: string } {
     dnum: String(d.getDate()),
   };
 }
+
+export function relativeAgo(iso: string): string {
+  const now = Date.now();
+  const then = new Date(iso).getTime();
+  const ms = Math.max(0, now - then);
+  const hours = Math.floor(ms / 3_600_000);
+  if (hours < 24) return `${hours}H AGO`;
+  const days = Math.floor(ms / 86_400_000);
+  if (days === 1) return 'YEST';
+  return `${days}D`;
+}
