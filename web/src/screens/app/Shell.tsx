@@ -44,11 +44,11 @@ export const AppBar = ({
 );
 
 const TAB_ROUTES: Record<TabKey, string> = {
-  home: '/d/',
-  forms: '/d/forms',
-  pillars: '/d/pillars',
-  weekly: '/d/weekly',
-  activity: '/d/activity',
+  home: '/',
+  forms: '/forms',
+  pillars: '/pillars',
+  weekly: '/weekly',
+  activity: '/activity',
 };
 
 export const TabBar = ({ active = 'home' }: { active?: TabKey }) => {
