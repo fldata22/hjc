@@ -1487,3 +1487,50 @@
     font-size: 26px;
   }
 }
+
+/* ============================================================
+   WEEKLY — desktop reflow (>=1024px)
+   ============================================================ */
+@media (min-width: 1024px) {
+  .app-root .weekly-head {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 32px 48px;
+  }
+  .app-root .weekly-head .week { font-size: 42px; }
+
+  .app-root .rate-grid {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 16px 48px;
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 0 48px;
+  }
+  .app-root .rate-grid .rate-card {
+    padding: 22px 0;
+  }
+
+  .app-root .narrative-grid {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 48px 24px;
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 0 32px;
+  }
+  .app-root .narrative-grid .field {
+    border-bottom: none;
+  }
+
+  .app-root .weekly-section {
+    max-width: 1200px;
+    margin: 0 auto;
+  }
+
+  .app-root .action-bar {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 24px 48px;
+  }
+}

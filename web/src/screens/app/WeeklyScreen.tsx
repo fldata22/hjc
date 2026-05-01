@@ -58,33 +58,35 @@ export function WeeklyScreen() {
           <div className="ptrack"><i style={{ width: (completed / total * 100) + '%' }}/></div>
         </div>
 
-        {PILLARS.slice(0, 6).map((p, i) => {
-          const r = ratings[i];
-          const lw = lastWeek[i];
-          const dir = r - lw;
-          return (
-            <div className="rate-card" key={i}>
-              <div className="top">
-                <span className="L serif">{p.l}</span>
-                <span className="nm">{p.n}</span>
-                <span className="last">Last wk <b>{lw}/10</b></span>
+        <div className="rate-grid">
+          {PILLARS.slice(0, 6).map((p, i) => {
+            const r = ratings[i];
+            const lw = lastWeek[i];
+            const dir = r - lw;
+            return (
+              <div className="rate-card" key={i}>
+                <div className="top">
+                  <span className="L serif">{p.l}</span>
+                  <span className="nm">{p.n}</span>
+                  <span className="last">Last wk <b>{lw}/10</b></span>
+                </div>
+                <div className="scale">
+                  {Array.from({ length: 11 }, (_, n) => (
+                    <span key={n} className={n === r ? 'on' : ''} onClick={() => setRating(i, n)}>{n}</span>
+                  ))}
+                </div>
+                <div className="delta">
+                  <span>Selected: <b>{r}/10</b></span>
+                  <span className={dir >= 0 ? 'up' : 'down'}>
+                    {dir > 0 ? '▲ +' : dir < 0 ? '▼ ' : '— '}{dir !== 0 && Math.abs(dir)} {dir === 0 && 'no change'}
+                  </span>
+                </div>
               </div>
-              <div className="scale">
-                {Array.from({ length: 11 }, (_, n) => (
-                  <span key={n} className={n === r ? 'on' : ''} onClick={() => setRating(i, n)}>{n}</span>
-                ))}
-              </div>
-              <div className="delta">
-                <span>Selected: <b>{r}/10</b></span>
-                <span className={dir >= 0 ? 'up' : 'down'}>
-                  {dir > 0 ? '▲ +' : dir < 0 ? '▼ ' : '— '}{dir !== 0 && Math.abs(dir)} {dir === 0 && 'no change'}
-                </span>
-              </div>
-            </div>
-          );
-        })}
+            );
+          })}
+        </div>
 
-        <div style={{ padding: '22px 20px', borderBottom: '1px solid var(--line)', background: 'var(--bg-2)' }}>
+        <div className="weekly-section" style={{ padding: '22px 20px', borderBottom: '1px solid var(--line)', background: 'var(--bg-2)' }}>
           <div
             style={{
               fontSize: 10,
@@ -102,7 +104,7 @@ export function WeeklyScreen() {
           </div>
         </div>
 
-        <div style={{ padding: '22px 20px 8px' }}>
+        <div className="weekly-section" style={{ padding: '22px 20px 8px' }}>
           <h2
             className="serif"
             style={{ fontSize: 22, fontWeight: 300, letterSpacing: '-0.025em', marginBottom: 4 }}
@@ -113,7 +115,7 @@ export function WeeklyScreen() {
             Three short reflections — central office reads these.
           </p>
         </div>
-        <div className="fields" style={{ paddingTop: 0 }}>
+        <div className="fields narrative-grid" style={{ paddingTop: 0 }}>
           <div className="field">
             <div className="lbl"><span>Biggest win this week</span></div>
             <textarea
