@@ -1355,6 +1355,8 @@
   }
 
   .app-root .home-grid {
+    max-width: 1200px;
+    margin: 0 auto;
     display: grid;
     grid-template-columns: repeat(3, 1fr);
     gap: 32px;
@@ -1410,7 +1412,7 @@
    FORMS — desktop reflow (>=1024px)
    ============================================================ */
 @media (min-width: 1024px) {
-  .app-root .scroll > div:first-child {
+  .app-root .forms-hero {
     /* Forms hero header — wider padding */
     max-width: 1200px;
     margin: 0 auto;
@@ -1437,7 +1439,7 @@
     padding-top: 32px;
   }
 
-  .app-root .form-list {
+  .app-root .forms-grid {
     max-width: 1200px;
     margin: 0 auto;
     padding: 0 48px 8px;
@@ -1445,7 +1447,7 @@
     grid-template-columns: repeat(2, 1fr);
     gap: 0 32px;
   }
-  .app-root .form-list .form-row {
+  .app-root .forms-grid .form-row {
     border-bottom: 1px solid var(--line);
   }
 }

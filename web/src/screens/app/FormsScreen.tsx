@@ -29,7 +29,7 @@ const DAILY: FormRow[] = [
 ];
 
 const FormGroup = ({ rows }: { rows: FormRow[] }) => (
-  <div className="form-list" style={{ padding: '0 20px' }}>
+  <div className="form-list forms-grid">
     {rows.map((r, i) => (
       <div className="form-row" key={i}>
         <div>
@@ -66,7 +66,7 @@ export function FormsScreen() {
       <StatusBar/>
       <AppBar onMenu={() => setDrawer(true)}/>
       <div className="scroll">
-        <div style={{ padding: '20px 20px 0' }}>
+        <div className="forms-hero" style={{ padding: '20px 20px 0' }}>
           <div
             className="eyebrow"
             style={{
