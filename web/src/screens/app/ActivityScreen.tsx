@@ -20,7 +20,7 @@ export function ActivityScreen() {
       <StatusBar/>
       <AppBar onMenu={() => setDrawer(true)}/>
       <div className="scroll">
-        <div style={{ padding: '20px 20px 24px' }}>
+        <div className="activity-hero" style={{ padding: '20px 20px 24px' }}>
           <div
             className="eyebrow"
             style={{
@@ -45,7 +45,7 @@ export function ActivityScreen() {
           </p>
         </div>
 
-        <div className="chips" style={{ paddingBottom: 12 }}>
+        <div className="chips activity-chips" style={{ paddingBottom: 12 }}>
           {chips.map((c) => (
             <div
               key={c.k}

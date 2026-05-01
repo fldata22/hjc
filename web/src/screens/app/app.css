@@ -1534,3 +1534,30 @@
     padding: 24px 48px;
   }
 }
+
+/* ============================================================
+   ACTIVITY — desktop reflow (>=1024px)
+   ============================================================ */
+@media (min-width: 1024px) {
+  .app-root .activity-hero {
+    max-width: 760px;
+    margin: 0 auto;
+  }
+  .app-root .activity-chips {
+    max-width: 760px;
+    margin: 12px auto 0;
+    padding-left: 24px;
+    padding-right: 24px;
+  }
+  .app-root .activity-log {
+    max-width: 760px;
+    margin: 0 auto;
+    padding: 0 24px;
+  }
+  /* Day-head bands span full content width within the cap */
+  .app-root .activity-log .day-head {
+    margin: 0 -24px;
+    padding-left: 24px;
+    padding-right: 24px;
+  }
+}
