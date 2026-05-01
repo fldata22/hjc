@@ -1,5 +1,6 @@
 import { type ReactNode } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { Sidebar } from './Sidebar';
 
 export type TabKey = 'home' | 'forms' | 'pillars' | 'weekly' | 'activity';
 
@@ -147,8 +148,15 @@ export const Drawer = ({
   );
 };
 
-export const PhoneFrame = ({ children }: { children: ReactNode }) => (
+export const ResponsiveShell = ({
+  active,
+  children,
+}: {
+  active: TabKey;
+  children: ReactNode;
+}) => (
   <div className="app-root">
+    <Sidebar active={active} />
     <div className="phone">{children}</div>
   </div>
 );

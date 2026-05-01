@@ -1,11 +1,11 @@
 import { useState } from 'react';
-import { AppBar, Drawer, PhoneFrame, PILLARS, StatusBar, TabBar } from './Shell';
+import { AppBar, Drawer, ResponsiveShell, PILLARS, StatusBar, TabBar } from './Shell';
 import './app.css';
 
 export function HomeScreen() {
   const [drawer, setDrawer] = useState(false);
   return (
-    <PhoneFrame>
+    <ResponsiveShell active="home">
       <StatusBar/>
       <AppBar onMenu={() => setDrawer(true)}/>
 
@@ -150,6 +150,6 @@ export function HomeScreen() {
 
       <TabBar active="home"/>
       {drawer && <Drawer active="home" onClose={() => setDrawer(false)}/>}
-    </PhoneFrame>
+    </ResponsiveShell>
   );
 }

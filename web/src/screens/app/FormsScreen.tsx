@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { AppBar, Drawer, PhoneFrame, StatusBar, TabBar } from './Shell';
+import { AppBar, Drawer, ResponsiveShell, StatusBar, TabBar } from './Shell';
 import './app.css';
 
 type FormRow = { n: string; p: string; meta: string; due: string; dueClass: 'ok' | 'warn' | 'urgent' };
@@ -62,7 +62,7 @@ export function FormsScreen() {
   ];
 
   return (
-    <PhoneFrame>
+    <ResponsiveShell active="forms">
       <StatusBar/>
       <AppBar onMenu={() => setDrawer(true)}/>
       <div className="scroll">
@@ -129,6 +129,6 @@ export function FormsScreen() {
       </div>
       <TabBar active="forms"/>
       {drawer && <Drawer active="forms" onClose={() => setDrawer(false)}/>}
-    </PhoneFrame>
+    </ResponsiveShell>
   );
 }

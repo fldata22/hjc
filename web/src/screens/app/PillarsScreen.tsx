@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { AppBar, Drawer, PhoneFrame, PILLARS, StatusBar, TabBar } from './Shell';
+import { AppBar, Drawer, ResponsiveShell, PILLARS, StatusBar, TabBar } from './Shell';
 import './app.css';
 
 type Filter = 'all' | 'risk' | 'hold' | 'track';
@@ -10,7 +10,7 @@ export function PillarsScreen() {
   const sorted = [...PILLARS].sort((a, b) => a.s - b.s);
 
   return (
-    <PhoneFrame>
+    <ResponsiveShell active="pillars">
       <StatusBar/>
       <AppBar onMenu={() => setDrawer(true)}/>
       <div className="scroll">
@@ -90,6 +90,6 @@ export function PillarsScreen() {
       </div>
       <TabBar active="pillars"/>
       {drawer && <Drawer active="pillars" onClose={() => setDrawer(false)}/>}
-    </PhoneFrame>
+    </ResponsiveShell>
   );
 }

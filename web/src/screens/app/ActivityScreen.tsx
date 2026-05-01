@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { AppBar, Drawer, PhoneFrame, StatusBar, TabBar } from './Shell';
+import { AppBar, Drawer, ResponsiveShell, StatusBar, TabBar } from './Shell';
 import './app.css';
 
 export function ActivityScreen() {
@@ -16,7 +16,7 @@ export function ActivityScreen() {
   ];
 
   return (
-    <PhoneFrame>
+    <ResponsiveShell active="activity">
       <StatusBar/>
       <AppBar onMenu={() => setDrawer(true)}/>
       <div className="scroll">
@@ -134,6 +134,6 @@ export function ActivityScreen() {
       </div>
       <TabBar active="activity"/>
       {drawer && <Drawer active="activity" onClose={() => setDrawer(false)}/>}
-    </PhoneFrame>
+    </ResponsiveShell>
   );
 }

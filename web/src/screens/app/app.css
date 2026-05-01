@@ -1188,3 +1188,130 @@
 
 /* spacer at bottom of scroll body */
 .app-root .bot-pad { height: 32px; }
+
+/* ============================================================
+   SIDEBAR (desktop only — hidden by default)
+   ============================================================ */
+.app-root .sidebar {
+  display: none;
+}
+
+/* ============================================================
+   DESKTOP REFLOW — sidebar visible, phone chrome hidden
+   ============================================================ */
+@media (min-width: 1024px) {
+  .app-root {
+    flex-direction: row;
+    align-items: stretch;
+    background: var(--bg);
+  }
+
+  .app-root .sidebar {
+    display: flex;
+    flex-direction: column;
+    width: 240px;
+    flex-shrink: 0;
+    background: var(--bg);
+    border-right: 1px solid var(--line);
+    height: 100dvh;
+    position: sticky;
+    top: 0;
+    overflow-y: auto;
+  }
+  .app-root .sidebar-head {
+    padding: 32px 24px 24px;
+    border-bottom: 1px solid var(--line);
+  }
+  .app-root .sidebar-head .crusade-eyebrow {
+    font-size: 10px;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--ink-3);
+    font-weight: 500;
+    margin-bottom: 8px;
+  }
+  .app-root .sidebar-head h2 {
+    font-family: 'Playfair Display', serif;
+    font-size: 24px;
+    font-weight: 300;
+    letter-spacing: -0.03em;
+    line-height: 1;
+    margin-bottom: 6px;
+  }
+  .app-root .sidebar-head .day {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    color: var(--ink-3);
+  }
+  .app-root .sidebar-head .day b { color: var(--accent); }
+  .app-root .sidebar-section {
+    padding: 16px 24px 6px;
+    font-size: 10px;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--ink-3);
+    font-weight: 500;
+  }
+  .app-root .sidebar-item {
+    padding: 10px 24px;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    font-size: 14px;
+    color: var(--ink-2);
+    font-weight: 500;
+    letter-spacing: -0.005em;
+    cursor: pointer;
+    background: transparent;
+    border: 0;
+    text-align: left;
+    width: 100%;
+    font-family: inherit;
+  }
+  .app-root .sidebar-item.on {
+    color: var(--ink);
+    background: var(--bg-2);
+    border-left: 2px solid var(--accent);
+    padding-left: 22px;
+  }
+  .app-root .sidebar-item .ico {
+    width: 22px; height: 22px;
+    display: grid;
+    place-items: center;
+    color: var(--ink-3);
+  }
+  .app-root .sidebar-item.on .ico { color: var(--ink); }
+  .app-root .sidebar-item .badge {
+    margin-left: auto;
+    background: var(--accent);
+    color: var(--bg);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    padding: 1px 7px;
+    border-radius: 999px;
+    font-weight: 600;
+  }
+
+  /* Phone container becomes the main content pane */
+  .app-root .phone {
+    max-width: none;
+    border-left: none;
+    border-right: none;
+    flex: 1;
+    min-height: 100dvh;
+  }
+
+  /* Hide phone-only chrome at desktop */
+  .app-root .statusbar,
+  .app-root .app-bar,
+  .app-root .tabbar,
+  .app-root .drawer-overlay,
+  .app-root .drawer {
+    display: none !important;
+  }
+
+  /* Bottom padding (action bar still visible on Weekly) */
+  .app-root .action-bar {
+    position: relative;
+  }
+}
