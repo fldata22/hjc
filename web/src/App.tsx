@@ -7,6 +7,7 @@ import { PillarsScreen } from './screens/app/PillarsScreen';
 import { WeeklyScreen } from './screens/app/WeeklyScreen';
 import { ActivityScreen } from './screens/app/ActivityScreen';
 import { Placeholder } from './screens/app/Placeholder';
+import { BOTForm } from './screens/forms/BOTForm';
 
 export default function App() {
   return (
@@ -16,6 +17,7 @@ export default function App() {
       {/* Real screens at root */}
       <Route path="/" element={<RequireAuth><HomeScreen /></RequireAuth>} />
       <Route path="/forms" element={<RequireAuth><FormsScreen /></RequireAuth>} />
+      <Route path="/forms/bot" element={<RequireAuth><BOTForm /></RequireAuth>} />
       <Route path="/pillars" element={<RequireAuth><PillarsScreen /></RequireAuth>} />
       <Route path="/weekly" element={<RequireAuth><WeeklyScreen /></RequireAuth>} />
       <Route path="/activity" element={<RequireAuth><ActivityScreen /></RequireAuth>} />
