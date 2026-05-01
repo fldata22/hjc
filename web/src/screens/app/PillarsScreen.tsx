@@ -14,7 +14,7 @@ export function PillarsScreen() {
       <StatusBar/>
       <AppBar onMenu={() => setDrawer(true)}/>
       <div className="scroll">
-        <div style={{ padding: '20px 20px 0' }}>
+        <div className="pillars-hero" style={{ padding: '20px 20px 0' }}>
           <div
             className="eyebrow"
             style={{
@@ -39,7 +39,7 @@ export function PillarsScreen() {
           </p>
         </div>
 
-        <div className="chips">
+        <div className="chips pillars-chips">
           <div className={'chip' + (filter === 'all' ? ' on' : '')} onClick={() => setFilter('all')}>All<span className="n">13</span></div>
           <div className={'chip' + (filter === 'risk' ? ' on' : '')} onClick={() => setFilter('risk')}>At risk<span className="n">4</span></div>
           <div className={'chip' + (filter === 'hold' ? ' on' : '')} onClick={() => setFilter('hold')}>Holding<span className="n">4</span></div>
@@ -62,30 +62,32 @@ export function PillarsScreen() {
           <span style={{ color: 'var(--ink)' }}>↕</span>
         </div>
 
-        {sorted.map((p, i) => {
-          const dir = p.s - p.n7;
-          return (
-            <div className="pillar-row" key={i}>
-              <div className="L serif">{p.l}</div>
-              <div>
-                <div className="nm">{p.n}</div>
-                <div className="bar">
-                  <i className={p.s < 50 ? 'acc' : ''} style={{ width: p.s + '%' }}/>
+        <div className="pillars-grid">
+          {sorted.map((p, i) => {
+            const dir = p.s - p.n7;
+            return (
+              <div className="pillar-row" key={i}>
+                <div className="L serif">{p.l}</div>
+                <div>
+                  <div className="nm">{p.n}</div>
+                  <div className="bar">
+                    <i className={p.s < 50 ? 'acc' : ''} style={{ width: p.s + '%' }}/>
+                  </div>
+                  <div className="pillar-meta" style={{ marginTop: 8 }}>
+                    <span>{p.src}</span>
+                    <span className="d">·</span>
+                    <span className={dir >= 0 ? 'delta-up' : 'delta-down'}>
+                      {dir >= 0 ? '▲' : '▼'} {Math.abs(dir)} pts wk
+                    </span>
+                  </div>
                 </div>
-                <div className="pillar-meta" style={{ marginTop: 8 }}>
-                  <span>{p.src}</span>
-                  <span className="d">·</span>
-                  <span className={dir >= 0 ? 'delta-up' : 'delta-down'}>
-                    {dir >= 0 ? '▲' : '▼'} {Math.abs(dir)} pts wk
-                  </span>
+                <div className={'pct' + (p.s < 50 ? ' acc' : '')}>
+                  {p.s}<small>%</small>
                 </div>
               </div>
-              <div className={'pct' + (p.s < 50 ? ' acc' : '')}>
-                {p.s}<small>%</small>
-              </div>
-            </div>
-          );
-        })}
+            );
+          })}
+        </div>
         <div className="bot-pad"/>
       </div>
       <TabBar active="pillars"/>
