@@ -1405,3 +1405,47 @@
     font-weight: 400;
   }
 }
+
+/* ============================================================
+   FORMS — desktop reflow (>=1024px)
+   ============================================================ */
+@media (min-width: 1024px) {
+  .app-root .scroll > div:first-child {
+    /* Forms hero header — wider padding */
+    max-width: 1200px;
+    margin: 0 auto;
+  }
+  .app-root .search {
+    max-width: 1200px;
+    margin: 24px auto 0;
+  }
+  .app-root .tabs {
+    max-width: 1200px;
+    margin: 24px auto 0;
+    padding: 0 48px;
+    position: sticky;
+    top: 0;
+    background: var(--bg);
+    z-index: 1;
+  }
+  .app-root .cat-group {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 48px;
+  }
+  .app-root .cat-head {
+    padding-top: 32px;
+  }
+
+  .app-root .form-list {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 48px 8px;
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 0 32px;
+  }
+  .app-root .form-list .form-row {
+    border-bottom: 1px solid var(--line);
+  }
+}
