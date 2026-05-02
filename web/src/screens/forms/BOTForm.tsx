@@ -181,7 +181,17 @@ export function BOTForm() {
           )}
         </div>
 
-        <button type="button" className="add-toggle" onClick={() => setShowForm((s) => !s)}>
+        <button
+          type="button"
+          className="add-toggle"
+          onClick={() => {
+            if (showForm) {
+              setDraft(emptyDraft);
+              setSaveError(null);
+            }
+            setShowForm((s) => !s);
+          }}
+        >
           {showForm ? 'Cancel' : 'Add trustee'}
         </button>
 
