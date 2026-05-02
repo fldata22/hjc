@@ -214,3 +214,26 @@ export function useAwarenessSurveys() {
     queryFn: () => apiFetch<{ data: AwarenessSurveyRow[] }>('/awareness-surveys').then((r) => r.data),
   });
 }
+
+export function useCreateAwarenessSurvey() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (body: {
+      crusade_id: number;
+      zone_id: number;
+      survey_number: number;
+      surveyed_count: number;
+      attending_yes_count: number;
+      taken_on: string;
+    }) =>
+      apiFetch<{ data: AwarenessSurveyRow }>('/awareness-surveys', {
+        method: 'POST',
+        body: JSON.stringify(body),
+      }).then((r) => r.data),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['awareness-surveys'] });
+      qc.invalidateQueries({ queryKey: ['awareness-trajectory'] });
+      qc.invalidateQueries({ queryKey: ['mission-control'] });
+    },
+  });
+}
