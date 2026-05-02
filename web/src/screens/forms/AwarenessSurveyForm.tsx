@@ -11,6 +11,7 @@ import {
   type Zone,
   type AwarenessSurveyRow,
 } from '../../api/hooks';
+import { ApiError } from '../../api/client';
 import { todayISO } from '../../lib/dateHelpers';
 import './forms.css';
 
@@ -125,6 +126,7 @@ export function AwarenessSurveyForm() {
   const [takenOn, setTakenOn] = useState<string>(todayISO());
   const [rows, setRows] = useState<RowDraft[]>([]);
   const [rowErrors, setRowErrors] = useState<Record<number, string>>({});
+  const [submittedZoneIds, setSubmittedZoneIds] = useState<Set<number>>(new Set());
   const [expandedWave, setExpandedWave] = useState<number | null>(null);
 
   const openForm = () => {
@@ -133,6 +135,7 @@ export function AwarenessSurveyForm() {
     setTakenOn(todayISO());
     setRows(emptyRows(zones));
     setRowErrors({});
+    setSubmittedZoneIds(new Set());
     setShowForm(true);
   };
 
@@ -151,7 +154,9 @@ export function AwarenessSurveyForm() {
     return a > s;
   };
 
-  const validRows = rows.filter((r) => typeof r.surveyed === 'number' && r.surveyed > 0);
+  const validRows = rows.filter(
+    (r) => typeof r.surveyed === 'number' && r.surveyed > 0 && !submittedZoneIds.has(r.zone_id)
+  );
   const anyMismatch = rows.some(rowHasMismatch);
   const canSubmit =
     typeof waveNumber === 'number' &&
@@ -179,6 +184,17 @@ export function AwarenessSurveyForm() {
     const failures = results
       .map((res, i) => ({ res, row: validRows[i] }))
       .filter(({ res }) => res.status === 'rejected');
+    const succeededZoneIds = results
+      .map((res, i) => ({ res, row: validRows[i] }))
+      .filter(({ res }) => res.status === 'fulfilled')
+      .map(({ row }) => row.zone_id);
+    if (succeededZoneIds.length > 0) {
+      setSubmittedZoneIds((prev) => {
+        const next = new Set(prev);
+        succeededZoneIds.forEach((id) => next.add(id));
+        return next;
+      });
+    }
     if (failures.length === 0) {
       alert(`Wave ${waveNumber} logged · ${validRows.length} zone${validRows.length === 1 ? '' : 's'}`);
       closeForm();
@@ -187,10 +203,17 @@ export function AwarenessSurveyForm() {
     const errs: Record<number, string> = {};
     failures.forEach(({ res, row }) => {
       const reason = (res as PromiseRejectedResult).reason;
-      const message =
-        (reason && typeof reason === 'object' && 'message' in reason && typeof reason.message === 'string')
-          ? reason.message
-          : 'Failed';
+      let message = 'Failed';
+      if (reason instanceof ApiError) {
+        const body = reason.body;
+        if (body && typeof body === 'object' && 'message' in body && typeof (body as { message?: unknown }).message === 'string') {
+          message = (body as { message: string }).message;
+        } else {
+          message = reason.message;
+        }
+      } else if (reason instanceof Error) {
+        message = reason.message;
+      }
       errs[row.zone_id] = message;
     });
     setRowErrors(errs);
@@ -293,7 +316,7 @@ export function AwarenessSurveyForm() {
         </div>
 
         <button type="button" className="add-toggle" onClick={showForm ? closeForm : openForm}>
-          {showForm ? 'Cancel' : '+ Log new wave'}
+          {showForm ? 'Cancel' : 'Log new wave'}
         </button>
 
         {showForm && (
