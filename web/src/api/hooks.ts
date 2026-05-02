@@ -194,3 +194,23 @@ export function useZones() {
     queryFn: () => apiFetch<{ data: Zone[] }>('/zones').then((r) => r.data),
   });
 }
+
+// === Awareness surveys (aggregate rows) ===
+export interface AwarenessSurveyRow {
+  id: number;
+  crusade_id: number;
+  zone_id: number;
+  survey_number: number;
+  surveyed_count: number;
+  attending_yes_count: number;
+  taken_on: string;
+  created_at: string;
+  updated_at: string;
+}
+
+export function useAwarenessSurveys() {
+  return useQuery({
+    queryKey: ['awareness-surveys'],
+    queryFn: () => apiFetch<{ data: AwarenessSurveyRow[] }>('/awareness-surveys').then((r) => r.data),
+  });
+}
