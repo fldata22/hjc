@@ -1,23 +1,27 @@
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ResponsiveShell } from '../app/Shell';
 import { FormShell } from './FormShell';
 import { TextField, PhoneField, SegmentedField, SelectField, TextareaField } from './fields';
-import { enqueue, getRecords, subscribe } from '../../lib/submitQueue';
+import {
+  useCrusade,
+  useCommitteeMembers,
+  useCreateCommitteeMember,
+} from '../../api/hooks';
+import { ApiError } from '../../api/client';
 import './forms.css';
 
-type CPCRecord = {
-  id?: string;
+type Status = 'active' | 'on-leave' | 'stepped-down' | '';
+
+type Draft = {
   fullName: string;
   role: string;
   zone: string;
   phone: string;
   email: string;
-  status: 'active' | 'on-leave' | 'stepped-down';
+  status: Status;
   notes: string;
 };
-
-const FORM_SLUG = 'cpc';
 
 const ZONES = [
   { value: 'wa-central', label: 'Wa Central' },
@@ -27,61 +31,140 @@ const ZONES = [
   { value: 'wa-west', label: 'Wa West' },
 ];
 
-const SEED: CPCRecord[] = [
-  { fullName: 'Akua Boateng', role: 'Zone Coordinator', zone: 'wa-central', phone: '+233 24 555 0301', email: '', status: 'active', notes: '' },
-  { fullName: 'Yaw Owusu', role: 'Logistics Lead', zone: 'wa-north', phone: '+233 24 555 0302', email: '', status: 'active', notes: '' },
-  { fullName: 'Pst. Daniel Ofori', role: 'Pastor Liaison', zone: 'wa-south', phone: '+233 24 555 0303', email: '', status: 'active', notes: '' },
-  { fullName: 'Mary Asante', role: 'Volunteer Manager', zone: 'wa-east', phone: '+233 24 555 0304', email: '', status: 'on-leave', notes: '' },
-];
-
-const STATUS_CLASS: Record<CPCRecord['status'], string> = {
+const STATUS_CLASS: Record<'active' | 'on-leave' | 'stepped-down', string> = {
   active: 'confirmed',
   'on-leave': 'pending',
   'stepped-down': 'declined',
 };
 
-const STATUS_LABEL: Record<CPCRecord['status'], string> = {
+const STATUS_LABEL: Record<'active' | 'on-leave' | 'stepped-down', string> = {
   active: 'active',
   'on-leave': 'on leave',
   'stepped-down': 'stepped down',
 };
 
-const emptyForm: CPCRecord = {
-  fullName: '', role: '', zone: '', phone: '', email: '', status: 'active', notes: '',
+const emptyDraft: Draft = {
+  fullName: '', role: '', zone: '', phone: '', email: '', status: '', notes: '',
 };
+
+const ErrorBanner = ({ what, onRetry }: { what: string; onRetry: () => void }) => (
+  <div style={{
+    padding: '14px 16px',
+    margin: '12px 20px',
+    background: 'var(--accent-bg)',
+    border: '1px solid var(--accent-soft)',
+    borderRadius: 6,
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    gap: 12,
+  }}>
+    <div style={{ fontSize: 12, color: 'var(--accent)' }}>Couldn't load {what}.</div>
+    <button
+      type="button"
+      onClick={onRetry}
+      style={{
+        padding: '6px 12px',
+        fontSize: 12,
+        fontWeight: 500,
+        borderRadius: 999,
+        border: '1px solid var(--accent)',
+        background: 'transparent',
+        color: 'var(--accent)',
+        fontFamily: 'inherit',
+        cursor: 'pointer',
+      }}
+    >
+      Retry
+    </button>
+  </div>
+);
 
 export function CPCForm() {
   const navigate = useNavigate();
-  const [members, setMembers] = useState<CPCRecord[]>(() => {
-    const stored = getRecords<CPCRecord>(FORM_SLUG);
-    return stored.length > 0 ? stored : SEED;
-  });
-  const [showForm, setShowForm] = useState(false);
-  const [draft, setDraft] = useState<CPCRecord>(emptyForm);
+  const { data: crusade, isLoading: crusadeLoading, isError: crusadeError, refetch: refetchCrusade } = useCrusade();
+  const { data: members, isLoading: membersLoading, isError: membersError, refetch: refetchMembers } = useCommitteeMembers('cpc');
+  const createMutation = useCreateCommitteeMember();
 
-  useEffect(() => {
-    const unsubscribe = subscribe(() => {
-      const stored = getRecords<CPCRecord>(FORM_SLUG);
-      if (stored.length > 0) setMembers(stored);
-    });
-    return () => { unsubscribe(); };
-  }, []);
+  const [showForm, setShowForm] = useState(false);
+  const [draft, setDraft] = useState<Draft>(emptyDraft);
+  const [saveError, setSaveError] = useState<string | null>(null);
 
   const canSave =
+    !!crusade &&
     draft.fullName.trim() !== '' &&
     draft.role.trim() !== '' &&
     draft.zone !== '' &&
     draft.phone.trim() !== '' &&
-    draft.status !== ('' as CPCRecord['status']);
+    draft.status !== '' &&
+    !createMutation.isPending;
 
-  const handleSave = () => {
-    enqueue<CPCRecord>(FORM_SLUG, draft);
-    setDraft(emptyForm);
-    setShowForm(false);
+  const handleSave = async () => {
+    if (!canSave || !crusade) return;
+    setSaveError(null);
+    const zoneLabel = ZONES.find((z) => z.value === draft.zone)?.label ?? draft.zone;
+    try {
+      await createMutation.mutateAsync({
+        crusade_id: crusade.id,
+        kind: 'cpc',
+        name: draft.fullName.trim(),
+        role: draft.role.trim(),
+        org: zoneLabel,
+        phone: draft.phone.trim() === '' ? null : draft.phone.trim(),
+        email: draft.email.trim() === '' ? null : draft.email.trim(),
+        status: draft.status,
+        notes: draft.notes.trim() === '' ? null : draft.notes.trim(),
+      });
+      setDraft(emptyDraft);
+      setShowForm(false);
+    } catch (e) {
+      let message = 'Failed';
+      if (e instanceof ApiError) {
+        const body = e.body;
+        if (body && typeof body === 'object' && 'message' in body && typeof (body as { message?: unknown }).message === 'string') {
+          message = (body as { message: string }).message;
+        } else {
+          message = e.message;
+        }
+      } else if (e instanceof Error) {
+        message = e.message;
+      }
+      setSaveError(message);
+    }
   };
 
-  const activeCount = members.filter((m) => m.status === 'active').length;
-  const onLeaveCount = members.filter((m) => m.status === 'on-leave').length;
+  if (crusadeError) {
+    return (
+      <ResponsiveShell active="forms">
+        <FormShell
+          title={<>CPC <em>Central Planning</em></>}
+          pillar="P4"
+          primaryAction={{ label: 'Done', onClick: () => navigate('/forms') }}
+        >
+          <ErrorBanner what="crusade" onRetry={refetchCrusade}/>
+        </FormShell>
+      </ResponsiveShell>
+    );
+  }
+  if (crusadeLoading || !crusade) {
+    return (
+      <ResponsiveShell active="forms">
+        <FormShell
+          title={<>CPC <em>Central Planning</em></>}
+          pillar="P4"
+          primaryAction={{ label: 'Done', onClick: () => navigate('/forms') }}
+        >
+          <div style={{ padding: '24px 20px', fontSize: 13, color: 'var(--ink-3)', textAlign: 'center' }}>Loading…</div>
+        </FormShell>
+      </ResponsiveShell>
+    );
+  }
+
+  const list = members ?? [];
+  const isKnownStatus = (s: string): s is 'active' | 'on-leave' | 'stepped-down' =>
+    s === 'active' || s === 'on-leave' || s === 'stepped-down';
+  const activeCount = list.filter((m) => m.status === 'active').length;
+  const onLeaveCount = list.filter((m) => m.status === 'on-leave').length;
 
   return (
     <ResponsiveShell active="forms">
@@ -93,7 +176,7 @@ export function CPCForm() {
         <div className="stat-strip">
           <div>
             <div className="num">{activeCount}</div>
-            <div className="lbl">of {members.length} active</div>
+            <div className="lbl">of {list.length} active</div>
           </div>
           <div style={{ flex: 1 }}/>
           <div>
@@ -102,24 +185,43 @@ export function CPCForm() {
         </div>
 
         <div style={{ padding: '0 20px' }}>
-          {members.map((m, i) => {
-            const zoneLabel = ZONES.find((z) => z.value === m.zone)?.label ?? m.zone;
-            return (
-              <div key={m.id ?? `${m.fullName}-${i}`} className="form-list-row">
-                <div>
-                  <div className="name">{m.fullName}</div>
-                  <div className="sub">{m.role} · {zoneLabel}</div>
+          {membersError ? (
+            <ErrorBanner what="members" onRetry={refetchMembers}/>
+          ) : membersLoading ? (
+            <div style={{ padding: '16px 0', fontSize: 13, color: 'var(--ink-3)', textAlign: 'center' }}>Loading…</div>
+          ) : list.length === 0 ? (
+            <div className="empty">No members yet.</div>
+          ) : (
+            list.map((m) => {
+              const statusClass = isKnownStatus(m.status) ? STATUS_CLASS[m.status] : 'pending';
+              const statusLabel = isKnownStatus(m.status) ? STATUS_LABEL[m.status] : m.status;
+              return (
+                <div key={m.id} className="form-list-row">
+                  <div>
+                    <div className="name">{m.name}</div>
+                    <div className="sub">{m.role}{m.org && ` · ${m.org}`}</div>
+                  </div>
+                  <div className="right">
+                    <div className={'status ' + statusClass}>{statusLabel}</div>
+                    <div style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: 11, color: 'var(--ink-3)' }}>{m.phone ?? ''}</div>
+                  </div>
                 </div>
-                <div className="right">
-                  <div className={'status ' + STATUS_CLASS[m.status]}>{STATUS_LABEL[m.status]}</div>
-                  <div style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: 11, color: 'var(--ink-3)' }}>{m.phone}</div>
-                </div>
-              </div>
-            );
-          })}
+              );
+            })
+          )}
         </div>
 
-        <button type="button" className="add-toggle" onClick={() => setShowForm((s) => !s)}>
+        <button
+          type="button"
+          className="add-toggle"
+          onClick={() => {
+            if (showForm) {
+              setDraft(emptyDraft);
+              setSaveError(null);
+            }
+            setShowForm((s) => !s);
+          }}
+        >
           {showForm ? 'Cancel' : 'Add CPC member'}
         </button>
 
@@ -140,13 +242,18 @@ export function CPCForm() {
                   { value: 'stepped-down', label: 'Stepped down' },
                 ]}
                 value={draft.status}
-                onChange={(v) => setDraft({ ...draft, status: v as CPCRecord['status'] })}
+                onChange={(v) => setDraft({ ...draft, status: v as Status })}
               />
               <TextareaField label="Notes" value={draft.notes} onChange={(v) => setDraft({ ...draft, notes: v })}/>
             </div>
+            {saveError && (
+              <div className="field-error" style={{ margin: '4px 0' }}>{saveError}</div>
+            )}
             <div className="row">
-              <button type="button" className="btn" onClick={() => { setDraft(emptyForm); setShowForm(false); }}>Cancel</button>
-              <button type="button" className="btn primary" onClick={handleSave} disabled={!canSave}>Save member</button>
+              <button type="button" className="btn" onClick={() => { setDraft(emptyDraft); setShowForm(false); setSaveError(null); }}>Cancel</button>
+              <button type="button" className="btn primary" onClick={handleSave} disabled={!canSave}>
+                {createMutation.isPending ? 'Saving…' : 'Save member'}
+              </button>
             </div>
           </div>
         )}
