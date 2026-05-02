@@ -177,3 +177,20 @@ export function useCrusade() {
     queryFn: () => apiFetch<{ data: Crusade }>('/crusade').then((r) => r.data),
   });
 }
+
+// === Zones ===
+export interface Zone {
+  id: number;
+  crusade_id: number;
+  code: string;
+  name: string;
+  population: number | null;
+  pap: number | null;
+}
+
+export function useZones() {
+  return useQuery({
+    queryKey: ['zones'],
+    queryFn: () => apiFetch<{ data: Zone[] }>('/zones').then((r) => r.data),
+  });
+}
