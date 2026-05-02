@@ -183,7 +183,7 @@ export interface Zone {
   id: number;
   crusade_id: number;
   code: string;
-  name: string;
+  name: string | null;
   population: number | null;
   pap: number | null;
 }
