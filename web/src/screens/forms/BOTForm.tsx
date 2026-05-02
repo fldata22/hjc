@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { ResponsiveShell } from '../app/Shell';
 import { FormShell } from './FormShell';
 import { TextField, PhoneField, SegmentedField, TextareaField } from './fields';
@@ -60,6 +61,7 @@ const ErrorBanner = ({ what, onRetry }: { what: string; onRetry: () => void }) =
 );
 
 export function BOTForm() {
+  const navigate = useNavigate();
   const { data: crusade, isLoading: crusadeLoading, isError: crusadeError, refetch: refetchCrusade } = useCrusade();
   const { data: trustees, isLoading: trusteesLoading, isError: trusteesError, refetch: refetchTrustees } = useCommitteeMembers('bot');
   const createMutation = useCreateCommitteeMember();
@@ -115,7 +117,7 @@ export function BOTForm() {
         <FormShell
           title={<>BOT <em>Board of Trustees</em></>}
           pillar="P3"
-          primaryAction={{ label: 'Done', onClick: () => window.history.back() }}
+          primaryAction={{ label: 'Done', onClick: () => navigate('/forms') }}
         >
           <ErrorBanner what="crusade" onRetry={refetchCrusade}/>
         </FormShell>
@@ -128,7 +130,7 @@ export function BOTForm() {
         <FormShell
           title={<>BOT <em>Board of Trustees</em></>}
           pillar="P3"
-          primaryAction={{ label: 'Done', onClick: () => window.history.back() }}
+          primaryAction={{ label: 'Done', onClick: () => navigate('/forms') }}
         >
           <div style={{ padding: '24px 20px', fontSize: 13, color: 'var(--ink-3)', textAlign: 'center' }}>Loading…</div>
         </FormShell>
@@ -145,7 +147,7 @@ export function BOTForm() {
       <FormShell
         title={<>BOT <em>Board of Trustees</em></>}
         pillar="P3"
-        primaryAction={{ label: 'Done', onClick: () => window.history.back() }}
+        primaryAction={{ label: 'Done', onClick: () => navigate('/forms') }}
       >
         <div className="stat-strip">
           <div>
