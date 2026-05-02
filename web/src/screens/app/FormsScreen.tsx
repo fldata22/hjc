@@ -11,7 +11,6 @@ const PARTICIPATION: FormRow[] = [
   { n: 'BOT (Board of Trustees)',         p: 'P3', meta: 'Last edit 5d ago · Director', due: 'SUN · 4D', dueClass: 'warn', slug: 'bot' },
   { n: 'CPC (Central Planning)',          p: 'P4', meta: '42 zones mapped · today', due: 'OK', dueClass: 'ok', slug: 'cpc' },
   { n: 'Worker Groups',                   p: 'P6', meta: 'Choir 28 enrolled · 5d ago', due: 'DRAFT', dueClass: 'warn', slug: 'workers' },
-  { n: 'PCM Hunt Daily Activity',         p: 'P1', meta: 'Active today', due: 'TODAY', dueClass: 'ok', slug: 'pcm-hunt-daily' },
 ];
 
 const AWARENESS: FormRow[] = [

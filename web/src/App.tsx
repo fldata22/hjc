@@ -10,7 +10,6 @@ import { BudgetScreen } from './screens/app/BudgetScreen';
 import { PeopleScreen } from './screens/app/PeopleScreen';
 import { Placeholder } from './screens/app/Placeholder';
 import { BOTForm } from './screens/forms/BOTForm';
-import { PCMHuntDailyForm } from './screens/forms/PCMHuntDailyForm';
 import { PCMListScreen } from './screens/forms/PCMListScreen';
 import { PCMForm } from './screens/forms/PCMForm';
 import { CPCForm } from './screens/forms/CPCForm';
@@ -26,7 +25,6 @@ export default function App() {
       <Route path="/" element={<RequireAuth><HomeScreen /></RequireAuth>} />
       <Route path="/forms" element={<RequireAuth><FormsScreen /></RequireAuth>} />
       <Route path="/forms/bot" element={<RequireAuth><BOTForm /></RequireAuth>} />
-      <Route path="/forms/pcm-hunt-daily" element={<RequireAuth><PCMHuntDailyForm /></RequireAuth>} />
       <Route path="/forms/pcm" element={<RequireAuth><PCMListScreen /></RequireAuth>} />
       <Route path="/forms/pcm/new" element={<RequireAuth><PCMForm /></RequireAuth>} />
       <Route path="/forms/cpc" element={<RequireAuth><CPCForm /></RequireAuth>} />
