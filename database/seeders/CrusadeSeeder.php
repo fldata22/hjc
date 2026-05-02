@@ -20,6 +20,7 @@ use App\Models\Power;
 use App\Models\PublicityChannel;
 use App\Models\Reminder;
 use App\Models\Stakeholder;
+use App\Models\CommitteeMember;
 use App\Models\User;
 use App\Models\BudgetCategory;
 use App\Models\BudgetTransaction;
@@ -330,6 +331,23 @@ class CrusadeSeeder extends Seeder
                 'name' => $name, 'org' => $org, 'role' => $role,
                 'pipeline_stage' => $stage, 'status_label' => $label,
                 'last_contact_at' => $contact,
+            ]);
+        }
+
+        // Committee members (BOT + CPC)
+        $committeeMembers = [
+            ['bot', 'Rev. Edmund Asare', 'Chair', 'Wa Council of Churches', '+233 24 555 0100', null, 'confirmed', null],
+            ['bot', 'Mrs. Adwoa Mensah', 'Treasurer', 'Christ Apostolic', '+233 24 555 0101', null, 'confirmed', null],
+            ['bot', 'Pastor Kwaku Frimpong', 'Secretary', 'Living Word', '+233 24 555 0102', null, 'pending', null],
+            ['cpc', 'Akua Boateng', 'Zone Coordinator', 'Wa Central', '+233 24 555 0301', null, 'active', null],
+            ['cpc', 'Yaw Owusu', 'Logistics Lead', 'Wa North', '+233 24 555 0302', null, 'active', null],
+            ['cpc', 'Pst. Daniel Ofori', 'Pastor Liaison', 'Wa South', '+233 24 555 0303', null, 'active', null],
+            ['cpc', 'Mary Asante', 'Volunteer Manager', 'Wa East', '+233 24 555 0304', null, 'on-leave', null],
+        ];
+        foreach ($committeeMembers as [$kind, $name, $role, $org, $phone, $email, $status, $notes]) {
+            CommitteeMember::create([
+                'crusade_id' => $crusade->id, 'kind' => $kind, 'name' => $name, 'role' => $role,
+                'org' => $org, 'phone' => $phone, 'email' => $email, 'status' => $status, 'notes' => $notes,
             ]);
         }
 
