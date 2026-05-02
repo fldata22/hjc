@@ -88,11 +88,15 @@ class CommitteeMemberApiTest extends TestCase
 
     public function test_create_rejects_unknown_kind(): void
     {
-        $this->postJson('/api/committee-members', [
+        $response = $this->postJson('/api/committee-members', [
             'crusade_id' => $this->crusade->id,
             'kind' => 'other',
             'name' => 'X', 'role' => 'Y', 'status' => 'confirmed',
         ])->assertStatus(422)->assertJsonValidationErrors(['kind']);
+
+        // Should NOT report a misleading status error when kind is the actual problem.
+        $errors = $response->json('errors');
+        $this->assertArrayNotHasKey('status', $errors, 'unknown kind should not also produce a status error');
     }
 
     public function test_create_rejects_status_not_in_kind_enum(): void

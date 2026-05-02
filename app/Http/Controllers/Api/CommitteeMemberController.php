@@ -26,9 +26,6 @@ class CommitteeMemberController extends Controller
 
     public function store(Request $request): JsonResponse
     {
-        $kind = $request->input('kind');
-        $allowed = self::STATUS_BY_KIND[$kind] ?? [];
-
         $validated = $request->validate([
             'crusade_id' => 'required|exists:crusades,id',
             'kind' => ['required', Rule::in(array_keys(self::STATUS_BY_KIND))],
@@ -37,7 +34,15 @@ class CommitteeMemberController extends Controller
             'org' => 'nullable|string|max:128',
             'phone' => 'nullable|string|max:32',
             'email' => 'nullable|email|max:128',
-            'status' => ['required', 'string', Rule::in($allowed)],
+            'status' => ['required', 'string', function (string $attribute, mixed $value, \Closure $fail) use ($request) {
+                $kind = $request->input('kind');
+                if (!isset(self::STATUS_BY_KIND[$kind])) {
+                    return; // Let kind's own validation report the error; don't compound it.
+                }
+                if (!in_array($value, self::STATUS_BY_KIND[$kind], true)) {
+                    $fail('The status must be one of: ' . implode(', ', self::STATUS_BY_KIND[$kind]) . '.');
+                }
+            }],
             'notes' => 'nullable|string|max:255',
         ]);
 
