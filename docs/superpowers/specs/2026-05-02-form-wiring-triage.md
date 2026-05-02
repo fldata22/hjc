@@ -45,45 +45,43 @@ This triage replaces those two chunks with a per-form disposition table and an o
 
 ### BOT (Board of Trustees roster)
 
-**Backend:** `/stakeholders` (CRUD) — exists, but needs a small extension.
+**Updated 2026-05-02:** initial triage proposed reusing `/stakeholders`; closer inspection revealed that table is purpose-shaped for VIP-courting funnel (mayor/imam/bishop being moved through identified→engaged→committed→won). BOT and CPC are operational rosters of *already-on-the-team* people, not pipeline targets. New table is the honest fit.
 
-**Backend extension required:**
-- Add `phone: string|null` to `stakeholders` table
-- Add `email: string|null` to `stakeholders` table
-- Add `kind: enum('bot','cpc','other')` to `stakeholders` table (defaults to `'other'`; existing records can be backfilled to `'other'`)
-- Update `StakeholderController` validation to accept these fields
+**Backend:** New `/committee-members` resource (apiResource) backed by a new `committee_members` table.
 
 **Field mapping:**
 - `name` → `name`
 - `role` → `role`
 - `organization` → `org`
-- `phone`, `email` → newly-added columns
-- `status` (confirmed/pending/declined) → `status_label` (committed/engaged/identified) via translation map; also set `pipeline_stage` accordingly (committed=3, engaged=2, identified=1)
+- `phone` → `phone`
+- `email` → `email`
+- `status` (confirmed/pending/declined) → `status` (preserved as-is; per-kind enum validated in controller)
 - `notes` → `notes`
 - `kind = 'bot'` set on every BOT submission
 
 **Why phone/email are an exception to heuristic 1:** the BOT screen exists *for the director to call/email trustees*. The form itself is the consumer. Without phone/email it has no operational value.
 
-**Disposition: REWIRE to /stakeholders + small migration.**
+**Disposition: REWIRE to /committee-members (new table).**
 
 ---
 
 ### CPC (Crusade Planning Committee roster)
 
-**Backend:** `/stakeholders` — same as BOT, with `kind = 'cpc'` discriminator.
+**Backend:** Same `/committee-members` endpoint as BOT, with `kind = 'cpc'` discriminator.
 
 **Field mapping:**
 - `fullName` → `name`
 - `role` → `role`
-- `zone` → `org` (zone is the closest thing to "the org/area they represent" in CPC context). Note: lossy — zone selector becomes a free-text-ish field; could revisit if a zones-as-FK model is needed later.
-- `phone`, `email` → newly-added columns (shared migration with BOT)
-- `status` (active/on-leave/stepped-down) → `status_label` (committed/engaged/identified) via translation map
+- `zone` → `org` (zone is the closest thing to "what they represent" in CPC context — text label, not FK). Could revisit if a zones-as-FK model is needed later.
+- `phone` → `phone`
+- `email` → `email`
+- `status` (active/on-leave/stepped-down) → `status` (preserved as-is; per-kind enum validated in controller)
 - `notes` → `notes`
 - `kind = 'cpc'` set on every CPC submission
 
-**Bundle with BOT** as a single backend migration + two parallel form rewrites. Both forms share the new CSS patterns and the React Query hook shape.
+**Bundle with BOT** as a single backend migration + two parallel form rewrites. Both forms share the same React Query hook (parameterized by kind).
 
-**Disposition: REWIRE to /stakeholders. Shares migration with BOT.**
+**Disposition: REWIRE to /committee-members. Shares table + migration with BOT.**
 
 ---
 
@@ -138,7 +136,7 @@ This triage replaces those two chunks with a per-form disposition table and an o
 | New chunk | Scope | Backend work | Risk |
 |---|---|---|---|
 | **Chunk 4** | Delete PCM Hunt Daily | None | Trivial |
-| **Chunk 5** | Wire BOT + CPC together to /stakeholders | Migration: add phone, email, kind columns | Low — Awareness Survey pattern x2 |
+| **Chunk 5** | Wire BOT + CPC together to /committee-members | New committee_members table + apiResource controller | Low — Awareness Survey pattern x2 |
 | **Chunk 6** | Wire Daily Expenses (incl. receipt photo backend) | New column + multipart upload + budget_categories seed | Medium — receipt upload is the unknown |
 | **Chunk 7** | Wire PCM (2-call orchestration) | None | Medium — multi-step wizard with rollback if step 2 fails |
 | (Chunk 9 from original) | Quick log → /activity-entries | None | Subsumes Hunt Daily's actual use case; build later |
