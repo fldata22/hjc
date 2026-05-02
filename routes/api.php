@@ -40,6 +40,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::apiResource('committees', \App\Http\Controllers\Api\CommitteeController::class);
     Route::apiResource('conferences', \App\Http\Controllers\Api\ConferenceController::class);
     Route::apiResource('stakeholders', \App\Http\Controllers\Api\StakeholderController::class);
+    Route::apiResource('committee-members', \App\Http\Controllers\Api\CommitteeMemberController::class);
     Route::apiResource('permits', \App\Http\Controllers\Api\PermitController::class);
     Route::apiResource('budget-categories', \App\Http\Controllers\Api\BudgetCategoryController::class);
     Route::apiResource('budget-transactions', \App\Http\Controllers\Api\BudgetTransactionController::class);
