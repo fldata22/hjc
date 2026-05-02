@@ -237,3 +237,53 @@ export function useCreateAwarenessSurvey() {
     },
   });
 }
+
+// === Committee members (BOT + CPC roster) ===
+export type CommitteeKind = 'bot' | 'cpc';
+
+export interface CommitteeMember {
+  id: number;
+  crusade_id: number;
+  kind: CommitteeKind;
+  name: string;
+  role: string;
+  org: string | null;
+  phone: string | null;
+  email: string | null;
+  status: string;
+  notes: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
+export function useCommitteeMembers(kind: CommitteeKind) {
+  return useQuery({
+    queryKey: ['committee-members', kind],
+    queryFn: () =>
+      apiFetch<{ data: CommitteeMember[] }>(`/committee-members?kind=${kind}`).then((r) => r.data),
+  });
+}
+
+export function useCreateCommitteeMember() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (body: {
+      crusade_id: number;
+      kind: CommitteeKind;
+      name: string;
+      role: string;
+      org: string | null;
+      phone: string | null;
+      email: string | null;
+      status: string;
+      notes: string | null;
+    }) =>
+      apiFetch<{ data: CommitteeMember }>('/committee-members', {
+        method: 'POST',
+        body: JSON.stringify(body),
+      }).then((r) => r.data),
+    onSuccess: (_data, vars) => {
+      qc.invalidateQueries({ queryKey: ['committee-members', vars.kind] });
+    },
+  });
+}
