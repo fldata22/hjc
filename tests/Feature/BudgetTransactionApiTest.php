@@ -6,6 +6,8 @@ use App\Models\BudgetTransaction;
 use App\Models\Crusade;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Facades\Storage;
 use Laravel\Sanctum\Sanctum;
 use Tests\TestCase;
 
@@ -88,5 +90,57 @@ class BudgetTransactionApiTest extends TestCase
         $this->patchJson("/api/budget-transactions/{$t->id}", ['amount' => 999])
             ->assertOk()->assertJsonPath('data.amount', '999.00');
         $this->deleteJson("/api/budget-transactions/{$t->id}")->assertStatus(204);
+    }
+
+    public function test_store_accepts_multipart_with_receipt_photo(): void
+    {
+        Storage::fake('public');
+        $cat = BudgetCategory::factory()->create(['crusade_id' => $this->crusade->id]);
+        $file = UploadedFile::fake()->image('receipt.jpg', 800, 600);
+
+        $response = $this->post('/api/budget-transactions', [
+            'crusade_id' => $this->crusade->id,
+            'budget_category_id' => $cat->id,
+            'description' => 'Test expense',
+            'occurred_on' => '2026-04-15',
+            'kind' => 'expense',
+            'amount' => '125.50',
+            'receipt_photo' => $file,
+        ]);
+
+        $response->assertStatus(201)->assertJsonPath('data.description', 'Test expense');
+        $body = $response->json('data');
+        $this->assertNotNull($body['receipt_photo_url']);
+        $this->assertStringStartsWith('/storage/receipts/', $body['receipt_photo_url']);
+        $diskPath = str_replace('/storage/', '', $body['receipt_photo_url']);
+        Storage::disk('public')->assertExists($diskPath);
+    }
+
+    public function test_store_works_without_receipt_photo(): void
+    {
+        $response = $this->postJson('/api/budget-transactions', [
+            'crusade_id' => $this->crusade->id,
+            'description' => 'No photo',
+            'occurred_on' => '2026-04-15',
+            'kind' => 'expense',
+            'amount' => '50.00',
+        ]);
+        $response->assertStatus(201)->assertJsonPath('data.receipt_photo_url', null);
+    }
+
+    public function test_store_rejects_non_image_upload(): void
+    {
+        Storage::fake('public');
+        $file = UploadedFile::fake()->create('not-an-image.pdf', 100, 'application/pdf');
+
+        $this->withHeaders(['Accept' => 'application/json'])
+            ->post('/api/budget-transactions', [
+                'crusade_id' => $this->crusade->id,
+                'description' => 'Bad file',
+                'occurred_on' => '2026-04-15',
+                'kind' => 'expense',
+                'amount' => '10.00',
+                'receipt_photo' => $file,
+            ])->assertStatus(422)->assertJsonValidationErrors(['receipt_photo']);
     }
 }

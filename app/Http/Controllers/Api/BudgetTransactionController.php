@@ -5,6 +5,7 @@ use App\Http\Controllers\Controller;
 use App\Models\BudgetTransaction;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
 
 class BudgetTransactionController extends Controller
 {
@@ -32,7 +33,16 @@ class BudgetTransactionController extends Controller
             'occurred_on' => 'required|date',
             'kind' => 'required|in:income,expense',
             'amount' => 'required|numeric|min:0',
+            'receipt_photo' => 'nullable|image|max:5120',
         ]);
+
+        $photo = $request->file('receipt_photo');
+        if ($photo) {
+            $path = $photo->store('receipts', 'public');
+            $v['receipt_photo_url'] = Storage::url($path);
+        }
+        unset($v['receipt_photo']);
+
         return response()->json(['data' => BudgetTransaction::create($v)], 201);
     }
 
