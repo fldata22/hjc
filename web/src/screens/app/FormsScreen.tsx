@@ -7,21 +7,21 @@ type FormRow = { n: string; p: string; meta: string; due: string; dueClass: 'ok'
 
 const PARTICIPATION: FormRow[] = [
   { n: 'PCM (Primary Committee Members)', p: 'P1', meta: '9 of 10 confirmed · 2h ago', due: 'OK', dueClass: 'ok', slug: 'pcm' },
-  { n: 'Fathers of the Land',             p: 'P2', meta: '3 of 4 verified · yesterday', due: 'DRAFT', dueClass: 'warn', slug: 'fathers' },
+  { n: 'Fathers of the Land',             p: 'P2', meta: 'Coming soon',                due: '—',  dueClass: 'ok', slug: 'fathers' },
   { n: 'BOT (Board of Trustees)',         p: 'P3', meta: 'Last edit 5d ago · Director', due: 'SUN · 4D', dueClass: 'warn', slug: 'bot' },
   { n: 'CPC (Central Planning)',          p: 'P4', meta: '42 zones mapped · today', due: 'OK', dueClass: 'ok', slug: 'cpc' },
-  { n: 'Worker Groups',                   p: 'P6', meta: 'Choir 28 enrolled · 5d ago', due: 'DRAFT', dueClass: 'warn', slug: 'workers' },
+  { n: 'Worker Groups',                   p: 'P6', meta: 'Coming soon',             due: '—',  dueClass: 'ok', slug: 'workers' },
 ];
 
 const AWARENESS: FormRow[] = [
   { n: 'Awareness Survey · Field',  p: 'A9',    meta: '500 posters printed · 4d ago', due: 'MON · 5D', dueClass: 'warn', slug: 'awareness-survey' },
-  { n: 'Town Profile',              p: 'A·all', meta: 'Population baseline · 12d',    due: 'DONE',     dueClass: 'ok',   slug: 'town-profile' },
-  { n: 'Publicity & Video Campaign', p: 'D13',  meta: 'On track · today',             due: 'OK',       dueClass: 'ok',   slug: 'publicity' },
+  { n: 'Town Profile',              p: 'A·all', meta: 'Coming soon',                  due: '—',        dueClass: 'ok',   slug: 'town-profile' },
+  { n: 'Publicity & Video Campaign', p: 'D13',  meta: 'Coming soon',                  due: '—',        dueClass: 'ok',   slug: 'publicity' },
 ];
 
 const VENUE: FormRow[] = [
-  { n: 'Venue Inspection (Regular)', p: 'V10', meta: 'Permits secured · 3d ago', due: 'OK', dueClass: 'ok', slug: 'venue-inspection' },
-  { n: 'Must-Do Checklist',          p: 'V10', meta: '82% complete · 2d ago',    due: 'OK', dueClass: 'ok', slug: 'must-do' },
+  { n: 'Venue Inspection (Regular)', p: 'V10', meta: 'Coming soon', due: '—', dueClass: 'ok', slug: 'venue-inspection' },
+  { n: 'Must-Do Checklist',          p: 'V10', meta: 'Coming soon', due: '—', dueClass: 'ok', slug: 'must-do' },
 ];
 
 const DAILY: FormRow[] = [
@@ -65,15 +65,6 @@ const FormGroup = ({ rows }: { rows: FormRow[] }) => {
 
 export function FormsScreen() {
   const [drawer, setDrawer] = useState(false);
-  const [tab, setTab] = useState('all');
-  const tabs: Array<{ k: string; l: string; n: number }> = [
-    { k: 'all', l: 'All', n: 36 },
-    { k: 'due', l: 'Due', n: 3 },
-    { k: 'pcm', l: 'PCM', n: 5 },
-    { k: 'workers', l: 'Workers', n: 8 },
-    { k: 'govt', l: 'Government', n: 4 },
-    { k: 'awareness', l: 'Awareness', n: 6 },
-  ];
 
   return (
     <ResponsiveShell active="forms">
@@ -91,7 +82,7 @@ export function FormsScreen() {
               marginBottom: 10,
             }}
           >
-            36 forms · 5 categories
+            12 forms · 4 categories
           </div>
           <h1
             className="serif"
@@ -101,40 +92,23 @@ export function FormsScreen() {
           </h1>
         </div>
 
-        <div className="search">
-          <span className="ic"/>
-          <span>Search forms, pillars, fields…</span>
-        </div>
-
-        <div className="tabs">
-          {tabs.map((t) => (
-            <div
-              key={t.k}
-              className={'tab' + (tab === t.k ? ' on' : '')}
-              onClick={() => setTab(t.k)}
-            >
-              {t.l}<span className="n">{t.n}</span>
-            </div>
-          ))}
-        </div>
-
         <div className="cat-group">
-          <div className="cat-head"><span>P · Participation</span><span>17 forms</span></div>
+          <div className="cat-head"><span>P · Participation</span><span>5 forms</span></div>
         </div>
         <FormGroup rows={PARTICIPATION}/>
 
         <div className="cat-group">
-          <div className="cat-head"><span>A · Awareness</span><span>6 forms</span></div>
+          <div className="cat-head"><span>A · Awareness</span><span>3 forms</span></div>
         </div>
         <FormGroup rows={AWARENESS}/>
 
         <div className="cat-group">
-          <div className="cat-head"><span>V · Venue & Logistics</span><span>5 forms</span></div>
+          <div className="cat-head"><span>V · Venue & Logistics</span><span>2 forms</span></div>
         </div>
         <FormGroup rows={VENUE}/>
 
         <div className="cat-group">
-          <div className="cat-head"><span>D · Daily ops</span><span>8 forms</span></div>
+          <div className="cat-head"><span>D · Daily ops</span><span>2 forms</span></div>
         </div>
         <FormGroup rows={DAILY}/>
 

@@ -225,6 +225,85 @@ P 17 + A 6 + V 5 + D 8 = **36** ✓ matches the cat-head sum. Header claim of "5
 
 Unchanged from the original 🟢 set: Town Profile, Venue Inspection, Must-Do Checklist. Strawman doesn't shift the build scope — it just gives the director something concrete to react to for the 24 currently-unspec'd forms.
 
+## Locked decisions (2026-05-09 director check-in)
+
+After the strawman was presented, the director gave three decisions:
+
+### 1. Worker Groups → umbrella
+
+One backend resource (e.g. a `workers` table with a `group_type` enum — `choir`, `ushers`, `security`, `counsellors`, `prayer_warriors`, `hospitality`, `technical`, `medical`, `childrens`, `general`) shared by all worker rosters. One frontend route `/forms/workers` with a kind picker, mirroring the BOT/CPC pattern. Hub shows ONE row "Worker Groups."
+
+This collapses what was 9 P-rows in the strawman (Choir, Ushers, Security, Counsellors, Prayer Warriors, Hospitality, Technical, Medical, Children's) into a single hub row. "Volunteer Sign-up" also folds in as `group_type='general'`. Net effect on P count: -10 rows.
+
+### 2. Categories → 4, drop the "5" claim
+
+The "5 categories" claim doesn't reconcile under the strawman, and adding a 5th by splitting Permits requires inventing rows to fill it. Decision: ship 4 categories (P · Participation, A · Awareness, V · Venue & Logistics, D · Daily ops). The header "36 forms · 5 categories" is updated to the honest count.
+
+### 3. Strawman corrections
+
+After the umbrella collapse and a backend audit, the locked roster:
+
+**P · Participation (8)**
+1. PCM ⚪ wired
+2. BOT ⚪ wired
+3. CPC ⚪ wired
+4. Fathers of the Land 🟡 (still NEEDS-DIRECTOR on intent — strawman guess: tribal elders / land custodians for venue rights)
+5. Stakeholders 🟡 (VIP funnel — backend table likely already exists per the form-wiring-triage)
+6. Worker Groups (umbrella) 🟡
+7. Donor Roster 🟡 (separate from Stakeholders — money-flow only)
+8. Pledge Meetings 🟡 (**newly added — backend already fully built**, see "Backend audit finding" below)
+
+**A · Awareness (6)** — unchanged from strawman
+1. Awareness Survey ⚪ wired
+2. Town Profile 🟢 BUILD
+3. Publicity & Video Campaign 🟡
+4. Door-to-Door Outreach Log 🟡
+5. Convoy Outreach Schedule 🟡
+6. Media Coverage Tracker 🟡
+
+**V · Venue & Logistics (5)** — unchanged
+1. Venue Inspection (Regular) 🟢 BUILD
+2. Must-Do Checklist 🟢 BUILD
+3. Permits Tracker 🟡
+4. Sound & Lighting Setup 🟡
+5. Seating & Capacity Plan 🟡
+
+**D · Daily ops (8)** — unchanged
+1. Crusade Daily Expenses ⚪ wired
+2. Weekly Assessment Rating ⚪ wired
+3. Daily Attendance Count 🟡
+4. Daily Decisions & Conversions 🟡
+5. Daily Program Log 🟡
+6. Daily Security Incident 🟡
+7. Daily Medical Incident 🟡
+8. Activity Quick-Log 🟡 (= Chunk 9 in original roadmap)
+
+**Total: 8 + 6 + 5 + 8 = 27 forms.** Header update: `27 forms · 4 categories`.
+
+### Backend audit finding (added during decision lock)
+
+`routes/api.php` has a fully-built **pledge meetings** subsystem with no frontend surface:
+
+```
+GET  /pastors/{pastor}/pledges                 # totals per pastor (used in Pastor.show already)
+apiResource pledge-meetings                    # CRUD pledge meeting events
+POST /pledge-meetings/{id}/attendances         # mark a pastor attended
+POST /pledge-meetings/{id}/pledges             # record a pledge made at the meeting
+GET  /pledges/summary                          # aggregate
+```
+
+This is a real director workflow (host a pledge meeting → pastors attend → record what each pledged) with full backend support and zero UX. **Adding "Pledge Meetings" to P fills both a hub gap and a backend-orphan gap.** Likely simpler to wire than the other 🟡 forms because the backend is done.
+
+## Cleanup that lands with the build chunk
+
+Independent of director input, three sweeps make the hub honest. These can land alongside the 🟢 set:
+
+1. **Header.** `36 forms · 5 categories` → `27 forms · 4 categories`. Honest count.
+2. **Tabs row.** Currently decorative — clicking does nothing. Remove until filtering is wired.
+3. **Fake meta on unwired placeholder rows.** "3 of 4 verified · yesterday" (Fathers), "Choir 28 enrolled · 5d ago" (Worker Groups), "On track · today" (Publicity). Replace with `Coming soon` until those forms are built.
+
+The wired-row meta ("9 of 10 confirmed · 2h ago" on PCM etc.) is *also* fake but the data sources exist now — split into a separate small chunk to compute live counts.
+
 ## Open follow-ups
 
 - Fold `Town Profile` into `zones` schema vs new resource: decide when implementation plan is written
