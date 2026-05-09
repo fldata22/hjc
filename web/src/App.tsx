@@ -31,6 +31,7 @@ import { SecurityIncidentsScreen, MedicalIncidentsScreen } from './screens/forms
 import { ActivityQuickLogScreen } from './screens/forms/ActivityQuickLogScreen';
 import { PillarDetailScreen } from './screens/app/PillarDetailScreen';
 import { PublicityAssetsScreen } from './screens/forms/PublicityAssetsScreen';
+import { DoorToDoorScreen, ConvoyOutreachScreen } from './screens/forms/OutreachScreen';
 
 export default function App() {
   return (
@@ -62,6 +63,8 @@ export default function App() {
       <Route path="/forms/daily-medical" element={<RequireAuth><MedicalIncidentsScreen /></RequireAuth>} />
       <Route path="/forms/activity-quick-log" element={<RequireAuth><ActivityQuickLogScreen /></RequireAuth>} />
       <Route path="/forms/publicity" element={<RequireAuth><PublicityAssetsScreen /></RequireAuth>} />
+      <Route path="/forms/door-to-door" element={<RequireAuth><DoorToDoorScreen /></RequireAuth>} />
+      <Route path="/forms/convoy" element={<RequireAuth><ConvoyOutreachScreen /></RequireAuth>} />
       <Route path="/forms/:slug" element={<RequireAuth><Placeholder title="Form" /></RequireAuth>} />
       <Route path="/pillars" element={<RequireAuth><PillarsScreen /></RequireAuth>} />
       <Route path="/weekly" element={<RequireAuth><WeeklyScreen /></RequireAuth>} />

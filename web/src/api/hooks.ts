@@ -1483,3 +1483,68 @@ export function useDeletePublicityAsset() {
     },
   });
 }
+
+// === Outreach activities (door-to-door + convoy) ===
+export type OutreachKind = 'door_to_door' | 'convoy';
+
+export interface OutreachActivity {
+  id: number;
+  crusade_id: number;
+  kind: OutreachKind;
+  occurred_on: string;
+  zone_id: number | null;
+  team_lead_name: string | null;
+  households_reached: number | null;
+  conversations_count: number | null;
+  pamphlets_distributed: number | null;
+  route_summary: string | null;
+  notes: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
+export function useOutreachActivities(filters: { kind?: OutreachKind } = {}) {
+  const params = new URLSearchParams();
+  if (filters.kind) params.set('kind', filters.kind);
+  const qs = params.toString();
+  return useQuery({
+    queryKey: ['outreach-activities', filters],
+    queryFn: () =>
+      apiFetch<{ data: OutreachActivity[] }>(`/outreach-activities${qs ? '?' + qs : ''}`).then((r) => r.data),
+  });
+}
+
+export function useCreateOutreachActivity() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (body: {
+      crusade_id: number;
+      kind: OutreachKind;
+      occurred_on: string;
+      zone_id?: number | null;
+      team_lead_name?: string | null;
+      households_reached?: number | null;
+      conversations_count?: number | null;
+      pamphlets_distributed?: number | null;
+      route_summary?: string | null;
+      notes?: string | null;
+    }) =>
+      apiFetch<{ data: OutreachActivity }>('/outreach-activities', {
+        method: 'POST',
+        body: JSON.stringify(body),
+      }).then((r) => r.data),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['outreach-activities'] });
+    },
+  });
+}
+
+export function useDeleteOutreachActivity() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (id: number) => apiFetch(`/outreach-activities/${id}`, { method: 'DELETE' }),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['outreach-activities'] });
+    },
+  });
+}

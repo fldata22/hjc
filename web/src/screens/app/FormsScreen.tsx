@@ -113,6 +113,8 @@ export function FormsScreen() {
     { n: 'Awareness Survey · Field',  p: 'A9',    meta: awarenessMeta,                  due: 'OK', dueClass: 'ok',   slug: 'awareness-survey' },
     { n: 'Town Profile',              p: 'A·all', meta: 'Per-zone baseline',            due: 'OK', dueClass: 'ok',   slug: 'town-profile' },
     { n: 'Publicity & Video Campaign', p: 'D13',  meta: 'Campaign asset log',           due: 'OK', dueClass: 'ok',   slug: 'publicity' },
+    { n: 'Door-to-Door Outreach',     p: 'A·all', meta: 'Per-zone sweep log',           due: 'OK', dueClass: 'ok',   slug: 'door-to-door' },
+    { n: 'Convoy Outreach Schedule',  p: 'A·all', meta: 'Mobile evangelism runs',       due: 'OK', dueClass: 'ok',   slug: 'convoy' },
   ], [awarenessMeta]);
 
   const venue: FormRow[] = useMemo(() => [
@@ -150,7 +152,7 @@ export function FormsScreen() {
               marginBottom: 10,
             }}
           >
-            23 forms · 4 categories
+            25 forms · 4 categories
           </div>
           <h1
             className="serif"
@@ -166,7 +168,7 @@ export function FormsScreen() {
         <FormGroup rows={participation}/>
 
         <div className="cat-group">
-          <div className="cat-head"><span>A · Awareness</span><span>3 forms</span></div>
+          <div className="cat-head"><span>A · Awareness</span><span>5 forms</span></div>
         </div>
         <FormGroup rows={awareness}/>
 
