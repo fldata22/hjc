@@ -17,6 +17,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/pastors/{pastor}/identifications', [\App\Http\Controllers\Api\PastorIdentificationController::class, 'index']);
     Route::post('/pastors/{pastor}/identifications', [\App\Http\Controllers\Api\PastorIdentificationController::class, 'store']);
     Route::apiResource('town-profiles', \App\Http\Controllers\Api\TownProfileController::class);
+    Route::apiResource('venue-inspections', \App\Http\Controllers\Api\VenueInspectionController::class);
     Route::apiResource('pledge-meetings', \App\Http\Controllers\Api\PledgeMeetingController::class);
     Route::post('/pledge-meetings/{pledgeMeeting}/attendances', [\App\Http\Controllers\Api\PledgeMeetingAttendanceController::class, 'store']);
     Route::post('/pledge-meetings/{pledgeMeeting}/pledges', [\App\Http\Controllers\Api\PledgeMeetingPledgesController::class, 'store']);
