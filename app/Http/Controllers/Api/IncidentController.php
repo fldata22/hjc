@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Models\Incident;
+use App\Services\ActivityLogger;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
@@ -54,7 +55,17 @@ class IncidentController extends Controller
 
         $v['severity'] = $v['severity'] ?? 'low';
 
-        return response()->json(['data' => Incident::create($v)], 201);
+        $incident = Incident::create($v);
+        $kindLabel = $incident->kind === 'security' ? 'Security' : 'Medical';
+        $loc = $incident->location ? " at {$incident->location}" : '';
+        ActivityLogger::log(
+            $incident->crusade_id,
+            $request->user()?->id,
+            'events',
+            "{$kindLabel} incident ({$incident->severity}){$loc}: {$incident->description}",
+            $incident->resolution ? 'done' : 'running',
+        );
+        return response()->json(['data' => $incident], 201);
     }
 
     public function show(Incident $incident): JsonResponse

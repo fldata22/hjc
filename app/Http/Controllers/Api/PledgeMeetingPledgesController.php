@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Models\Pledge;
 use App\Models\PledgeMeeting;
+use App\Services\ActivityLogger;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
@@ -29,6 +30,13 @@ class PledgeMeetingPledgesController extends Controller
             ]);
             $created++;
         }
+
+        ActivityLogger::log(
+            $pledgeMeeting->crusade_id,
+            $request->user()?->id,
+            'pledges',
+            "{$created} pledge" . ($created === 1 ? '' : 's') . " logged at meeting #{$pledgeMeeting->sequence}",
+        );
 
         return response()->json(['data' => ['created' => $created]]);
     }

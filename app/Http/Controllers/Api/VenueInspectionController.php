@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Models\VenueInspection;
+use App\Services\ActivityLogger;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
@@ -49,7 +50,14 @@ class VenueInspectionController extends Controller
         }
         unset($v['photo']);
 
-        return response()->json(['data' => VenueInspection::create($v)], 201);
+        $inspection = VenueInspection::create($v);
+        ActivityLogger::log(
+            $inspection->crusade_id,
+            $request->user()?->id,
+            'equipment',
+            "Venue inspected by {$inspection->inspector_name}",
+        );
+        return response()->json(['data' => $inspection], 201);
     }
 
     public function show(VenueInspection $venueInspection): JsonResponse

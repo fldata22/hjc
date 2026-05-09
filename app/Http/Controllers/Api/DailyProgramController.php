@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Models\DailyProgram;
+use App\Services\ActivityLogger;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
@@ -40,7 +41,16 @@ class DailyProgramController extends Controller
             'narrative' => 'nullable|string',
         ]);
 
-        return response()->json(['data' => DailyProgram::create($v)], 201);
+        $row = DailyProgram::create($v);
+        $speakerPart = $row->speaker ? " — {$row->speaker}" : '';
+        $topicPart = $row->topic ? ": \"{$row->topic}\"" : '';
+        ActivityLogger::log(
+            $row->crusade_id,
+            $request->user()?->id,
+            'events',
+            "Program logged ({$row->occurred_on->toDateString()}){$speakerPart}{$topicPart}",
+        );
+        return response()->json(['data' => $row], 201);
     }
 
     public function show(DailyProgram $dailyProgram): JsonResponse

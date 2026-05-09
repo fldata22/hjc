@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Models\AwarenessSurvey;
 use App\Models\Crusade;
+use App\Services\ActivityLogger;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
@@ -42,6 +43,15 @@ class AwarenessSurveyController extends Controller
             'taken_on' => 'required|date',
         ]);
         $survey = AwarenessSurvey::create($validated);
+        $pct = $survey->surveyed_count > 0
+            ? round($survey->attending_yes_count / $survey->surveyed_count * 100)
+            : 0;
+        ActivityLogger::log(
+            $survey->crusade_id,
+            $request->user()?->id,
+            'awareness',
+            "Awareness survey W{$survey->survey_number}: {$pct}% intent ({$survey->attending_yes_count}/{$survey->surveyed_count})",
+        );
         return response()->json(['data' => $survey], 201);
     }
 

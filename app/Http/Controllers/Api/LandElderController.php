@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Models\LandElder;
+use App\Services\ActivityLogger;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
@@ -43,7 +44,15 @@ class LandElderController extends Controller
 
         $v['status'] = $v['status'] ?? 'identified';
 
-        return response()->json(['data' => LandElder::create($v)], 201);
+        $elder = LandElder::create($v);
+        $titlePart = $elder->title ? "{$elder->title} " : '';
+        ActivityLogger::log(
+            $elder->crusade_id,
+            $request->user()?->id,
+            'govt',
+            "Land elder added: {$titlePart}{$elder->name}",
+        );
+        return response()->json(['data' => $elder], 201);
     }
 
     public function show(LandElder $landElder): JsonResponse
@@ -64,7 +73,16 @@ class LandElderController extends Controller
             'notes' => 'sometimes|nullable|string',
         ]);
 
+        $oldStatus = $landElder->status;
         $landElder->update($v);
+        if (isset($v['status']) && $v['status'] !== $oldStatus) {
+            ActivityLogger::log(
+                $landElder->crusade_id,
+                $request->user()?->id,
+                'govt',
+                "Land elder {$landElder->name}: {$oldStatus} → {$landElder->status}",
+            );
+        }
         return response()->json(['data' => $landElder]);
     }
 

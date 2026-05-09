@@ -4,6 +4,8 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Models\TownProfile;
+use App\Models\Zone;
+use App\Services\ActivityLogger;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
@@ -29,6 +31,15 @@ class TownProfileController extends Controller
         ]);
 
         $profile = TownProfile::create($validated);
+        $zone = Zone::find($profile->zone_id);
+        if ($zone) {
+            ActivityLogger::log(
+                $zone->crusade_id,
+                $request->user()?->id,
+                'awareness',
+                "Town profile logged for {$zone->code} ({$zone->name})",
+            );
+        }
         return response()->json(['data' => $profile], 201);
     }
 

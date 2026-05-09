@@ -3,6 +3,7 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Models\Stakeholder;
+use App\Services\ActivityLogger;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
@@ -25,7 +26,14 @@ class StakeholderController extends Controller
             'last_contact_at' => 'nullable|date',
             'notes' => 'nullable|string|max:255',
         ]);
-        return response()->json(['data' => Stakeholder::create($v)], 201);
+        $stakeholder = Stakeholder::create($v);
+        ActivityLogger::log(
+            $stakeholder->crusade_id,
+            $request->user()?->id,
+            'govt',
+            "Stakeholder added: {$stakeholder->name} ({$stakeholder->role}, {$stakeholder->org})",
+        );
+        return response()->json(['data' => $stakeholder], 201);
     }
 
     public function show(Stakeholder $stakeholder): JsonResponse { return response()->json(['data' => $stakeholder]); }
@@ -41,7 +49,16 @@ class StakeholderController extends Controller
             'last_contact_at' => 'sometimes|nullable|date',
             'notes' => 'sometimes|nullable|string|max:255',
         ]);
+        $oldLabel = $stakeholder->status_label;
         $stakeholder->update($v);
+        if (isset($v['status_label']) && $v['status_label'] !== $oldLabel) {
+            ActivityLogger::log(
+                $stakeholder->crusade_id,
+                $request->user()?->id,
+                'govt',
+                "Stakeholder {$stakeholder->name}: {$oldLabel} → {$stakeholder->status_label}",
+            );
+        }
         return response()->json(['data' => $stakeholder]);
     }
 

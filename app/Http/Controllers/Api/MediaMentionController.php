@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Models\MediaMention;
+use App\Services\ActivityLogger;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
@@ -44,7 +45,14 @@ class MediaMentionController extends Controller
             'summary' => 'nullable|string',
         ]);
 
-        return response()->json(['data' => MediaMention::create($v)], 201);
+        $mention = MediaMention::create($v);
+        ActivityLogger::log(
+            $mention->crusade_id,
+            $request->user()?->id,
+            'awareness',
+            "{$mention->kind} mention in {$mention->outlet}: \"{$mention->headline}\"",
+        );
+        return response()->json(['data' => $mention], 201);
     }
 
     public function show(MediaMention $mediaMention): JsonResponse

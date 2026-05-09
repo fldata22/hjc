@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Models\PublicityAsset;
+use App\Services\ActivityLogger;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
@@ -46,7 +47,15 @@ class PublicityAssetController extends Controller
 
         $v['status'] = $v['status'] ?? 'planned';
 
-        return response()->json(['data' => PublicityAsset::create($v)], 201);
+        $asset = PublicityAsset::create($v);
+        ActivityLogger::log(
+            $asset->crusade_id,
+            $request->user()?->id,
+            'publicity',
+            "Publicity asset added: {$asset->title} ({$asset->kind})",
+            $asset->status === 'deployed' ? 'done' : 'running',
+        );
+        return response()->json(['data' => $asset], 201);
     }
 
     public function show(PublicityAsset $publicityAsset): JsonResponse
@@ -66,7 +75,17 @@ class PublicityAssetController extends Controller
             'notes' => 'sometimes|nullable|string',
         ]);
 
+        $oldStatus = $publicityAsset->status;
         $publicityAsset->update($v);
+        if (isset($v['status']) && $v['status'] !== $oldStatus) {
+            ActivityLogger::log(
+                $publicityAsset->crusade_id,
+                $request->user()?->id,
+                'publicity',
+                "{$publicityAsset->title}: {$oldStatus} → {$publicityAsset->status}",
+                $publicityAsset->status === 'deployed' ? 'done' : 'running',
+            );
+        }
         return response()->json(['data' => $publicityAsset]);
     }
 

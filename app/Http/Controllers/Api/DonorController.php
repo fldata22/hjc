@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Models\Donor;
+use App\Services\ActivityLogger;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
@@ -58,7 +59,15 @@ class DonorController extends Controller
 
         $v['status'] = $v['status'] ?? 'prospect';
 
-        return response()->json(['data' => Donor::create($v)], 201);
+        $donor = Donor::create($v);
+        $orgPart = $donor->organization ? " ({$donor->organization})" : '';
+        ActivityLogger::log(
+            $donor->crusade_id,
+            $request->user()?->id,
+            'donors',
+            "Donor added: {$donor->name}{$orgPart}",
+        );
+        return response()->json(['data' => $donor], 201);
     }
 
     public function show(Donor $donor): JsonResponse
@@ -78,7 +87,16 @@ class DonorController extends Controller
             'notes' => 'sometimes|nullable|string',
         ]);
 
+        $oldStatus = $donor->status;
         $donor->update($v);
+        if (isset($v['status']) && $v['status'] !== $oldStatus) {
+            ActivityLogger::log(
+                $donor->crusade_id,
+                $request->user()?->id,
+                'donors',
+                "Donor {$donor->name}: {$oldStatus} → {$donor->status}",
+            );
+        }
         return response()->json(['data' => $donor]);
     }
 

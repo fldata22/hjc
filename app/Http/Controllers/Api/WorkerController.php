@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Models\Worker;
+use App\Services\ActivityLogger;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
@@ -50,7 +51,14 @@ class WorkerController extends Controller
 
         $v['status'] = $v['status'] ?? 'active';
 
-        return response()->json(['data' => Worker::create($v)], 201);
+        $worker = Worker::create($v);
+        ActivityLogger::log(
+            $worker->crusade_id,
+            $request->user()?->id,
+            'volunteers',
+            "Worker added: {$worker->name} ({$worker->group_type})",
+        );
+        return response()->json(['data' => $worker], 201);
     }
 
     public function show(Worker $worker): JsonResponse
@@ -70,7 +78,16 @@ class WorkerController extends Controller
             'notes' => 'sometimes|nullable|string',
         ]);
 
+        $oldStatus = $worker->status;
         $worker->update($v);
+        if (isset($v['status']) && $v['status'] !== $oldStatus) {
+            ActivityLogger::log(
+                $worker->crusade_id,
+                $request->user()?->id,
+                'volunteers',
+                "Worker {$worker->name}: {$oldStatus} → {$worker->status}",
+            );
+        }
         return response()->json(['data' => $worker]);
     }
 

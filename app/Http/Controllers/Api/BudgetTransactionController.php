@@ -3,6 +3,7 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Models\BudgetTransaction;
+use App\Services\ActivityLogger;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
@@ -43,7 +44,15 @@ class BudgetTransactionController extends Controller
         }
         unset($v['receipt_photo']);
 
-        return response()->json(['data' => BudgetTransaction::create($v)], 201);
+        $tx = BudgetTransaction::create($v);
+        $sign = $tx->kind === 'expense' ? '-' : '+';
+        ActivityLogger::log(
+            $tx->crusade_id,
+            $request->user()?->id,
+            'budget',
+            "{$tx->kind}: {$sign}\u{20B5}" . number_format((float) $tx->amount, 0) . " — {$tx->description}",
+        );
+        return response()->json(['data' => $tx], 201);
     }
 
     public function show(BudgetTransaction $budgetTransaction): JsonResponse { return response()->json(['data' => $budgetTransaction]); }

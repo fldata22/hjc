@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Models\PledgeMeeting;
+use App\Services\ActivityLogger;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
@@ -33,6 +34,13 @@ class PledgeMeetingController extends Controller
             'status' => 'nullable|in:upcoming,done',
         ]);
         $meeting = PledgeMeeting::create($validated);
+        ActivityLogger::log(
+            $meeting->crusade_id,
+            $request->user()?->id,
+            'pledges',
+            "Pledge meeting #{$meeting->sequence} scheduled at {$meeting->venue} ({$meeting->held_on->toDateString()})",
+            $meeting->status === 'done' ? 'done' : 'running',
+        );
         return response()->json(['data' => $meeting], 201);
     }
 

@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Models\CommitteeMember;
+use App\Services\ActivityLogger;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
@@ -46,7 +47,15 @@ class CommitteeMemberController extends Controller
             'notes' => 'nullable|string|max:255',
         ]);
 
-        return response()->json(['data' => CommitteeMember::create($validated)], 201);
+        $member = CommitteeMember::create($validated);
+        $kindLabel = strtoupper($member->kind);
+        ActivityLogger::log(
+            $member->crusade_id,
+            $request->user()?->id,
+            'committees',
+            "{$kindLabel} member added: {$member->name} ({$member->role})",
+        );
+        return response()->json(['data' => $member], 201);
     }
 
     public function show(CommitteeMember $committeeMember): JsonResponse
@@ -68,7 +77,17 @@ class CommitteeMemberController extends Controller
             'notes' => 'sometimes|nullable|string|max:255',
         ]);
 
+        $oldStatus = $committeeMember->status;
         $committeeMember->update($validated);
+        if (isset($validated['status']) && $validated['status'] !== $oldStatus) {
+            $kindLabel = strtoupper($committeeMember->kind);
+            ActivityLogger::log(
+                $committeeMember->crusade_id,
+                $request->user()?->id,
+                'committees',
+                "{$kindLabel} {$committeeMember->name}: {$oldStatus} → {$committeeMember->status}",
+            );
+        }
         return response()->json(['data' => $committeeMember]);
     }
 

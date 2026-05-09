@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Models\MustDoItem;
+use App\Services\ActivityLogger;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
@@ -45,7 +46,15 @@ class MustDoItemController extends Controller
 
         $v['status'] = $v['status'] ?? 'pending';
 
-        return response()->json(['data' => MustDoItem::create($v)], 201);
+        $item = MustDoItem::create($v);
+        ActivityLogger::log(
+            $item->crusade_id,
+            $request->user()?->id,
+            'equipment',
+            "Must-do added ({$item->area}): {$item->title}",
+            $item->status === 'done' ? 'done' : 'running',
+        );
+        return response()->json(['data' => $item], 201);
     }
 
     public function show(MustDoItem $mustDoItem): JsonResponse
@@ -64,7 +73,17 @@ class MustDoItemController extends Controller
             'notes' => 'sometimes|nullable|string',
         ]);
 
+        $oldStatus = $mustDoItem->status;
         $mustDoItem->update($v);
+        if (isset($v['status']) && $v['status'] !== $oldStatus) {
+            ActivityLogger::log(
+                $mustDoItem->crusade_id,
+                $request->user()?->id,
+                'equipment',
+                "Must-do \"{$mustDoItem->title}\": {$oldStatus} → {$mustDoItem->status}",
+                $mustDoItem->status === 'done' ? 'done' : 'running',
+            );
+        }
         return response()->json(['data' => $mustDoItem]);
     }
 

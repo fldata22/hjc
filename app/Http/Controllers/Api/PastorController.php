@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Models\Pastor;
+use App\Services\ActivityLogger;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
@@ -82,6 +83,12 @@ class PastorController extends Controller
             'last_contact_at' => 'nullable|date',
         ]);
         $pastor = Pastor::create($validated);
+        ActivityLogger::log(
+            $pastor->crusade_id,
+            $request->user()?->id,
+            'pastors',
+            "PCM registered: {$pastor->full_name}",
+        );
         return response()->json(['data' => $pastor], 201);
     }
 
@@ -108,7 +115,16 @@ class PastorController extends Controller
             'pipeline_stage' => 'sometimes|in:identified,engaged,committed,active,champion',
             'last_contact_at' => 'sometimes|nullable|date',
         ]);
+        $oldStage = $pastor->pipeline_stage;
         $pastor->update($validated);
+        if (isset($validated['pipeline_stage']) && $validated['pipeline_stage'] !== $oldStage) {
+            ActivityLogger::log(
+                $pastor->crusade_id,
+                $request->user()?->id,
+                'pastors',
+                "PCM {$pastor->full_name}: {$oldStage} → {$pastor->pipeline_stage}",
+            );
+        }
         return response()->json(['data' => $pastor]);
     }
 

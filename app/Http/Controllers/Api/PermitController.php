@@ -3,6 +3,7 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Models\Permit;
+use App\Services\ActivityLogger;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
@@ -35,7 +36,15 @@ class PermitController extends Controller
             'signed_on' => 'nullable|date',
             'notes' => 'nullable|string|max:255',
         ]);
-        return response()->json(['data' => Permit::create($v)], 201);
+        $permit = Permit::create($v);
+        ActivityLogger::log(
+            $permit->crusade_id,
+            $request->user()?->id,
+            'govt',
+            "Permit lodged: {$permit->name} ({$permit->agency})",
+            $permit->status === 'approved' ? 'done' : 'running',
+        );
+        return response()->json(['data' => $permit], 201);
     }
 
     public function show(Permit $permit): JsonResponse { return response()->json(['data' => $permit]); }
@@ -50,7 +59,17 @@ class PermitController extends Controller
             'signed_on' => 'sometimes|nullable|date',
             'notes' => 'sometimes|nullable|string|max:255',
         ]);
+        $oldStatus = $permit->status;
         $permit->update($v);
+        if (isset($v['status']) && $v['status'] !== $oldStatus) {
+            ActivityLogger::log(
+                $permit->crusade_id,
+                $request->user()?->id,
+                'govt',
+                "Permit {$permit->name}: {$oldStatus} → {$permit->status}",
+                $permit->status === 'approved' ? 'done' : 'running',
+            );
+        }
         return response()->json(['data' => $permit]);
     }
 

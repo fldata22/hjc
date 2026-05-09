@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Models\Crusade;
 use App\Models\SeatingPlan;
+use App\Services\ActivityLogger;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
@@ -30,9 +31,16 @@ class SeatingPlanController extends Controller
             'layout_notes' => 'nullable|string',
         ]);
 
+        $existed = SeatingPlan::where('crusade_id', $crusade->id)->exists();
         $plan = SeatingPlan::updateOrCreate(
             ['crusade_id' => $crusade->id],
             $v,
+        );
+        ActivityLogger::log(
+            $crusade->id,
+            $request->user()?->id,
+            'equipment',
+            $existed ? 'Seating plan updated' : 'Seating plan drafted',
         );
 
         return response()->json(['data' => $plan->fresh()], 200);

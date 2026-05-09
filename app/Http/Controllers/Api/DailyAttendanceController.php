@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Models\DailyAttendance;
+use App\Services\ActivityLogger;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
@@ -38,7 +39,14 @@ class DailyAttendanceController extends Controller
             'notes' => 'nullable|string',
         ]);
 
-        return response()->json(['data' => DailyAttendance::create($v)], 201);
+        $row = DailyAttendance::create($v);
+        ActivityLogger::log(
+            $row->crusade_id,
+            $request->user()?->id,
+            'events',
+            "Attendance logged ({$row->counted_on->toDateString()}): " . number_format($row->count),
+        );
+        return response()->json(['data' => $row], 201);
     }
 
     public function show(DailyAttendance $dailyAttendance): JsonResponse

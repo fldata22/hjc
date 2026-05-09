@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Models\OutreachActivity;
+use App\Services\ActivityLogger;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
@@ -51,7 +52,19 @@ class OutreachActivityController extends Controller
             'notes' => 'nullable|string',
         ]);
 
-        return response()->json(['data' => OutreachActivity::create($v)], 201);
+        $activity = OutreachActivity::create($v);
+        $kindLabel = $activity->kind === 'door_to_door' ? 'Door-to-door' : 'Convoy';
+        $reachBits = [];
+        if ($activity->households_reached) $reachBits[] = "{$activity->households_reached} households";
+        if ($activity->conversations_count) $reachBits[] = "{$activity->conversations_count} convos";
+        $reach = $reachBits ? ' — ' . implode(', ', $reachBits) : '';
+        ActivityLogger::log(
+            $activity->crusade_id,
+            $request->user()?->id,
+            'awareness',
+            "{$kindLabel} outreach{$reach}",
+        );
+        return response()->json(['data' => $activity], 201);
     }
 
     public function show(OutreachActivity $outreachActivity): JsonResponse

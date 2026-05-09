@@ -5,6 +5,7 @@ use App\Http\Controllers\Controller;
 use App\Models\WeeklyAssessment;
 use App\Models\WeeklyAssessmentReading;
 use App\Models\WeeklyAssessmentRisk;
+use App\Services\ActivityLogger;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -56,9 +57,15 @@ class WeeklyAssessmentController extends Controller
         return response()->json(null, 204);
     }
 
-    public function submit(WeeklyAssessment $weeklyAssessment): JsonResponse
+    public function submit(Request $request, WeeklyAssessment $weeklyAssessment): JsonResponse
     {
         $weeklyAssessment->update(['submitted_at' => now()]);
+        ActivityLogger::log(
+            $weeklyAssessment->crusade_id,
+            $request->user()?->id,
+            'events',
+            "Weekly readiness W{$weeklyAssessment->week_number} submitted",
+        );
         return response()->json(['data' => $weeklyAssessment]);
     }
 

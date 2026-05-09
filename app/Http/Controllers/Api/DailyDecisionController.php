@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Models\DailyDecision;
+use App\Services\ActivityLogger;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
@@ -40,7 +41,20 @@ class DailyDecisionController extends Controller
             'notes' => 'nullable|string',
         ]);
 
-        return response()->json(['data' => DailyDecision::create($v)], 201);
+        $row = DailyDecision::create($v);
+        $bits = [];
+        if ($row->salvations) $bits[] = "{$row->salvations} salvations";
+        if ($row->rededications) $bits[] = "{$row->rededications} rededications";
+        if ($row->healings) $bits[] = "{$row->healings} healings";
+        if ($row->counselled) $bits[] = "{$row->counselled} counselled";
+        $summary = $bits ? implode(', ', $bits) : 'logged (no decisions yet)';
+        ActivityLogger::log(
+            $row->crusade_id,
+            $request->user()?->id,
+            'decisions',
+            "Decisions ({$row->decided_on->toDateString()}): {$summary}",
+        );
+        return response()->json(['data' => $row], 201);
     }
 
     public function show(DailyDecision $dailyDecision): JsonResponse
