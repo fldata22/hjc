@@ -79,11 +79,16 @@ class MissionControlApiTest extends TestCase
 
         $powers = collect($r->json('data.powers'));
         $this->assertCount(14, $powers);
+        // Pillars derive from operational data when available, overriding the manual weekly reading.
+        // 8 active+champion pastors / 1088 target = 1% — ops overrides the manual 78.
         $pastorsRow = $powers->firstWhere('code', 'pastors');
-        $this->assertSame(78, $pastorsRow['value_pct']);
-        $this->assertSame('success', $pastorsRow['status']);
+        $this->assertSame(1, $pastorsRow['value_pct']);
+        $this->assertSame('derived', $pastorsRow['source']);
+        $this->assertSame('danger', $pastorsRow['status']);
+        // Awareness: 21/100 survey = 21% (matches the manual reading either way).
         $awarenessRow = $powers->firstWhere('code', 'awareness');
         $this->assertSame(21, $awarenessRow['value_pct']);
+        $this->assertSame('derived', $awarenessRow['source']);
         $this->assertSame('danger', $awarenessRow['status']);
 
         $this->assertSame(2200000, $r->json('data.context.population'));

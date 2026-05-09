@@ -8,7 +8,7 @@ export interface MissionControlData {
     pastors_won: { n: number; target: number; pct: string };
     awareness_pct: string;
   };
-  powers: Array<{ code: string; name: string; order_index: number; value_pct: number | null; status: 'success' | 'warning' | 'danger' | 'muted' }>;
+  powers: Array<{ code: string; name: string; order_index: number; value_pct: number | null; status: 'success' | 'warning' | 'danger' | 'muted'; source: 'derived' | 'manual' | null }>;
   context: {
     population: number | null;
     pap: number | null;
