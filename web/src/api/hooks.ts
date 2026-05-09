@@ -880,3 +880,94 @@ export function usePledgesSummary() {
     queryFn: () => apiFetch<{ data: PledgeSummary }>('/pledges/summary').then((r) => r.data),
   });
 }
+
+// === Workers (umbrella roster) ===
+export type WorkerGroup =
+  | 'choir' | 'ushers' | 'security' | 'counsellors' | 'prayer_warriors'
+  | 'hospitality' | 'technical' | 'medical' | 'childrens' | 'general';
+export type WorkerStatus = 'active' | 'inactive';
+
+export interface Worker {
+  id: number;
+  crusade_id: number;
+  group_type: WorkerGroup;
+  name: string;
+  role: string | null;
+  phone: string | null;
+  email: string | null;
+  status: WorkerStatus;
+  notes: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
+export function useWorkers(filters: { group_type?: WorkerGroup; status?: WorkerStatus } = {}) {
+  const params = new URLSearchParams();
+  if (filters.group_type) params.set('group_type', filters.group_type);
+  if (filters.status) params.set('status', filters.status);
+  const qs = params.toString();
+  return useQuery({
+    queryKey: ['workers', filters],
+    queryFn: () =>
+      apiFetch<{ data: Worker[] }>(`/workers${qs ? '?' + qs : ''}`).then((r) => r.data),
+  });
+}
+
+export function useCreateWorker() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (body: {
+      crusade_id: number;
+      group_type: WorkerGroup;
+      name: string;
+      role?: string | null;
+      phone?: string | null;
+      email?: string | null;
+      status?: WorkerStatus;
+      notes?: string | null;
+    }) =>
+      apiFetch<{ data: Worker }>('/workers', {
+        method: 'POST',
+        body: JSON.stringify(body),
+      }).then((r) => r.data),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['workers'] });
+    },
+  });
+}
+
+export function useUpdateWorker() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: ({ id, body }: {
+      id: number;
+      body: Partial<{
+        group_type: WorkerGroup;
+        name: string;
+        role: string | null;
+        phone: string | null;
+        email: string | null;
+        status: WorkerStatus;
+        notes: string | null;
+      }>;
+    }) =>
+      apiFetch<{ data: Worker }>(`/workers/${id}`, {
+        method: 'PATCH',
+        body: JSON.stringify(body),
+      }).then((r) => r.data),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['workers'] });
+    },
+  });
+}
+
+export function useDeleteWorker() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (id: number) =>
+      apiFetch(`/workers/${id}`, { method: 'DELETE' }),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['workers'] });
+    },
+  });
+}
