@@ -1058,3 +1058,52 @@ export function useDeletePermit() {
     },
   });
 }
+
+// === Sound & Lighting Plan (singleton) ===
+export interface SoundLightingPlan {
+  id: number;
+  crusade_id: number;
+  sound_provider: string | null;
+  sound_capacity_notes: string | null;
+  lighting_provider: string | null;
+  lighting_setup_notes: string | null;
+  generator_provider: string | null;
+  generator_kva: number | null;
+  has_backup_power: boolean;
+  power_notes: string | null;
+  equipment_notes: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
+export function useSoundLightingPlan() {
+  return useQuery({
+    queryKey: ['sound-lighting-plan'],
+    queryFn: () =>
+      apiFetch<{ data: SoundLightingPlan | null }>('/sound-lighting-plan').then((r) => r.data),
+  });
+}
+
+export function useUpsertSoundLightingPlan() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (body: Partial<{
+      sound_provider: string | null;
+      sound_capacity_notes: string | null;
+      lighting_provider: string | null;
+      lighting_setup_notes: string | null;
+      generator_provider: string | null;
+      generator_kva: number | null;
+      has_backup_power: boolean;
+      power_notes: string | null;
+      equipment_notes: string | null;
+    }>) =>
+      apiFetch<{ data: SoundLightingPlan }>('/sound-lighting-plan', {
+        method: 'PUT',
+        body: JSON.stringify(body),
+      }).then((r) => r.data),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['sound-lighting-plan'] });
+    },
+  });
+}
