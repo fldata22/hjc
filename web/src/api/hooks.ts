@@ -407,6 +407,34 @@ export interface PastorIdentificationRow {
   updated_at: string;
 }
 
+export function useUpdatePastor() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: ({ id, body }: {
+      id: number;
+      body: Partial<{
+        full_name: string;
+        zone_id: number | null;
+        phone: string | null;
+        email: string | null;
+        address: string | null;
+        pastor_since: number | null;
+        pipeline_stage: 'identified' | 'engaged' | 'committed' | 'active' | 'champion';
+        last_contact_at: string | null;
+      }>;
+    }) =>
+      apiFetch<{ data: Pastor }>(`/pastors/${id}`, {
+        method: 'PATCH',
+        body: JSON.stringify(body),
+      }).then((r) => r.data),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['pastors'] });
+      qc.invalidateQueries({ queryKey: ['pastor-stage-counts'] });
+      qc.invalidateQueries({ queryKey: ['mission-control'] });
+    },
+  });
+}
+
 export function useCreatePastor() {
   const qc = useQueryClient();
   return useMutation({
