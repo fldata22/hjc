@@ -33,6 +33,7 @@ const DAILY: FormRow[] = [
   { n: 'Weekly Assessment Rating', p: 'All',    meta: 'W8 awaiting submission',     due: 'FRI · 2D', dueClass: 'urgent', slug: 'weekly' },
   { n: 'Crusade Daily Expenses',   p: 'Budget', meta: '$43.8k of $84k · today',     due: 'DAILY',    dueClass: 'ok',     slug: 'daily-expenses' },
   { n: 'Daily Attendance',         p: 'D14',    meta: 'Per-night headcount',        due: 'DAILY',    dueClass: 'ok',     slug: 'daily-attendance' },
+  { n: 'Daily Decisions',          p: 'D15',    meta: 'Salvations, healings, etc.', due: 'DAILY',    dueClass: 'ok',     slug: 'daily-decisions' },
 ];
 
 const FormGroup = ({ rows }: { rows: FormRow[] }) => {
@@ -88,7 +89,7 @@ export function FormsScreen() {
               marginBottom: 10,
             }}
           >
-            18 forms · 4 categories
+            19 forms · 4 categories
           </div>
           <h1
             className="serif"
@@ -114,7 +115,7 @@ export function FormsScreen() {
         <FormGroup rows={VENUE}/>
 
         <div className="cat-group">
-          <div className="cat-head"><span>D · Daily ops</span><span>3 forms</span></div>
+          <div className="cat-head"><span>D · Daily ops</span><span>4 forms</span></div>
         </div>
         <FormGroup rows={DAILY}/>
 

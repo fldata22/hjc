@@ -1204,3 +1204,61 @@ export function useDeleteDailyAttendance() {
     },
   });
 }
+
+// === Daily decisions ===
+export interface DailyDecision {
+  id: number;
+  crusade_id: number;
+  decided_on: string;
+  salvations: number;
+  rededications: number;
+  healings: number;
+  counselled: number;
+  notes: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
+export function useDailyDecisions(filters: { date_from?: string; date_to?: string } = {}) {
+  const params = new URLSearchParams();
+  if (filters.date_from) params.set('date_from', filters.date_from);
+  if (filters.date_to) params.set('date_to', filters.date_to);
+  const qs = params.toString();
+  return useQuery({
+    queryKey: ['daily-decisions', filters],
+    queryFn: () =>
+      apiFetch<{ data: DailyDecision[] }>(`/daily-decisions${qs ? '?' + qs : ''}`).then((r) => r.data),
+  });
+}
+
+export function useCreateDailyDecision() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (body: {
+      crusade_id: number;
+      decided_on: string;
+      salvations?: number;
+      rededications?: number;
+      healings?: number;
+      counselled?: number;
+      notes?: string | null;
+    }) =>
+      apiFetch<{ data: DailyDecision }>('/daily-decisions', {
+        method: 'POST',
+        body: JSON.stringify(body),
+      }).then((r) => r.data),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['daily-decisions'] });
+    },
+  });
+}
+
+export function useDeleteDailyDecision() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (id: number) => apiFetch(`/daily-decisions/${id}`, { method: 'DELETE' }),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['daily-decisions'] });
+    },
+  });
+}
