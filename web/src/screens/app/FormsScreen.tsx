@@ -101,7 +101,7 @@ export function FormsScreen() {
 
   const participation: FormRow[] = useMemo(() => [
     { n: 'PCM (Primary Committee Members)', p: 'P1', meta: pcmMeta, due: 'OK', dueClass: 'ok', slug: 'pcm' },
-    { n: 'Fathers of the Land',             p: 'P2', meta: 'Coming soon',                due: '—',  dueClass: 'ok', slug: 'fathers' },
+    { n: 'Fathers of the Land',             p: 'P2', meta: 'Traditional elders + chiefs', due: 'OK', dueClass: 'ok', slug: 'fathers' },
     { n: 'BOT (Board of Trustees)',         p: 'P3', meta: botMeta, due: 'OK', dueClass: 'ok', slug: 'bot' },
     { n: 'CPC (Central Planning)',          p: 'P4', meta: cpcMeta, due: 'OK', dueClass: 'ok', slug: 'cpc' },
     { n: 'Stakeholders (VIP funnel)',       p: 'P5', meta: 'Mayors, bishops, donors',  due: 'OK', dueClass: 'ok', slug: 'stakeholders' },

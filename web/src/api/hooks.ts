@@ -1611,3 +1611,88 @@ export function useDeleteMediaMention() {
     },
   });
 }
+
+// === Land elders (Fathers of the Land) ===
+export type LandElderStatus = 'identified' | 'courted' | 'blessed' | 'neutral' | 'opposed';
+
+export interface LandElder {
+  id: number;
+  crusade_id: number;
+  name: string;
+  title: string | null;
+  region: string | null;
+  phone: string | null;
+  email: string | null;
+  status: LandElderStatus;
+  last_contact_at: string | null;
+  notes: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
+export function useLandElders() {
+  return useQuery({
+    queryKey: ['land-elders'],
+    queryFn: () => apiFetch<{ data: LandElder[] }>('/land-elders').then((r) => r.data),
+  });
+}
+
+export function useCreateLandElder() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (body: {
+      crusade_id: number;
+      name: string;
+      title?: string | null;
+      region?: string | null;
+      phone?: string | null;
+      email?: string | null;
+      status?: LandElderStatus;
+      last_contact_at?: string | null;
+      notes?: string | null;
+    }) =>
+      apiFetch<{ data: LandElder }>('/land-elders', {
+        method: 'POST',
+        body: JSON.stringify(body),
+      }).then((r) => r.data),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['land-elders'] });
+    },
+  });
+}
+
+export function useUpdateLandElder() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: ({ id, body }: {
+      id: number;
+      body: Partial<{
+        name: string;
+        title: string | null;
+        region: string | null;
+        phone: string | null;
+        email: string | null;
+        status: LandElderStatus;
+        last_contact_at: string | null;
+        notes: string | null;
+      }>;
+    }) =>
+      apiFetch<{ data: LandElder }>(`/land-elders/${id}`, {
+        method: 'PATCH',
+        body: JSON.stringify(body),
+      }).then((r) => r.data),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['land-elders'] });
+    },
+  });
+}
+
+export function useDeleteLandElder() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (id: number) => apiFetch(`/land-elders/${id}`, { method: 'DELETE' }),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['land-elders'] });
+    },
+  });
+}
