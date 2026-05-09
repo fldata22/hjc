@@ -29,6 +29,7 @@ import { DailyDecisionsScreen } from './screens/forms/DailyDecisionsScreen';
 import { DailyProgramScreen } from './screens/forms/DailyProgramScreen';
 import { SecurityIncidentsScreen, MedicalIncidentsScreen } from './screens/forms/IncidentsScreen';
 import { ActivityQuickLogScreen } from './screens/forms/ActivityQuickLogScreen';
+import { PillarDetailScreen } from './screens/app/PillarDetailScreen';
 
 export default function App() {
   return (
@@ -68,7 +69,7 @@ export default function App() {
       <Route path="/log" element={<RequireAuth><Placeholder title="Quick log" /></RequireAuth>} />
       <Route path="/pastors" element={<RequireAuth><Placeholder title="Pastors directory" /></RequireAuth>} />
       <Route path="/pastors/:id" element={<RequireAuth><Placeholder title="Pastor profile" /></RequireAuth>} />
-      <Route path="/pillars/:code" element={<RequireAuth><Placeholder title="Pillar detail" /></RequireAuth>} />
+      <Route path="/pillars/:code" element={<RequireAuth><PillarDetailScreen /></RequireAuth>} />
 
       {/* Sidebar destinations */}
       <Route path="/people" element={<RequireAuth><PeopleScreen /></RequireAuth>} />

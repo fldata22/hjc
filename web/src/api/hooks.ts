@@ -43,6 +43,14 @@ export function usePowers() {
   });
 }
 
+export function usePower(code: string | undefined) {
+  return useQuery({
+    queryKey: ['power', code],
+    queryFn: () => apiFetch<{ data: Power }>(`/powers/${code}`).then((r) => r.data),
+    enabled: !!code,
+  });
+}
+
 // === Pastors ===
 export interface Pastor {
   id: number; crusade_id: number; full_name: string; church_id: number | null; zone_id: number | null;

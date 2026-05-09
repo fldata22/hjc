@@ -1,4 +1,5 @@
 import { useMemo, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { AppBar, Drawer, ResponsiveShell, TabBar } from './Shell';
 import { useMissionControl, useWeeklyLatest } from '../../api/hooks';
 import './app.css';
@@ -6,6 +7,7 @@ import './app.css';
 type Filter = 'all' | 'risk' | 'hold' | 'track';
 
 export function PillarsScreen() {
+  const navigate = useNavigate();
   const [drawer, setDrawer] = useState(false);
   const [filter, setFilter] = useState<Filter>('all');
 
@@ -137,7 +139,13 @@ export function PillarsScreen() {
               const dir = (p.value_pct != null && reading != null) ? p.value_pct - reading.value_pct : null;
               const v = p.value_pct ?? 0;
               return (
-                <div className="pillar-row" key={p.code}>
+                <button
+                  type="button"
+                  className="pillar-row"
+                  key={p.code}
+                  onClick={() => navigate(`/pillars/${p.code}`)}
+                  style={{ background: 'transparent', border: 0, textAlign: 'left', cursor: 'pointer', fontFamily: 'inherit', width: '100%', padding: 0 }}
+                >
                   <div className="L serif">{p.code[0]}</div>
                   <div>
                     <div className="nm">{p.name}</div>
@@ -155,7 +163,7 @@ export function PillarsScreen() {
                   <div className={'pct' + (v < 50 ? ' acc' : '')}>
                     {p.value_pct != null ? <>{p.value_pct}<small>%</small></> : <>—</>}
                   </div>
-                </div>
+                </button>
               );
             })}
           </div>
