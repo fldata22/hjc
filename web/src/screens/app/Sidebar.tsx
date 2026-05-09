@@ -1,5 +1,8 @@
 import { useNavigate } from 'react-router-dom';
 import { type TabKey } from './Shell';
+import { useAuth } from '../../auth/useAuth';
+import { useCrusade } from '../../api/hooks';
+import { crusadeProgressLabel } from '../../lib/dateHelpers';
 
 const NAV_ROUTES: Record<TabKey, string> = {
   home: '/',
@@ -11,15 +14,32 @@ const NAV_ROUTES: Record<TabKey, string> = {
 
 export const Sidebar = ({ active }: { active: TabKey }) => {
   const navigate = useNavigate();
+  const { logout } = useAuth();
+  const { data: crusade } = useCrusade();
   const goto = (key: TabKey) => () => navigate(NAV_ROUTES[key]);
+
+  const handleSignOut = async () => {
+    await logout();
+    navigate('/login', { replace: true });
+  };
+
+  const cityShort = crusade?.city ?? '';
+  const nameSuffix = crusade?.name?.replace(cityShort, '').trim() || crusade?.name || '';
+  const progress = crusadeProgressLabel(crusade?.opens_at, crusade?.closes_at);
+
   return (
     <aside className="sidebar" aria-label="Primary navigation">
       <div className="sidebar-head">
         <div className="crusade-eyebrow">Crusade</div>
         <h2 className="serif">
-          Wa, <em style={{ fontStyle: 'italic', color: 'var(--ink-3)' }}>Ghana 2024</em>
+          {cityShort || 'Crusade'}
+          {nameSuffix && (
+            <>
+              , <em style={{ fontStyle: 'italic', color: 'var(--ink-3)' }}>{nameSuffix}</em>
+            </>
+          )}
         </h2>
-        <div className="day">Day <b>58</b> of 84 · 26 days out</div>
+        {progress && <div className="day">{progress}</div>}
       </div>
       <div className="sidebar-section">Director</div>
       <button
@@ -36,7 +56,7 @@ export const Sidebar = ({ active }: { active: TabKey }) => {
         aria-current={active === 'forms' ? 'page' : undefined}
         onClick={goto('forms')}
       >
-        <span className="ico"><span className="gl-doc"/></span>Forms<span className="badge">3</span>
+        <span className="ico"><span className="gl-doc"/></span>Forms
       </button>
       <button
         type="button"
@@ -69,10 +89,10 @@ export const Sidebar = ({ active }: { active: TabKey }) => {
       <button type="button" className="sidebar-item" onClick={() => navigate('/budget')}>
         <span className="ico">◇</span>Budget
       </button>
-      <div className="sidebar-item"><span className="ico">⊟</span>Documents</div>
       <div className="sidebar-section" style={{ marginTop: 'auto' }}>Account</div>
-      <div className="sidebar-item"><span className="ico">⊙</span>Settings</div>
-      <div className="sidebar-item"><span className="ico">⤴</span>Sign out</div>
+      <button type="button" className="sidebar-item" onClick={handleSignOut}>
+        <span className="ico">⤴</span>Sign out
+      </button>
     </aside>
   );
 };

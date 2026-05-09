@@ -36,3 +36,29 @@ export function relativeAgo(iso: string): string {
   if (days === 1) return 'YEST';
   return `${days}D`;
 }
+
+/**
+ * Compact crusade-progress label for sidebars/drawers.
+ * Pre-crusade: "Day N of 84 · K days out" (planning runway = 12 weeks before opens_at).
+ * During run: "Day N of M · live". After closes_at: "Closed".
+ */
+export function crusadeProgressLabel(opens_at: string | undefined, closes_at: string | undefined): string {
+  if (!opens_at || !closes_at) return '';
+  const today = Date.now();
+  const opens = new Date(opens_at).getTime();
+  const closes = new Date(closes_at).getTime();
+  const planningDays = 84;
+  const planningStart = opens - planningDays * 86_400_000;
+
+  if (today < opens) {
+    const dayN = Math.max(1, Math.round((today - planningStart) / 86_400_000));
+    const daysOut = Math.max(0, Math.round((opens - today) / 86_400_000));
+    return `Day ${Math.min(dayN, planningDays)} of ${planningDays} · ${daysOut} days out`;
+  }
+  if (today <= closes) {
+    const totalRunDays = Math.max(1, Math.round((closes - opens) / 86_400_000) + 1);
+    const dayN = Math.max(1, Math.round((today - opens) / 86_400_000) + 1);
+    return `Day ${dayN} of ${totalRunDays} · live`;
+  }
+  return 'Closed';
+}

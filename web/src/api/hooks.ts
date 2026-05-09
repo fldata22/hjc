@@ -172,6 +172,78 @@ export function useReplaceRisks() {
   });
 }
 
+export function useUpdateWeeklyAssessment() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: ({ id, body }: { id: number; body: Partial<{ self_score: number | null; notes: string | null; decisions_needed: string | null }> }) =>
+      apiFetch<{ data: WeeklyAssessment }>(`/weekly-assessments/${id}`, { method: 'PATCH', body: JSON.stringify(body) }).then((r) => r.data),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ['weekly-latest'] }),
+  });
+}
+
+export function useCreateWeeklyAssessment() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (body: { crusade_id: number; week_number: number; prompted_at: string; self_score?: number | null; notes?: string | null; decisions_needed?: string | null }) =>
+      apiFetch<{ data: WeeklyAssessment }>('/weekly-assessments', { method: 'POST', body: JSON.stringify(body) }).then((r) => r.data),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ['weekly-latest'] }),
+  });
+}
+
+// === Reminders ===
+export interface Reminder {
+  id: number; crusade_id: number; user_id: number;
+  text: string; due_on: string | null; completed_at: string | null;
+  created_at: string; updated_at: string;
+}
+
+export function useReminders(includeCompleted = false) {
+  return useQuery({
+    queryKey: ['reminders', includeCompleted],
+    queryFn: () => apiFetch<{ data: Reminder[] }>(`/reminders${includeCompleted ? '?include_completed=1' : ''}`).then((r) => r.data),
+  });
+}
+
+export function useCreateReminder() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (body: { crusade_id: number; text: string; due_on?: string | null }) =>
+      apiFetch<{ data: Reminder }>('/reminders', { method: 'POST', body: JSON.stringify(body) }).then((r) => r.data),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ['reminders'] }),
+  });
+}
+
+export function useUpdateReminder() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: ({ id, body }: { id: number; body: Partial<{ text: string; due_on: string | null; completed_at: string | null }> }) =>
+      apiFetch<{ data: Reminder }>(`/reminders/${id}`, { method: 'PATCH', body: JSON.stringify(body) }).then((r) => r.data),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ['reminders'] }),
+  });
+}
+
+export function useDeleteReminder() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (id: number) =>
+      apiFetch(`/reminders/${id}`, { method: 'DELETE' }),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ['reminders'] }),
+  });
+}
+
+export function useSubmitWeeklyAssessment() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (id: number) =>
+      apiFetch<{ data: WeeklyAssessment }>(`/weekly-assessments/${id}/submit`, { method: 'POST' }).then((r) => r.data),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['weekly-latest'] });
+      qc.invalidateQueries({ queryKey: ['mission-control'] });
+      qc.invalidateQueries({ queryKey: ['activity-entries'] });
+    },
+  });
+}
+
 // === Crusade (singleton) ===
 export interface Crusade {
   id: number; name: string; city: string; opens_at: string; closes_at: string;

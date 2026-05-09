@@ -76,25 +76,24 @@ export default function App() {
       <Route path="/weekly" element={<RequireAuth><WeeklyScreen /></RequireAuth>} />
       <Route path="/activity" element={<RequireAuth><ActivityScreen /></RequireAuth>} />
 
-      {/* Parked features per spec decision #5 */}
-      <Route path="/log" element={<RequireAuth><Placeholder title="Quick log" /></RequireAuth>} />
-      <Route path="/pastors" element={<RequireAuth><Placeholder title="Pastors directory" /></RequireAuth>} />
-      <Route path="/pastors/:id" element={<RequireAuth><Placeholder title="Pastor profile" /></RequireAuth>} />
       <Route path="/pillars/:code" element={<RequireAuth><PillarDetailScreen /></RequireAuth>} />
 
       {/* Sidebar destinations */}
       <Route path="/people" element={<RequireAuth><PeopleScreen /></RequireAuth>} />
       <Route path="/budget" element={<RequireAuth><BudgetScreen /></RequireAuth>} />
-      <Route path="/documents" element={<RequireAuth><Placeholder title="Documents" /></RequireAuth>} />
-      <Route path="/settings" element={<RequireAuth><Placeholder title="Settings" /></RequireAuth>} />
 
-      {/* Backwards-compat redirects (params dropped — placeholders don't use them) */}
+      {/* Redirects: parked routes → working equivalents */}
+      <Route path="/log" element={<Navigate to="/forms/activity-quick-log" replace />} />
+      <Route path="/pastors" element={<Navigate to="/forms/pcm" replace />} />
+      <Route path="/pastors/:id" element={<Navigate to="/forms/pcm" replace />} />
+
+      {/* Backwards-compat redirects from old /m and /d prefixes */}
       <Route path="/m/" element={<Navigate to="/" replace />} />
       <Route path="/m/powers" element={<Navigate to="/pillars" replace />} />
       <Route path="/m/powers/:code" element={<Navigate to="/pillars" replace />} />
-      <Route path="/m/pastors" element={<Navigate to="/pastors" replace />} />
-      <Route path="/m/pastors/:id" element={<Navigate to="/pastors" replace />} />
-      <Route path="/m/log" element={<Navigate to="/log" replace />} />
+      <Route path="/m/pastors" element={<Navigate to="/forms/pcm" replace />} />
+      <Route path="/m/pastors/:id" element={<Navigate to="/forms/pcm" replace />} />
+      <Route path="/m/log" element={<Navigate to="/forms/activity-quick-log" replace />} />
       <Route path="/m/assessment" element={<Navigate to="/weekly" replace />} />
       <Route path="/m/activity" element={<Navigate to="/activity" replace />} />
       <Route path="/m/more" element={<Navigate to="/" replace />} />

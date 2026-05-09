@@ -1,7 +1,16 @@
 import { useMemo, useState } from 'react';
 import { AppBar, Drawer, ResponsiveShell, TabBar } from './Shell';
-import { useMissionControl, useActivityEntries } from '../../api/hooks';
+import {
+  useMissionControl,
+  useActivityEntries,
+  useCrusade,
+  useReminders,
+  useCreateReminder,
+  useUpdateReminder,
+  useDeleteReminder,
+} from '../../api/hooks';
 import { useAuth } from '../../auth/useAuth';
+import { useToast } from './toast-context';
 import { relativeAgo } from '../../lib/dateHelpers';
 import './app.css';
 
@@ -56,6 +65,38 @@ export function HomeScreen() {
   const { user } = useAuth();
   const { data: mc, isLoading: mcLoading, isError: mcError, refetch: refetchMc } = useMissionControl();
   const { data: activity, isLoading: actLoading, isError: actError, refetch: refetchAct } = useActivityEntries({ per_page: 4 });
+  const { data: crusade } = useCrusade();
+  const { data: reminders, isLoading: remLoading } = useReminders();
+  const createReminder = useCreateReminder();
+  const updateReminder = useUpdateReminder();
+  const deleteReminder = useDeleteReminder();
+  const { showToast } = useToast();
+  const [reminderText, setReminderText] = useState('');
+  const [reminderDue, setReminderDue] = useState('');
+
+  const addReminder = async () => {
+    if (!crusade || reminderText.trim() === '' || createReminder.isPending) return;
+    try {
+      await createReminder.mutateAsync({
+        crusade_id: crusade.id,
+        text: reminderText.trim(),
+        due_on: reminderDue || null,
+      });
+      setReminderText('');
+      setReminderDue('');
+    } catch {
+      showToast('Couldn’t add reminder', 'error');
+    }
+  };
+
+  const completeReminder = (id: number) => {
+    updateReminder.mutate({ id, body: { completed_at: new Date().toISOString() } });
+  };
+
+  const removeReminder = (id: number) => {
+    if (!confirm('Delete this reminder?')) return;
+    deleteReminder.mutate(id);
+  };
 
   const composite = useMemo(() => {
     if (!mc) return null;
@@ -187,6 +228,67 @@ export function HomeScreen() {
             )}
           </section>
         </div>
+
+        <section className="home-card" style={{ margin: '0 20px 24px' }}>
+          <div className="sec">
+            <h2 className="serif">Personal <em>reminders</em></h2>
+            <span className="more">{reminders?.length ?? 0} open</span>
+          </div>
+          {remLoading ? (
+            <div style={{ padding: '14px 0', fontSize: 13, color: 'var(--ink-3)', textAlign: 'center' }}>Loading…</div>
+          ) : (reminders?.length ?? 0) === 0 ? (
+            <div style={{ padding: '10px 0 14px', fontSize: 13, color: 'var(--ink-3)' }}>Nothing on your list — add one below.</div>
+          ) : (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 6, paddingBottom: 8 }}>
+              {reminders!.map((r) => (
+                <div key={r.id} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '8px 0', borderBottom: '1px solid var(--line)' }}>
+                  <button
+                    type="button"
+                    onClick={() => completeReminder(r.id)}
+                    aria-label="Mark done"
+                    style={{ width: 18, height: 18, borderRadius: '50%', border: '1.5px solid var(--ink-3)', background: 'transparent', cursor: 'pointer', flexShrink: 0 }}
+                  />
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <div style={{ fontSize: 13, color: 'var(--ink-1)', lineHeight: 1.4 }}>{r.text}</div>
+                    {r.due_on && <div style={{ fontSize: 11, color: 'var(--ink-3)', marginTop: 2 }}>Due {new Date(r.due_on).toLocaleDateString('en-GB', { day: '2-digit', month: 'short' })}</div>}
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => removeReminder(r.id)}
+                    aria-label="Delete reminder"
+                    style={{ background: 'transparent', border: 0, padding: 4, fontSize: 14, cursor: 'pointer', color: 'var(--ink-3)', lineHeight: 1, fontFamily: 'inherit' }}
+                  >
+                    ×
+                  </button>
+                </div>
+              ))}
+            </div>
+          )}
+          <div style={{ display: 'flex', gap: 8, paddingTop: 10, borderTop: '1px solid var(--line)' }}>
+            <input
+              type="text"
+              placeholder="New reminder…"
+              value={reminderText}
+              onChange={(e) => setReminderText(e.target.value)}
+              onKeyDown={(e) => e.key === 'Enter' && addReminder()}
+              style={{ flex: 1, fontSize: 13, padding: '8px 10px', border: '1px solid var(--line)', borderRadius: 4, background: 'var(--bg-1)', fontFamily: 'inherit', color: 'var(--ink-1)' }}
+            />
+            <input
+              type="date"
+              value={reminderDue}
+              onChange={(e) => setReminderDue(e.target.value)}
+              style={{ fontSize: 12, padding: '8px 8px', border: '1px solid var(--line)', borderRadius: 4, background: 'var(--bg-1)', fontFamily: 'inherit', color: 'var(--ink-1)' }}
+            />
+            <button
+              type="button"
+              onClick={addReminder}
+              disabled={createReminder.isPending || reminderText.trim() === ''}
+              style={{ padding: '8px 14px', fontSize: 12, fontWeight: 500, borderRadius: 4, border: '1px solid var(--ink-1)', background: 'var(--ink-1)', color: 'var(--bg-1)', fontFamily: 'inherit', cursor: 'pointer' }}
+            >
+              Add
+            </button>
+          </div>
+        </section>
 
         <div className="bot-pad"/>
       </div>
