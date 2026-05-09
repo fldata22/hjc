@@ -580,3 +580,89 @@ export function useCreateVenueInspection() {
     },
   });
 }
+
+// === Must-do items ===
+export type MustDoArea = 'venue' | 'publicity' | 'permits' | 'logistics' | 'other';
+export type MustDoStatus = 'pending' | 'in_progress' | 'done';
+
+export interface MustDoItem {
+  id: number;
+  crusade_id: number;
+  area: MustDoArea;
+  title: string;
+  owner_name: string | null;
+  due_date: string | null;
+  status: MustDoStatus;
+  notes: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
+export function useMustDoItems(filters: { status?: MustDoStatus; area?: MustDoArea } = {}) {
+  const params = new URLSearchParams();
+  if (filters.status) params.set('status', filters.status);
+  if (filters.area) params.set('area', filters.area);
+  const qs = params.toString();
+  return useQuery({
+    queryKey: ['must-do-items', filters],
+    queryFn: () =>
+      apiFetch<{ data: MustDoItem[] }>(`/must-do-items${qs ? '?' + qs : ''}`).then((r) => r.data),
+  });
+}
+
+export function useCreateMustDoItem() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (body: {
+      crusade_id: number;
+      area: MustDoArea;
+      title: string;
+      owner_name?: string | null;
+      due_date?: string | null;
+      status?: MustDoStatus;
+      notes?: string | null;
+    }) =>
+      apiFetch<{ data: MustDoItem }>('/must-do-items', {
+        method: 'POST',
+        body: JSON.stringify(body),
+      }).then((r) => r.data),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['must-do-items'] });
+    },
+  });
+}
+
+export function useUpdateMustDoItem() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: ({ id, body }: {
+      id: number;
+      body: Partial<{
+        area: MustDoArea;
+        title: string;
+        owner_name: string | null;
+        due_date: string | null;
+        status: MustDoStatus;
+        notes: string | null;
+      }>;
+    }) =>
+      apiFetch<{ data: MustDoItem }>(`/must-do-items/${id}`, {
+        method: 'PATCH',
+        body: JSON.stringify(body),
+      }).then((r) => r.data),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['must-do-items'] });
+    },
+  });
+}
+
+export function useDeleteMustDoItem() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (id: number) =>
+      apiFetch(`/must-do-items/${id}`, { method: 'DELETE' }),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['must-do-items'] });
+    },
+  });
+}
