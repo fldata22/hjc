@@ -152,6 +152,79 @@ Cleanup #1 + #2 are tiny and could land in this chunk's stop-the-bleeding pass. 
 - Search bar wiring
 - Edit/delete UX on any of the new forms (matches existing chunk pattern)
 
+## Strawman roster — full 36 (derived from a crusade end-to-end trace)
+
+Director was asked to react to this strawman rather than fill in 24 blank rows. Items currently in the hub keep their existing names; new items are derived from a top-to-bottom walk through the crusade lifecycle (intake → planning → publicity → permits → venue → execution → debrief). Numbers chosen to hit 17 / 6 / 5 / 8 = 36 to match the existing cat-head claim. **All NEW rows are 🟡 NEEDS-DIRECTOR until confirmed.**
+
+### P · Participation (17) — people the director is tracking
+
+| # | Form | State | Strawman intent |
+|---|---|---|---|
+| 1 | PCM (Primary Committee Members) | ⚪ WIRED | Pastor intake (Chunk 7) |
+| 2 | BOT (Board of Trustees) | ⚪ WIRED | National/advisory roster (Chunk 5) |
+| 3 | CPC (Crusade Planning Committee) | ⚪ WIRED | Local planning team roster (Chunk 5) |
+| 4 | Fathers of the Land | 🟡 placeholder, in hub | Tribal elders / land custodians who grant venue rights — *guessing*; could be donor patriarchs or a religious-leader courtship list. CONFIRM. |
+| 5 | Stakeholders (VIP funnel) | 🟡 NEW | Mayor / imam / bishop / governor courtship — uses the existing `stakeholders` table that triage doc explicitly carved out as separate from BOT/CPC. Probably already exists in the backend; just needs a hub row + form. |
+| 6 | Choir Roster | 🟡 NEW | Singers, vocal range, zone, attendance |
+| 7 | Ushers Roster | 🟡 NEW | Crowd-flow volunteers, zone, shift |
+| 8 | Security Team | 🟡 NEW | Internal security (separate from police), background-checked |
+| 9 | Counsellors Roster | 🟡 NEW | Altar-call counsellors with theological training records |
+| 10 | Prayer Warriors | 🟡 NEW | 24/7 prayer chain enlistment (slot/hour assignment) |
+| 11 | Hospitality Team | 🟡 NEW | Housing/feeding visiting workers |
+| 12 | Technical Team | 🟡 NEW | Sound / lights / video / livestream |
+| 13 | Medical Team | 🟡 NEW | First aid + ambulance liaison |
+| 14 | Convoy Team | 🟡 NEW | Mobile-evangelism crews assigned by zone |
+| 15 | Children's Ministry Workers | 🟡 NEW | Kids tent staff (background check critical) |
+| 16 | Donor Roster | 🟡 NEW | Financial + in-kind (parallel to Stakeholders but money-flow only) |
+| 17 | Volunteer Sign-up | 🟡 NEW | General catch-all when role TBD; gets sorted into 6-15 |
+
+**Director gut-check on this category:**
+- Rows 6-15 could be ONE form ("Worker Groups") with a `group_type` picker, identical to BOT/CPC sharing one `committee_members` table. Saves 9 rows. But then the Forms hub only has 8 P-rows, not 17. **Question: prefer one umbrella row or N separate rows?**
+- Children's Ministry could fold into Worker Groups under `kind='kids'` or be split out for the safeguarding paperwork.
+- "Volunteer Sign-up" is mostly redundant if Worker Groups is umbrella.
+
+### A · Awareness (6) — building public attention
+
+| # | Form | State | Strawman intent |
+|---|---|---|---|
+| 1 | Awareness Survey · Field | ⚪ WIRED | Rolling pre-crusade surveys (Chunk 3) |
+| 2 | Town Profile | 🟢 BUILD | Per-town/zone baseline (population, language, religion mix, prior history) |
+| 3 | Publicity & Video Campaign | 🟡 placeholder, in hub | Status log of campaign assets (radio jingle / posters / banners / social cuts / billboards / flyers). CONFIRM: log of milestones, or per-asset checklist? |
+| 4 | Door-to-Door Outreach Log | 🟡 NEW | Daily door-knock counts per zone |
+| 5 | Convoy Outreach Schedule | 🟡 NEW | Where the mobile evangelism crews go each day |
+| 6 | Media Coverage Tracker | 🟡 NEW | Newspaper / radio / TV mentions; sentiment if available |
+
+### V · Venue & Logistics (5) — physical site
+
+| # | Form | State | Strawman intent |
+|---|---|---|---|
+| 1 | Venue Inspection (Regular) | 🟢 BUILD | Per-visit safety + permits checklist for the crusade ground |
+| 2 | Must-Do Checklist | 🟢 BUILD | Master pre-crusade items list with ticks |
+| 3 | Permits Tracker | 🟡 NEW | Police / fire / city / health permits — status, application date, approval date, document upload |
+| 4 | Sound & Lighting Setup | 🟡 NEW | Equipment manifest + setup checklist + power requirements |
+| 5 | Seating & Capacity Plan | 🟡 NEW | Layout, capacity by zone (front / general / VIP / counsellor area), chair count |
+
+### D · Daily ops (8) — recurring during planning + execution
+
+| # | Form | State | Strawman intent |
+|---|---|---|---|
+| 1 | Crusade Daily Expenses | ⚪ WIRED | Chunk 6 |
+| 2 | Weekly Assessment Rating | ⚪ WIRED | Existing `/weekly` |
+| 3 | Daily Attendance Count | 🟡 NEW | Per-night headcount + estimate methodology |
+| 4 | Daily Decisions & Conversions | 🟡 NEW | Per-night response card counts: salvations / rededications / healings / counselled |
+| 5 | Daily Program Log | 🟡 NEW | What happened that night — speaker, key moments, testimonies, length |
+| 6 | Daily Security Incident | 🟡 NEW | Append-log per incident |
+| 7 | Daily Medical Incident | 🟡 NEW | Append-log per incident |
+| 8 | Activity Quick-Log | 🟡 NEW (= Chunk 9 in original roadmap) | Director's micro-log: "Met 4 pastors, won 2" — already scoped as Chunk 9 |
+
+### Math check
+
+P 17 + A 6 + V 5 + D 8 = **36** ✓ matches the cat-head sum. Header claim of "5 categories" remains unreconciled — if a 5th category is real, the most natural carve-out is **G · Government & Permits** (4 forms: Police, Fire, City, Health), pulling Permits Tracker out of V and splitting it. That'd shift V to 5 and add G at 4, leaving 17 + 6 + 5 + 4 + 8 = **40** — over by 4. Doesn't reconcile cleanly without dropping rows elsewhere. **Recommendation: drop the "5 categories" claim from the header until a 5th category is genuinely named.**
+
+### Strawman implications for Chunk 8 build set
+
+Unchanged from the original 🟢 set: Town Profile, Venue Inspection, Must-Do Checklist. Strawman doesn't shift the build scope — it just gives the director something concrete to react to for the 24 currently-unspec'd forms.
+
 ## Open follow-ups
 
 - Fold `Town Profile` into `zones` schema vs new resource: decide when implementation plan is written
