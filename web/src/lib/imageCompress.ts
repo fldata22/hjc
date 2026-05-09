@@ -1,6 +1,7 @@
 /**
  * Compress an image file by drawing it to an off-screen canvas at a
- * capped width and exporting as JPEG. Returns a base64 data URL.
+ * capped width and exporting as JPEG. Returns both the binary Blob
+ * (for multipart upload) and the data URL (for in-form preview).
  *
  * Used for receipt photos — typical phone-camera input (3–5MB) compresses
  * to ~50–150KB at the defaults below.
@@ -9,7 +10,7 @@ export function compressImage(
   file: File,
   maxWidth = 800,
   quality = 0.7,
-): Promise<string> {
+): Promise<{ blob: Blob; dataUrl: string }> {
   return new Promise((resolve, reject) => {
     const reader = new FileReader();
 
@@ -23,9 +24,7 @@ export function compressImage(
       }
 
       const img = new Image();
-
       img.onerror = () => reject(new Error('Could not decode image'));
-
       img.onload = () => {
         const targetWidth = Math.min(maxWidth, img.naturalWidth);
         const scale = targetWidth / img.naturalWidth;
@@ -43,12 +42,18 @@ export function compressImage(
 
         ctx.drawImage(img, 0, 0, targetWidth, targetHeight);
 
-        try {
-          const out = canvas.toDataURL('image/jpeg', quality);
-          resolve(out);
-        } catch (err) {
-          reject(err instanceof Error ? err : new Error('Encode failed'));
-        }
+        canvas.toBlob(
+          (blob) => {
+            if (!blob) {
+              reject(new Error('Encode failed'));
+              return;
+            }
+            const previewUrl = canvas.toDataURL('image/jpeg', quality);
+            resolve({ blob, dataUrl: previewUrl });
+          },
+          'image/jpeg',
+          quality,
+        );
       };
 
       img.src = dataUrl;
