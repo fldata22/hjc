@@ -1696,3 +1696,91 @@ export function useDeleteLandElder() {
     },
   });
 }
+
+// === Donors ===
+export type DonorKind = 'individual' | 'organization' | 'foundation' | 'church';
+export type DonorStatus = 'prospect' | 'engaged' | 'committed' | 'given' | 'declined';
+
+export interface Donor {
+  id: number;
+  crusade_id: number;
+  name: string;
+  organization: string | null;
+  kind: DonorKind;
+  pledge_amount: string | null;
+  status: DonorStatus;
+  last_contact_at: string | null;
+  notes: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface DonorsResponse {
+  data: Donor[];
+  meta: { totals: { pledged: string; given: string } };
+}
+
+export function useDonors() {
+  return useQuery({
+    queryKey: ['donors'],
+    queryFn: () => apiFetch<DonorsResponse>('/donors'),
+  });
+}
+
+export function useCreateDonor() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (body: {
+      crusade_id: number;
+      name: string;
+      organization?: string | null;
+      kind: DonorKind;
+      pledge_amount?: number | null;
+      status?: DonorStatus;
+      last_contact_at?: string | null;
+      notes?: string | null;
+    }) =>
+      apiFetch<{ data: Donor }>('/donors', {
+        method: 'POST',
+        body: JSON.stringify(body),
+      }).then((r) => r.data),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['donors'] });
+    },
+  });
+}
+
+export function useUpdateDonor() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: ({ id, body }: {
+      id: number;
+      body: Partial<{
+        name: string;
+        organization: string | null;
+        kind: DonorKind;
+        pledge_amount: number | null;
+        status: DonorStatus;
+        last_contact_at: string | null;
+        notes: string | null;
+      }>;
+    }) =>
+      apiFetch<{ data: Donor }>(`/donors/${id}`, {
+        method: 'PATCH',
+        body: JSON.stringify(body),
+      }).then((r) => r.data),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['donors'] });
+    },
+  });
+}
+
+export function useDeleteDonor() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (id: number) => apiFetch(`/donors/${id}`, { method: 'DELETE' }),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['donors'] });
+    },
+  });
+}

@@ -107,6 +107,7 @@ export function FormsScreen() {
     { n: 'Stakeholders (VIP funnel)',       p: 'P5', meta: 'Mayors, bishops, donors',  due: 'OK', dueClass: 'ok', slug: 'stakeholders' },
     { n: 'Worker Groups',                   p: 'P6', meta: 'Choir, ushers, security…', due: 'OK', dueClass: 'ok', slug: 'workers' },
     { n: 'Pledge Meetings',                 p: 'P7', meta: 'Schedule + record pledges', due: 'OK', dueClass: 'ok', slug: 'pledge-meetings' },
+    { n: 'Donor Roster',                    p: 'P8', meta: 'Money funnel · ₵ pledges',   due: 'OK', dueClass: 'ok', slug: 'donors' },
   ], [pcmMeta, botMeta, cpcMeta]);
 
   const awareness: FormRow[] = useMemo(() => [
@@ -153,7 +154,7 @@ export function FormsScreen() {
               marginBottom: 10,
             }}
           >
-            26 forms · 4 categories
+            27 forms · 4 categories
           </div>
           <h1
             className="serif"
@@ -164,7 +165,7 @@ export function FormsScreen() {
         </div>
 
         <div className="cat-group">
-          <div className="cat-head"><span>P · Participation</span><span>7 forms</span></div>
+          <div className="cat-head"><span>P · Participation</span><span>8 forms</span></div>
         </div>
         <FormGroup rows={participation}/>
 

@@ -34,6 +34,7 @@ import { PublicityAssetsScreen } from './screens/forms/PublicityAssetsScreen';
 import { DoorToDoorScreen, ConvoyOutreachScreen } from './screens/forms/OutreachScreen';
 import { MediaCoverageScreen } from './screens/forms/MediaCoverageScreen';
 import { LandEldersScreen } from './screens/forms/LandEldersScreen';
+import { DonorsScreen } from './screens/forms/DonorsScreen';
 
 export default function App() {
   return (
@@ -69,6 +70,7 @@ export default function App() {
       <Route path="/forms/convoy" element={<RequireAuth><ConvoyOutreachScreen /></RequireAuth>} />
       <Route path="/forms/media-coverage" element={<RequireAuth><MediaCoverageScreen /></RequireAuth>} />
       <Route path="/forms/fathers" element={<RequireAuth><LandEldersScreen /></RequireAuth>} />
+      <Route path="/forms/donors" element={<RequireAuth><DonorsScreen /></RequireAuth>} />
       <Route path="/forms/:slug" element={<RequireAuth><Placeholder title="Form" /></RequireAuth>} />
       <Route path="/pillars" element={<RequireAuth><PillarsScreen /></RequireAuth>} />
       <Route path="/weekly" element={<RequireAuth><WeeklyScreen /></RequireAuth>} />
