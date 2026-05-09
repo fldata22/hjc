@@ -666,3 +666,99 @@ export function useDeleteMustDoItem() {
     },
   });
 }
+
+// === Stakeholders (VIP funnel) ===
+export type StakeholderStatus = 'identified' | 'engaged' | 'committed' | 'won';
+
+export interface Stakeholder {
+  id: number;
+  crusade_id: number;
+  name: string;
+  org: string;
+  role: string;
+  pipeline_stage: number;
+  status_label: StakeholderStatus;
+  last_contact_at: string | null;
+  notes: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
+export const STAKEHOLDER_STAGE: Record<StakeholderStatus, number> = {
+  identified: 1,
+  engaged: 2,
+  committed: 3,
+  won: 4,
+};
+
+export function useStakeholders() {
+  return useQuery({
+    queryKey: ['stakeholders'],
+    queryFn: () => apiFetch<{ data: Stakeholder[] }>('/stakeholders').then((r) => r.data),
+  });
+}
+
+export function useCreateStakeholder() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (body: {
+      crusade_id: number;
+      name: string;
+      org: string;
+      role: string;
+      status_label: StakeholderStatus;
+      last_contact_at?: string | null;
+      notes?: string | null;
+    }) =>
+      apiFetch<{ data: Stakeholder }>('/stakeholders', {
+        method: 'POST',
+        body: JSON.stringify({
+          ...body,
+          pipeline_stage: STAKEHOLDER_STAGE[body.status_label],
+        }),
+      }).then((r) => r.data),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['stakeholders'] });
+    },
+  });
+}
+
+export function useUpdateStakeholder() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: ({ id, body }: {
+      id: number;
+      body: Partial<{
+        name: string;
+        org: string;
+        role: string;
+        status_label: StakeholderStatus;
+        last_contact_at: string | null;
+        notes: string | null;
+      }>;
+    }) => {
+      const payload: Record<string, unknown> = { ...body };
+      if (body.status_label) {
+        payload.pipeline_stage = STAKEHOLDER_STAGE[body.status_label];
+      }
+      return apiFetch<{ data: Stakeholder }>(`/stakeholders/${id}`, {
+        method: 'PATCH',
+        body: JSON.stringify(payload),
+      }).then((r) => r.data);
+    },
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['stakeholders'] });
+    },
+  });
+}
+
+export function useDeleteStakeholder() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (id: number) =>
+      apiFetch(`/stakeholders/${id}`, { method: 'DELETE' }),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['stakeholders'] });
+    },
+  });
+}

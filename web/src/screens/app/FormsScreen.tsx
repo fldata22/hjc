@@ -10,6 +10,7 @@ const PARTICIPATION: FormRow[] = [
   { n: 'Fathers of the Land',             p: 'P2', meta: 'Coming soon',                due: '—',  dueClass: 'ok', slug: 'fathers' },
   { n: 'BOT (Board of Trustees)',         p: 'P3', meta: 'Last edit 5d ago · Director', due: 'SUN · 4D', dueClass: 'warn', slug: 'bot' },
   { n: 'CPC (Central Planning)',          p: 'P4', meta: '42 zones mapped · today', due: 'OK', dueClass: 'ok', slug: 'cpc' },
+  { n: 'Stakeholders (VIP funnel)',       p: 'P5', meta: 'Mayors, bishops, donors',  due: 'OK', dueClass: 'ok', slug: 'stakeholders' },
   { n: 'Worker Groups',                   p: 'P6', meta: 'Coming soon',             due: '—',  dueClass: 'ok', slug: 'workers' },
 ];
 
@@ -82,7 +83,7 @@ export function FormsScreen() {
               marginBottom: 10,
             }}
           >
-            12 forms · 4 categories
+            13 forms · 4 categories
           </div>
           <h1
             className="serif"
@@ -93,7 +94,7 @@ export function FormsScreen() {
         </div>
 
         <div className="cat-group">
-          <div className="cat-head"><span>P · Participation</span><span>5 forms</span></div>
+          <div className="cat-head"><span>P · Participation</span><span>6 forms</span></div>
         </div>
         <FormGroup rows={PARTICIPATION}/>
 
