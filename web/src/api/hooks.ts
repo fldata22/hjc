@@ -1320,3 +1320,70 @@ export function useDeleteDailyProgram() {
     },
   });
 }
+
+// === Incidents (security + medical) ===
+export type IncidentKind = 'security' | 'medical';
+export type IncidentSeverity = 'low' | 'medium' | 'high';
+
+export interface Incident {
+  id: number;
+  crusade_id: number;
+  kind: IncidentKind;
+  occurred_on: string;
+  occurred_at_time: string | null;
+  severity: IncidentSeverity;
+  location: string | null;
+  description: string;
+  response_taken: string | null;
+  transported_to: string | null;
+  resolution: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
+export function useIncidents(filters: { kind?: IncidentKind; severity?: IncidentSeverity } = {}) {
+  const params = new URLSearchParams();
+  if (filters.kind) params.set('kind', filters.kind);
+  if (filters.severity) params.set('severity', filters.severity);
+  const qs = params.toString();
+  return useQuery({
+    queryKey: ['incidents', filters],
+    queryFn: () =>
+      apiFetch<{ data: Incident[] }>(`/incidents${qs ? '?' + qs : ''}`).then((r) => r.data),
+  });
+}
+
+export function useCreateIncident() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (body: {
+      crusade_id: number;
+      kind: IncidentKind;
+      occurred_on: string;
+      occurred_at_time?: string | null;
+      severity?: IncidentSeverity;
+      location?: string | null;
+      description: string;
+      response_taken?: string | null;
+      transported_to?: string | null;
+      resolution?: string | null;
+    }) =>
+      apiFetch<{ data: Incident }>('/incidents', {
+        method: 'POST',
+        body: JSON.stringify(body),
+      }).then((r) => r.data),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['incidents'] });
+    },
+  });
+}
+
+export function useDeleteIncident() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (id: number) => apiFetch(`/incidents/${id}`, { method: 'DELETE' }),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['incidents'] });
+    },
+  });
+}
