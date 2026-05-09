@@ -762,3 +762,121 @@ export function useDeleteStakeholder() {
     },
   });
 }
+
+// === Pledge meetings ===
+export type PledgeMeetingStatus = 'upcoming' | 'done';
+export type PledgeResource = 'choir' | 'prayer' | 'ushers' | 'counsellors' | 'buses' | 'money';
+
+export interface PledgeMeeting {
+  id: number;
+  crusade_id: number;
+  sequence: string;
+  held_on: string;
+  venue: string;
+  status: PledgeMeetingStatus;
+  attendees_count?: number;
+  created_at: string;
+  updated_at: string;
+}
+
+export function usePledgeMeetings() {
+  return useQuery({
+    queryKey: ['pledge-meetings'],
+    queryFn: () =>
+      apiFetch<{
+        data: PledgeMeeting[];
+        meta: { current_page: number; total: number; per_page: number; last_page: number };
+      }>('/pledge-meetings?per_page=100'),
+  });
+}
+
+export function usePledgeMeeting(id: number | undefined) {
+  return useQuery({
+    queryKey: ['pledge-meeting', id],
+    queryFn: () =>
+      apiFetch<{ data: PledgeMeeting }>(`/pledge-meetings/${id}`).then((r) => r.data),
+    enabled: id != null,
+  });
+}
+
+export function useCreatePledgeMeeting() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (body: {
+      crusade_id: number;
+      sequence: string;
+      held_on: string;
+      venue: string;
+      status?: PledgeMeetingStatus;
+    }) =>
+      apiFetch<{ data: PledgeMeeting }>('/pledge-meetings', {
+        method: 'POST',
+        body: JSON.stringify(body),
+      }).then((r) => r.data),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['pledge-meetings'] });
+    },
+  });
+}
+
+export function useUpdatePledgeMeeting() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: ({ id, body }: {
+      id: number;
+      body: Partial<{ sequence: string; held_on: string; venue: string; status: PledgeMeetingStatus }>;
+    }) =>
+      apiFetch<{ data: PledgeMeeting }>(`/pledge-meetings/${id}`, {
+        method: 'PATCH',
+        body: JSON.stringify(body),
+      }).then((r) => r.data),
+    onSuccess: (_data, vars) => {
+      qc.invalidateQueries({ queryKey: ['pledge-meetings'] });
+      qc.invalidateQueries({ queryKey: ['pledge-meeting', vars.id] });
+    },
+  });
+}
+
+export function useMarkPledgeAttendance() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: ({ meetingId, pastorIds }: { meetingId: number; pastorIds: number[] }) =>
+      apiFetch<{ data: { attendees_count: number } }>(`/pledge-meetings/${meetingId}/attendances`, {
+        method: 'POST',
+        body: JSON.stringify({ pastor_ids: pastorIds }),
+      }).then((r) => r.data),
+    onSuccess: (_data, vars) => {
+      qc.invalidateQueries({ queryKey: ['pledge-meetings'] });
+      qc.invalidateQueries({ queryKey: ['pledge-meeting', vars.meetingId] });
+    },
+  });
+}
+
+export function useRecordPledges() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: ({ meetingId, pledges }: {
+      meetingId: number;
+      pledges: Array<{ pastor_id: number; resource: PledgeResource; quantity: number }>;
+    }) =>
+      apiFetch<{ data: { created: number } }>(`/pledge-meetings/${meetingId}/pledges`, {
+        method: 'POST',
+        body: JSON.stringify({ pledges }),
+      }).then((r) => r.data),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['pledges-summary'] });
+    },
+  });
+}
+
+// === Pledges summary ===
+export interface PledgeSummary {
+  totals: Record<PledgeResource, string>;
+}
+
+export function usePledgesSummary() {
+  return useQuery({
+    queryKey: ['pledges-summary'],
+    queryFn: () => apiFetch<{ data: PledgeSummary }>('/pledges/summary').then((r) => r.data),
+  });
+}

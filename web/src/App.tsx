@@ -19,6 +19,7 @@ import { TownProfileScreen } from './screens/forms/TownProfileScreen';
 import { VenueInspectionForm } from './screens/forms/VenueInspectionForm';
 import { MustDoChecklistScreen } from './screens/forms/MustDoChecklistScreen';
 import { StakeholdersScreen } from './screens/forms/StakeholdersScreen';
+import { PledgeMeetingsScreen } from './screens/forms/PledgeMeetingsScreen';
 
 export default function App() {
   return (
@@ -38,6 +39,7 @@ export default function App() {
       <Route path="/forms/venue-inspection" element={<RequireAuth><VenueInspectionForm /></RequireAuth>} />
       <Route path="/forms/must-do" element={<RequireAuth><MustDoChecklistScreen /></RequireAuth>} />
       <Route path="/forms/stakeholders" element={<RequireAuth><StakeholdersScreen /></RequireAuth>} />
+      <Route path="/forms/pledge-meetings" element={<RequireAuth><PledgeMeetingsScreen /></RequireAuth>} />
       <Route path="/forms/:slug" element={<RequireAuth><Placeholder title="Form" /></RequireAuth>} />
       <Route path="/pillars" element={<RequireAuth><PillarsScreen /></RequireAuth>} />
       <Route path="/weekly" element={<RequireAuth><WeeklyScreen /></RequireAuth>} />
