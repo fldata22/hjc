@@ -112,7 +112,7 @@ export function FormsScreen() {
   const awareness: FormRow[] = useMemo(() => [
     { n: 'Awareness Survey · Field',  p: 'A9',    meta: awarenessMeta,                  due: 'OK', dueClass: 'ok',   slug: 'awareness-survey' },
     { n: 'Town Profile',              p: 'A·all', meta: 'Per-zone baseline',            due: 'OK', dueClass: 'ok',   slug: 'town-profile' },
-    { n: 'Publicity & Video Campaign', p: 'D13',  meta: 'Coming soon',                  due: '—',  dueClass: 'ok',   slug: 'publicity' },
+    { n: 'Publicity & Video Campaign', p: 'D13',  meta: 'Campaign asset log',           due: 'OK', dueClass: 'ok',   slug: 'publicity' },
   ], [awarenessMeta]);
 
   const venue: FormRow[] = useMemo(() => [

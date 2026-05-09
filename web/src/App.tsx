@@ -30,6 +30,7 @@ import { DailyProgramScreen } from './screens/forms/DailyProgramScreen';
 import { SecurityIncidentsScreen, MedicalIncidentsScreen } from './screens/forms/IncidentsScreen';
 import { ActivityQuickLogScreen } from './screens/forms/ActivityQuickLogScreen';
 import { PillarDetailScreen } from './screens/app/PillarDetailScreen';
+import { PublicityAssetsScreen } from './screens/forms/PublicityAssetsScreen';
 
 export default function App() {
   return (
@@ -60,6 +61,7 @@ export default function App() {
       <Route path="/forms/daily-security" element={<RequireAuth><SecurityIncidentsScreen /></RequireAuth>} />
       <Route path="/forms/daily-medical" element={<RequireAuth><MedicalIncidentsScreen /></RequireAuth>} />
       <Route path="/forms/activity-quick-log" element={<RequireAuth><ActivityQuickLogScreen /></RequireAuth>} />
+      <Route path="/forms/publicity" element={<RequireAuth><PublicityAssetsScreen /></RequireAuth>} />
       <Route path="/forms/:slug" element={<RequireAuth><Placeholder title="Form" /></RequireAuth>} />
       <Route path="/pillars" element={<RequireAuth><PillarsScreen /></RequireAuth>} />
       <Route path="/weekly" element={<RequireAuth><WeeklyScreen /></RequireAuth>} />

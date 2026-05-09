@@ -1395,3 +1395,91 @@ export function useDeleteIncident() {
     },
   });
 }
+
+// === Publicity assets ===
+export type PublicityKind = 'radio_spot' | 'poster' | 'billboard' | 'social_post' | 'flyer' | 'banner' | 'video' | 'other';
+export type PublicityStatus = 'planned' | 'in_production' | 'produced' | 'deployed';
+
+export interface PublicityAsset {
+  id: number;
+  crusade_id: number;
+  kind: PublicityKind;
+  title: string;
+  status: PublicityStatus;
+  produced_on: string | null;
+  deployed_on: string | null;
+  quantity: number | null;
+  notes: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
+export function usePublicityAssets(filters: { status?: PublicityStatus; kind?: PublicityKind } = {}) {
+  const params = new URLSearchParams();
+  if (filters.status) params.set('status', filters.status);
+  if (filters.kind) params.set('kind', filters.kind);
+  const qs = params.toString();
+  return useQuery({
+    queryKey: ['publicity-assets', filters],
+    queryFn: () =>
+      apiFetch<{ data: PublicityAsset[] }>(`/publicity-assets${qs ? '?' + qs : ''}`).then((r) => r.data),
+  });
+}
+
+export function useCreatePublicityAsset() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (body: {
+      crusade_id: number;
+      kind: PublicityKind;
+      title: string;
+      status?: PublicityStatus;
+      produced_on?: string | null;
+      deployed_on?: string | null;
+      quantity?: number | null;
+      notes?: string | null;
+    }) =>
+      apiFetch<{ data: PublicityAsset }>('/publicity-assets', {
+        method: 'POST',
+        body: JSON.stringify(body),
+      }).then((r) => r.data),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['publicity-assets'] });
+    },
+  });
+}
+
+export function useUpdatePublicityAsset() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: ({ id, body }: {
+      id: number;
+      body: Partial<{
+        kind: PublicityKind;
+        title: string;
+        status: PublicityStatus;
+        produced_on: string | null;
+        deployed_on: string | null;
+        quantity: number | null;
+        notes: string | null;
+      }>;
+    }) =>
+      apiFetch<{ data: PublicityAsset }>(`/publicity-assets/${id}`, {
+        method: 'PATCH',
+        body: JSON.stringify(body),
+      }).then((r) => r.data),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['publicity-assets'] });
+    },
+  });
+}
+
+export function useDeletePublicityAsset() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (id: number) => apiFetch(`/publicity-assets/${id}`, { method: 'DELETE' }),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['publicity-assets'] });
+    },
+  });
+}
