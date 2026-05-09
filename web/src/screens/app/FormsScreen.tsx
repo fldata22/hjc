@@ -21,7 +21,7 @@ const AWARENESS: FormRow[] = [
 
 const VENUE: FormRow[] = [
   { n: 'Venue Inspection (Regular)', p: 'V10', meta: 'Per-visit checklist', due: 'OK', dueClass: 'ok', slug: 'venue-inspection' },
-  { n: 'Must-Do Checklist',          p: 'V10', meta: 'Coming soon', due: '—', dueClass: 'ok', slug: 'must-do' },
+  { n: 'Must-Do Checklist',          p: 'V10', meta: 'Pre-crusade items', due: 'OK', dueClass: 'ok', slug: 'must-do' },
 ];
 
 const DAILY: FormRow[] = [
