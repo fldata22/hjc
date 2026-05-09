@@ -1548,3 +1548,66 @@ export function useDeleteOutreachActivity() {
     },
   });
 }
+
+// === Media mentions ===
+export type MediaKind = 'newspaper' | 'radio' | 'tv' | 'online' | 'social' | 'other';
+export type MediaSentiment = 'positive' | 'neutral' | 'negative';
+
+export interface MediaMention {
+  id: number;
+  crusade_id: number;
+  mentioned_on: string;
+  kind: MediaKind;
+  outlet: string;
+  headline: string;
+  url: string | null;
+  sentiment: MediaSentiment | null;
+  summary: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
+export function useMediaMentions(filters: { kind?: MediaKind; sentiment?: MediaSentiment } = {}) {
+  const params = new URLSearchParams();
+  if (filters.kind) params.set('kind', filters.kind);
+  if (filters.sentiment) params.set('sentiment', filters.sentiment);
+  const qs = params.toString();
+  return useQuery({
+    queryKey: ['media-mentions', filters],
+    queryFn: () =>
+      apiFetch<{ data: MediaMention[] }>(`/media-mentions${qs ? '?' + qs : ''}`).then((r) => r.data),
+  });
+}
+
+export function useCreateMediaMention() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (body: {
+      crusade_id: number;
+      mentioned_on: string;
+      kind: MediaKind;
+      outlet: string;
+      headline: string;
+      url?: string | null;
+      sentiment?: MediaSentiment | null;
+      summary?: string | null;
+    }) =>
+      apiFetch<{ data: MediaMention }>('/media-mentions', {
+        method: 'POST',
+        body: JSON.stringify(body),
+      }).then((r) => r.data),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['media-mentions'] });
+    },
+  });
+}
+
+export function useDeleteMediaMention() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (id: number) => apiFetch(`/media-mentions/${id}`, { method: 'DELETE' }),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['media-mentions'] });
+    },
+  });
+}
