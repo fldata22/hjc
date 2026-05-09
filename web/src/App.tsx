@@ -16,6 +16,7 @@ import { CPCForm } from './screens/forms/CPCForm';
 import { DailyExpensesForm } from './screens/forms/DailyExpensesForm';
 import { AwarenessSurveyForm } from './screens/forms/AwarenessSurveyForm';
 import { TownProfileScreen } from './screens/forms/TownProfileScreen';
+import { VenueInspectionForm } from './screens/forms/VenueInspectionForm';
 
 export default function App() {
   return (
@@ -32,6 +33,7 @@ export default function App() {
       <Route path="/forms/daily-expenses" element={<RequireAuth><DailyExpensesForm /></RequireAuth>} />
       <Route path="/forms/awareness-survey" element={<RequireAuth><AwarenessSurveyForm /></RequireAuth>} />
       <Route path="/forms/town-profile" element={<RequireAuth><TownProfileScreen /></RequireAuth>} />
+      <Route path="/forms/venue-inspection" element={<RequireAuth><VenueInspectionForm /></RequireAuth>} />
       <Route path="/forms/:slug" element={<RequireAuth><Placeholder title="Form" /></RequireAuth>} />
       <Route path="/pillars" element={<RequireAuth><PillarsScreen /></RequireAuth>} />
       <Route path="/weekly" element={<RequireAuth><WeeklyScreen /></RequireAuth>} />
