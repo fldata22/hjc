@@ -21,6 +21,7 @@ import { MustDoChecklistScreen } from './screens/forms/MustDoChecklistScreen';
 import { StakeholdersScreen } from './screens/forms/StakeholdersScreen';
 import { PledgeMeetingsScreen } from './screens/forms/PledgeMeetingsScreen';
 import { WorkersScreen } from './screens/forms/WorkersScreen';
+import { PermitsScreen } from './screens/forms/PermitsScreen';
 
 export default function App() {
   return (
@@ -42,6 +43,7 @@ export default function App() {
       <Route path="/forms/stakeholders" element={<RequireAuth><StakeholdersScreen /></RequireAuth>} />
       <Route path="/forms/pledge-meetings" element={<RequireAuth><PledgeMeetingsScreen /></RequireAuth>} />
       <Route path="/forms/workers" element={<RequireAuth><WorkersScreen /></RequireAuth>} />
+      <Route path="/forms/permits" element={<RequireAuth><PermitsScreen /></RequireAuth>} />
       <Route path="/forms/:slug" element={<RequireAuth><Placeholder title="Form" /></RequireAuth>} />
       <Route path="/pillars" element={<RequireAuth><PillarsScreen /></RequireAuth>} />
       <Route path="/weekly" element={<RequireAuth><WeeklyScreen /></RequireAuth>} />

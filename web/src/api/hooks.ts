@@ -971,3 +971,90 @@ export function useDeleteWorker() {
     },
   });
 }
+
+// === Permits ===
+export type PermitStatus = 'in_review' | 'approved' | 'rejected';
+
+export interface Permit {
+  id: number;
+  crusade_id: number;
+  name: string;
+  agency: string;
+  status: PermitStatus;
+  due_on: string | null;
+  signed_on: string | null;
+  notes: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface PermitsResponse {
+  data: Permit[];
+  meta: {
+    status_counts: Record<PermitStatus, number>;
+  };
+}
+
+export function usePermits() {
+  return useQuery({
+    queryKey: ['permits'],
+    queryFn: () => apiFetch<PermitsResponse>('/permits'),
+  });
+}
+
+export function useCreatePermit() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (body: {
+      crusade_id: number;
+      name: string;
+      agency: string;
+      status?: PermitStatus;
+      due_on?: string | null;
+      signed_on?: string | null;
+      notes?: string | null;
+    }) =>
+      apiFetch<{ data: Permit }>('/permits', {
+        method: 'POST',
+        body: JSON.stringify(body),
+      }).then((r) => r.data),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['permits'] });
+    },
+  });
+}
+
+export function useUpdatePermit() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: ({ id, body }: {
+      id: number;
+      body: Partial<{
+        name: string;
+        agency: string;
+        status: PermitStatus;
+        due_on: string | null;
+        signed_on: string | null;
+        notes: string | null;
+      }>;
+    }) =>
+      apiFetch<{ data: Permit }>(`/permits/${id}`, {
+        method: 'PATCH',
+        body: JSON.stringify(body),
+      }).then((r) => r.data),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['permits'] });
+    },
+  });
+}
+
+export function useDeletePermit() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (id: number) =>
+      apiFetch(`/permits/${id}`, { method: 'DELETE' }),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['permits'] });
+    },
+  });
+}
