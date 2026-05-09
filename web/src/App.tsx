@@ -26,6 +26,7 @@ import { SoundLightingScreen } from './screens/forms/SoundLightingScreen';
 import { SeatingPlanScreen } from './screens/forms/SeatingPlanScreen';
 import { DailyAttendanceScreen } from './screens/forms/DailyAttendanceScreen';
 import { DailyDecisionsScreen } from './screens/forms/DailyDecisionsScreen';
+import { DailyProgramScreen } from './screens/forms/DailyProgramScreen';
 
 export default function App() {
   return (
@@ -52,6 +53,7 @@ export default function App() {
       <Route path="/forms/seating-plan" element={<RequireAuth><SeatingPlanScreen /></RequireAuth>} />
       <Route path="/forms/daily-attendance" element={<RequireAuth><DailyAttendanceScreen /></RequireAuth>} />
       <Route path="/forms/daily-decisions" element={<RequireAuth><DailyDecisionsScreen /></RequireAuth>} />
+      <Route path="/forms/daily-program" element={<RequireAuth><DailyProgramScreen /></RequireAuth>} />
       <Route path="/forms/:slug" element={<RequireAuth><Placeholder title="Form" /></RequireAuth>} />
       <Route path="/pillars" element={<RequireAuth><PillarsScreen /></RequireAuth>} />
       <Route path="/weekly" element={<RequireAuth><WeeklyScreen /></RequireAuth>} />

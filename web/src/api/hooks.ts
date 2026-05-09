@@ -1262,3 +1262,61 @@ export function useDeleteDailyDecision() {
     },
   });
 }
+
+// === Daily programs ===
+export interface DailyProgram {
+  id: number;
+  crusade_id: number;
+  occurred_on: string;
+  speaker: string | null;
+  topic: string | null;
+  duration_minutes: number | null;
+  key_moments: string | null;
+  narrative: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
+export function useDailyPrograms(filters: { date_from?: string; date_to?: string } = {}) {
+  const params = new URLSearchParams();
+  if (filters.date_from) params.set('date_from', filters.date_from);
+  if (filters.date_to) params.set('date_to', filters.date_to);
+  const qs = params.toString();
+  return useQuery({
+    queryKey: ['daily-programs', filters],
+    queryFn: () =>
+      apiFetch<{ data: DailyProgram[] }>(`/daily-programs${qs ? '?' + qs : ''}`).then((r) => r.data),
+  });
+}
+
+export function useCreateDailyProgram() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (body: {
+      crusade_id: number;
+      occurred_on: string;
+      speaker?: string | null;
+      topic?: string | null;
+      duration_minutes?: number | null;
+      key_moments?: string | null;
+      narrative?: string | null;
+    }) =>
+      apiFetch<{ data: DailyProgram }>('/daily-programs', {
+        method: 'POST',
+        body: JSON.stringify(body),
+      }).then((r) => r.data),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['daily-programs'] });
+    },
+  });
+}
+
+export function useDeleteDailyProgram() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (id: number) => apiFetch(`/daily-programs/${id}`, { method: 'DELETE' }),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['daily-programs'] });
+    },
+  });
+}
