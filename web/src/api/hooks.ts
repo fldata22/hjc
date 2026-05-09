@@ -386,3 +386,58 @@ export function useCreateExpenseTransaction() {
     },
   });
 }
+
+// === Pastor identifications ===
+export interface PastorIdentificationRow {
+  id: number;
+  pastor_id: number;
+  category: string;
+  sub_role: string | null;
+  assigned_at: string;
+  assigned_by_user_id: number;
+  created_at: string;
+  updated_at: string;
+}
+
+export function useCreatePastor() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (body: {
+      crusade_id: number;
+      full_name: string;
+      zone_id: number | null;
+      phone: string | null;
+      email: string | null;
+      address: string | null;
+      pastor_since: number | null;
+      pipeline_stage?: 'identified' | 'engaged' | 'committed' | 'active' | 'champion';
+    }) =>
+      apiFetch<{ data: Pastor }>('/pastors', {
+        method: 'POST',
+        body: JSON.stringify(body),
+      }).then((r) => r.data),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['pastors'] });
+      qc.invalidateQueries({ queryKey: ['pastor-stage-counts'] });
+      qc.invalidateQueries({ queryKey: ['mission-control'] });
+    },
+  });
+}
+
+export function useCreatePastorIdentification() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: ({ pastorId, body }: {
+      pastorId: number;
+      body: { category: string; sub_role: string | null; assigned_at: string };
+    }) =>
+      apiFetch<{ data: PastorIdentificationRow }>(
+        `/pastors/${pastorId}/identifications`,
+        { method: 'POST', body: JSON.stringify(body) },
+      ).then((r) => r.data),
+    onSuccess: (_data, vars) => {
+      qc.invalidateQueries({ queryKey: ['pastor', vars.pastorId] });
+      qc.invalidateQueries({ queryKey: ['pastors'] });
+    },
+  });
+}
