@@ -26,6 +26,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::put('/seating-plan', [\App\Http\Controllers\Api\SeatingPlanController::class, 'upsert']);
     Route::apiResource('daily-attendance', \App\Http\Controllers\Api\DailyAttendanceController::class)->parameters(['daily-attendance' => 'dailyAttendance']);
     Route::apiResource('daily-decisions', \App\Http\Controllers\Api\DailyDecisionController::class);
+    Route::apiResource('daily-programs', \App\Http\Controllers\Api\DailyProgramController::class);
     Route::apiResource('pledge-meetings', \App\Http\Controllers\Api\PledgeMeetingController::class);
     Route::post('/pledge-meetings/{pledgeMeeting}/attendances', [\App\Http\Controllers\Api\PledgeMeetingAttendanceController::class, 'store']);
     Route::post('/pledge-meetings/{pledgeMeeting}/pledges', [\App\Http\Controllers\Api\PledgeMeetingPledgesController::class, 'store']);
