@@ -514,3 +514,69 @@ export function useUpdateTownProfile() {
     },
   });
 }
+
+// === Venue inspections ===
+export interface VenueInspection {
+  id: number;
+  crusade_id: number;
+  inspected_at: string;
+  inspector_name: string;
+  capacity_verified: boolean;
+  exits_clear: boolean;
+  power_tested: boolean;
+  sound_tested: boolean;
+  permits_status: string | null;
+  photo_url: string | null;
+  notes: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
+export function useVenueInspections(filters: { date_from?: string; date_to?: string } = {}) {
+  const params = new URLSearchParams();
+  if (filters.date_from) params.set('date_from', filters.date_from);
+  if (filters.date_to) params.set('date_to', filters.date_to);
+  const qs = params.toString();
+  return useQuery({
+    queryKey: ['venue-inspections', filters],
+    queryFn: () =>
+      apiFetch<{ data: VenueInspection[] }>(`/venue-inspections${qs ? '?' + qs : ''}`).then((r) => r.data),
+  });
+}
+
+export function useCreateVenueInspection() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (input: {
+      crusade_id: number;
+      inspected_at: string;
+      inspector_name: string;
+      capacity_verified: boolean;
+      exits_clear: boolean;
+      power_tested: boolean;
+      sound_tested: boolean;
+      permits_status: string | null;
+      notes: string | null;
+      photo: Blob | null;
+    }) => {
+      const fd = new FormData();
+      fd.set('crusade_id', String(input.crusade_id));
+      fd.set('inspected_at', input.inspected_at);
+      fd.set('inspector_name', input.inspector_name);
+      fd.set('capacity_verified', input.capacity_verified ? '1' : '0');
+      fd.set('exits_clear', input.exits_clear ? '1' : '0');
+      fd.set('power_tested', input.power_tested ? '1' : '0');
+      fd.set('sound_tested', input.sound_tested ? '1' : '0');
+      if (input.permits_status) fd.set('permits_status', input.permits_status);
+      if (input.notes) fd.set('notes', input.notes);
+      if (input.photo) fd.set('photo', input.photo, 'inspection.jpg');
+      return apiFetch<{ data: VenueInspection }>('/venue-inspections', {
+        method: 'POST',
+        body: fd,
+      }).then((r) => r.data);
+    },
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['venue-inspections'] });
+    },
+  });
+}
