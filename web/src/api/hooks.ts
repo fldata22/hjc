@@ -441,3 +441,76 @@ export function useCreatePastorIdentification() {
     },
   });
 }
+
+// === Town profiles ===
+export interface TownProfile {
+  id: number;
+  zone_id: number;
+  language_primary: string | null;
+  language_secondary: string | null;
+  religion_primary: string | null;
+  religion_mix_notes: string | null;
+  prior_crusade_year: number | null;
+  prior_crusade_notes: string | null;
+  key_contacts: string | null;
+  notes: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
+export function useTownProfiles() {
+  return useQuery({
+    queryKey: ['town-profiles'],
+    queryFn: () => apiFetch<{ data: TownProfile[] }>('/town-profiles').then((r) => r.data),
+  });
+}
+
+export function useCreateTownProfile() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (body: {
+      zone_id: number;
+      language_primary?: string | null;
+      language_secondary?: string | null;
+      religion_primary?: string | null;
+      religion_mix_notes?: string | null;
+      prior_crusade_year?: number | null;
+      prior_crusade_notes?: string | null;
+      key_contacts?: string | null;
+      notes?: string | null;
+    }) =>
+      apiFetch<{ data: TownProfile }>('/town-profiles', {
+        method: 'POST',
+        body: JSON.stringify(body),
+      }).then((r) => r.data),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['town-profiles'] });
+    },
+  });
+}
+
+export function useUpdateTownProfile() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: ({ id, body }: {
+      id: number;
+      body: Partial<{
+        language_primary: string | null;
+        language_secondary: string | null;
+        religion_primary: string | null;
+        religion_mix_notes: string | null;
+        prior_crusade_year: number | null;
+        prior_crusade_notes: string | null;
+        key_contacts: string | null;
+        notes: string | null;
+      }>;
+    }) =>
+      apiFetch<{ data: TownProfile }>(`/town-profiles/${id}`, {
+        method: 'PATCH',
+        body: JSON.stringify(body),
+      }).then((r) => r.data),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['town-profiles'] });
+    },
+  });
+}
