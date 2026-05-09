@@ -1,45 +1,9 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ResponsiveShell, AppBar, TabBar, Drawer } from './Shell';
-import { getRecords, subscribe } from '../../lib/submitQueue';
+import { useBudgetCategories, useBudgetSummary, useExpenseTransactions } from '../../api/hooks';
 import { ReceiptModal } from '../forms/ReceiptModal';
 import './app.css';
-
-type ExpenseEntry = {
-  id?: string;
-  date: string;
-  time: string;
-  vendor: string;
-  category: 'transport' | 'printing' | 'permits' | 'food' | 'venue' | 'materials' | 'other';
-  amount: number | '';
-  receiptNumber: string;
-  approvedBy: string;
-  notes: string;
-  receiptPhoto?: string | null;
-};
-
-const FORM_SLUG = 'daily-expenses';
-const STATIC_BUDGET = 84000;
-
-const CATEGORIES: Array<{ value: ExpenseEntry['category']; label: string }> = [
-  { value: 'transport', label: 'Transport' },
-  { value: 'printing', label: 'Printing' },
-  { value: 'permits', label: 'Permits' },
-  { value: 'food', label: 'Food' },
-  { value: 'venue', label: 'Venue' },
-  { value: 'materials', label: 'Materials' },
-  { value: 'other', label: 'Other' },
-];
-
-const LETTER_FOR_CATEGORY: Record<ExpenseEntry['category'], string> = {
-  transport: 'T',
-  printing: 'P',
-  permits: 'R',
-  food: 'F',
-  venue: 'V',
-  materials: 'M',
-  other: 'O',
-};
 
 function formatRelativeDate(iso: string): string {
   const today = new Date().toISOString().slice(0, 10);
@@ -54,63 +18,54 @@ export function BudgetScreen() {
   const navigate = useNavigate();
   const [drawer, setDrawer] = useState(false);
   const [openReceipt, setOpenReceipt] = useState<string | null>(null);
-  const [allEntries, setAllEntries] = useState<ExpenseEntry[]>(() =>
-    getRecords<ExpenseEntry>(FORM_SLUG),
+
+  const [dateRange] = useState(() => ({
+    today: new Date().toISOString().slice(0, 10),
+    thirtyDaysAgo: new Date(Date.now() - 30 * 86_400_000).toISOString().slice(0, 10),
+  }));
+  const { data: page } = useExpenseTransactions(dateRange.thirtyDaysAgo, dateRange.today);
+  const { data: categories } = useBudgetCategories();
+  const { data: summary } = useBudgetSummary();
+
+  const entries = useMemo(() => page?.data ?? [], [page]);
+
+  const categoryById = useMemo(
+    () => new Map((categories ?? []).map((c) => [c.id, c] as const)),
+    [categories],
   );
 
-  useEffect(() => {
-    const unsubscribe = subscribe(() => {
-      setAllEntries(getRecords<ExpenseEntry>(FORM_SLUG));
-    });
-    return () => { unsubscribe(); };
-  }, []);
-
-  const totalSpent = useMemo(
-    () => allEntries.reduce((sum, e) => sum + (typeof e.amount === 'number' ? e.amount : 0), 0),
-    [allEntries],
-  );
-
-  const sumByCategory = useMemo(() => {
-    const sums: Record<ExpenseEntry['category'], number> = {
-      transport: 0, printing: 0, permits: 0, food: 0, venue: 0, materials: 0, other: 0,
-    };
-    for (const e of allEntries) {
-      if (typeof e.amount === 'number') sums[e.category] += e.amount;
-    }
-    return sums;
-  }, [allEntries]);
-
-  const categoriesWithSpend = useMemo(
+  const recent = useMemo(
     () =>
-      CATEGORIES
-        .map((c) => ({ ...c, amount: sumByCategory[c.value] }))
-        .filter((c) => c.amount > 0)
-        .sort((a, b) => b.amount - a.amount),
-    [sumByCategory],
+      [...entries]
+        .sort((a, b) => {
+          if (a.occurred_on !== b.occurred_on) return b.occurred_on.localeCompare(a.occurred_on);
+          return b.created_at.localeCompare(a.created_at);
+        })
+        .slice(0, 5),
+    [entries],
   );
+
+  const totalBudget = summary ? Number(summary.total_budget) : 0;
+  const totalSpent = summary ? Number(summary.spent) : 0;
+  const overBudget = totalSpent > totalBudget;
+  const remainingOrOver = overBudget
+    ? `₵${Math.round(totalSpent - totalBudget).toLocaleString()} over`
+    : `₵${Math.round(Math.max(0, totalBudget - totalSpent)).toLocaleString()} left`;
+
+  const categoriesWithSpend = useMemo(() => {
+    if (!summary) return [];
+    return summary.categories
+      .map((c) => ({ id: c.id, label: c.name, amount: Number(c.spent) }))
+      .filter((c) => c.amount > 0)
+      .sort((a, b) => b.amount - a.amount);
+  }, [summary]);
 
   const maxCategoryAmount = useMemo(
     () => Math.max(0, ...categoriesWithSpend.map((c) => c.amount)),
     [categoriesWithSpend],
   );
 
-  const recent = useMemo(
-    () =>
-      [...allEntries]
-        .sort((a, b) => {
-          if (a.date !== b.date) return b.date.localeCompare(a.date);
-          return b.time.localeCompare(a.time);
-        })
-        .slice(0, 5),
-    [allEntries],
-  );
-
-  const overBudget = totalSpent > STATIC_BUDGET;
-  const remainingOrOver = overBudget
-    ? `₵${(totalSpent - STATIC_BUDGET).toLocaleString()} over`
-    : `₵${(STATIC_BUDGET - totalSpent).toLocaleString()} left`;
-
-  const isEmpty = allEntries.length === 0;
+  const isEmpty = entries.length === 0 && categoriesWithSpend.length === 0;
 
   return (
     <ResponsiveShell active="home">
@@ -141,14 +96,14 @@ export function BudgetScreen() {
         <div className="composite">
           <div className="label">Total spent · all-time</div>
           <div className="row">
-            <div className="num serif">₵{totalSpent.toLocaleString()}</div>
+            <div className="num serif">₵{Math.round(totalSpent).toLocaleString()}</div>
             <div className="delta">
               <b>{remainingOrOver}</b>
-              of ₵{STATIC_BUDGET.toLocaleString()} budget
+              of ₵{Math.round(totalBudget).toLocaleString()} budget
             </div>
           </div>
           <div className="track">
-            <i style={{ width: `${Math.min(100, (totalSpent / STATIC_BUDGET) * 100)}%` }}/>
+            <i style={{ width: `${totalBudget > 0 ? Math.min(100, (totalSpent / totalBudget) * 100) : 0}%` }}/>
           </div>
         </div>
 
@@ -186,7 +141,7 @@ export function BudgetScreen() {
               const isDominating = totalSpent > 0 && cat.amount / totalSpent > 0.25;
               return (
                 <div
-                  key={cat.value}
+                  key={cat.id}
                   style={{
                     display: 'grid',
                     gridTemplateColumns: '24px 1fr auto',
@@ -200,7 +155,7 @@ export function BudgetScreen() {
                     className="serif"
                     style={{ fontSize: 18, color: 'var(--ink-3)', lineHeight: 1 }}
                   >
-                    {LETTER_FOR_CATEGORY[cat.value]}
+                    {cat.label.charAt(0).toUpperCase()}
                   </span>
                   <div>
                     <div style={{ fontSize: 13, fontWeight: 500, color: 'var(--ink)', marginBottom: 6 }}>
@@ -232,7 +187,7 @@ export function BudgetScreen() {
                       letterSpacing: '-0.03em',
                     }}
                   >
-                    ₵{cat.amount.toLocaleString()}
+                    ₵{Math.round(cat.amount).toLocaleString()}
                   </span>
                 </div>
               );
@@ -240,26 +195,26 @@ export function BudgetScreen() {
           </div>
         )}
 
-        {!isEmpty && (
+        {recent.length > 0 && (
           <>
             <div className="sec">
               <h2 className="serif">Recent <em>· 5 latest</em></h2>
-              <span className="more">{allEntries.length} total</span>
+              <span className="more">{entries.length} in last 30 days</span>
             </div>
 
             <div style={{ padding: '0 20px' }}>
-              {recent.map((e, i) => {
-                const categoryLabel = CATEGORIES.find((c) => c.value === e.category)?.label ?? e.category;
+              {recent.map((e) => {
+                const cat = e.budget_category_id != null ? categoryById.get(e.budget_category_id) : null;
                 return (
-                  <div key={e.id ?? `${e.date}-${e.time}-${i}`} className="form-list-row">
+                  <div key={e.id} className="form-list-row">
                     <div>
-                      <div className="name">{e.vendor}</div>
+                      <div className="name">{e.description}</div>
                       <div className="sub" style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}>
-                        <span>{categoryLabel}{e.receiptNumber && ` · ${e.receiptNumber}`}</span>
-                        {e.receiptPhoto && (
+                        <span>{cat?.name ?? 'Uncategorized'}</span>
+                        {e.receipt_photo_url && (
                           <button
                             type="button"
-                            onClick={(ev) => { ev.stopPropagation(); setOpenReceipt(e.receiptPhoto ?? null); }}
+                            onClick={(ev) => { ev.stopPropagation(); setOpenReceipt(e.receipt_photo_url); }}
                             aria-label="View receipt"
                             style={{ background: 'transparent', border: 0, padding: 0, fontSize: 14, cursor: 'pointer', lineHeight: 1 }}
                           >
@@ -270,10 +225,10 @@ export function BudgetScreen() {
                     </div>
                     <div className="right">
                       <div style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: 13, fontWeight: 600, color: 'var(--ink)' }}>
-                        ₵{typeof e.amount === 'number' ? e.amount.toLocaleString() : '—'}
+                        ₵{Number(e.amount).toLocaleString()}
                       </div>
                       <div style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: 11, color: 'var(--ink-3)' }}>
-                        {e.time} · {formatRelativeDate(e.date)}
+                        {formatRelativeDate(e.occurred_on)}
                       </div>
                     </div>
                   </div>
