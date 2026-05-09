@@ -10,7 +10,7 @@ import {
   useDeleteReminder,
 } from '../../api/hooks';
 import { useAuth } from '../../auth/useAuth';
-import { useToast } from './toast-context';
+import { useToast } from '../../lib/toast-context';
 import { relativeAgo } from '../../lib/dateHelpers';
 import './app.css';
 
@@ -70,7 +70,7 @@ export function HomeScreen() {
   const createReminder = useCreateReminder();
   const updateReminder = useUpdateReminder();
   const deleteReminder = useDeleteReminder();
-  const { showToast } = useToast();
+  const toast = useToast();
   const [reminderText, setReminderText] = useState('');
   const [reminderDue, setReminderDue] = useState('');
 
@@ -85,7 +85,7 @@ export function HomeScreen() {
       setReminderText('');
       setReminderDue('');
     } catch {
-      showToast('Couldn’t add reminder', 'error');
+      toast.show('Couldn’t add reminder', 'error');
     }
   };
 

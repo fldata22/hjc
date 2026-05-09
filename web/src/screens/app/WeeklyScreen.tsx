@@ -10,7 +10,7 @@ import {
   useSubmitWeeklyAssessment,
   type Power,
 } from '../../api/hooks';
-import { useToast } from './toast-context';
+import { useToast } from '../../lib/toast-context';
 import './app.css';
 
 type RatingMap = Record<number, number>; // power_id -> 0..10
@@ -33,7 +33,7 @@ export function WeeklyScreen() {
   const replaceReadingsMutation = useReplaceReadings();
   const updateMutation = useUpdateWeeklyAssessment();
   const submitMutation = useSubmitWeeklyAssessment();
-  const { showToast } = useToast();
+  const toast = useToast();
 
   const [ratings, setRatings] = useState<RatingMap>({});
   const [touched, setTouched] = useState<Set<number>>(new Set());
@@ -93,14 +93,14 @@ export function WeeklyScreen() {
         week_number: weekly.week_number + 1,
         prompted_at: new Date().toISOString(),
       });
-      showToast(`Started week ${weekly.week_number + 1}`);
+      toast.show(`Started week ${weekly.week_number + 1}`);
       setRatings({});
       setTouched(new Set());
       setNotes('');
       setDecisionsNeeded('');
       setSavedAt(null);
     } catch {
-      showToast('Couldn’t start a new week', 'error');
+      toast.show('Couldn’t start a new week', 'error');
     }
   };
 
@@ -119,14 +119,14 @@ export function WeeklyScreen() {
       return a.id;
     } catch (e) {
       const msg = e instanceof Error ? e.message : 'Save failed';
-      showToast(msg, 'error');
+      toast.show(msg, 'error');
       return null;
     }
   };
 
   const handleSave = async () => {
     const id = await persist();
-    if (id !== null) showToast('Saved');
+    if (id !== null) toast.show('Saved');
   };
 
   const handleSubmit = async () => {
@@ -134,10 +134,10 @@ export function WeeklyScreen() {
     if (id === null) return;
     try {
       await submitMutation.mutateAsync(id);
-      showToast(`Week ${weekly?.week_number ?? ''} submitted`);
+      toast.show(`Week ${weekly?.week_number ?? ''} submitted`);
     } catch (e) {
       const msg = e instanceof Error ? e.message : 'Submit failed';
-      showToast(msg, 'error');
+      toast.show(msg, 'error');
     }
   };
 
