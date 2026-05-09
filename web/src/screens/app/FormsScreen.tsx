@@ -15,7 +15,7 @@ const PARTICIPATION: FormRow[] = [
 
 const AWARENESS: FormRow[] = [
   { n: 'Awareness Survey · Field',  p: 'A9',    meta: '500 posters printed · 4d ago', due: 'MON · 5D', dueClass: 'warn', slug: 'awareness-survey' },
-  { n: 'PPPPPPPAVEDDD Town Name',   p: 'A·all', meta: 'Population baseline · 12d',    due: 'DONE',     dueClass: 'ok',   slug: 'town-name' },
+  { n: 'Town Profile',              p: 'A·all', meta: 'Population baseline · 12d',    due: 'DONE',     dueClass: 'ok',   slug: 'town-profile' },
   { n: 'Publicity & Video Campaign', p: 'D13',  meta: 'On track · today',             due: 'OK',       dueClass: 'ok',   slug: 'publicity' },
 ];
 
