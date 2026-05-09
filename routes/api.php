@@ -32,6 +32,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::apiResource('outreach-activities', \App\Http\Controllers\Api\OutreachActivityController::class);
     Route::apiResource('media-mentions', \App\Http\Controllers\Api\MediaMentionController::class);
     Route::apiResource('land-elders', \App\Http\Controllers\Api\LandElderController::class);
+    Route::apiResource('donors', \App\Http\Controllers\Api\DonorController::class);
     Route::apiResource('pledge-meetings', \App\Http\Controllers\Api\PledgeMeetingController::class);
     Route::post('/pledge-meetings/{pledgeMeeting}/attendances', [\App\Http\Controllers\Api\PledgeMeetingAttendanceController::class, 'store']);
     Route::post('/pledge-meetings/{pledgeMeeting}/pledges', [\App\Http\Controllers\Api\PledgeMeetingPledgesController::class, 'store']);
