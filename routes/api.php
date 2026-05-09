@@ -20,6 +20,8 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::apiResource('venue-inspections', \App\Http\Controllers\Api\VenueInspectionController::class);
     Route::apiResource('must-do-items', \App\Http\Controllers\Api\MustDoItemController::class);
     Route::apiResource('workers', \App\Http\Controllers\Api\WorkerController::class);
+    Route::get('/sound-lighting-plan', [\App\Http\Controllers\Api\SoundLightingPlanController::class, 'show']);
+    Route::put('/sound-lighting-plan', [\App\Http\Controllers\Api\SoundLightingPlanController::class, 'upsert']);
     Route::apiResource('pledge-meetings', \App\Http\Controllers\Api\PledgeMeetingController::class);
     Route::post('/pledge-meetings/{pledgeMeeting}/attendances', [\App\Http\Controllers\Api\PledgeMeetingAttendanceController::class, 'store']);
     Route::post('/pledge-meetings/{pledgeMeeting}/pledges', [\App\Http\Controllers\Api\PledgeMeetingPledgesController::class, 'store']);
