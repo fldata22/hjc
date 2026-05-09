@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 
 class Zone extends Model
 {
@@ -15,5 +16,10 @@ class Zone extends Model
     public function crusade(): BelongsTo
     {
         return $this->belongsTo(Crusade::class);
+    }
+
+    public function townProfile(): HasOne
+    {
+        return $this->hasOne(TownProfile::class);
     }
 }
