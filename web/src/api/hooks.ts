@@ -287,3 +287,102 @@ export function useCreateCommitteeMember() {
     },
   });
 }
+
+// === Budget categories + transactions + summary ===
+export interface BudgetCategory {
+  id: number;
+  crusade_id: number;
+  name: string;
+  allocated_amount: string;
+  order_index: number;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface BudgetTransaction {
+  id: number;
+  crusade_id: number;
+  budget_category_id: number | null;
+  description: string;
+  occurred_on: string;
+  kind: 'income' | 'expense';
+  amount: string;
+  receipt_photo_url: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface BudgetSummary {
+  total_budget: string;
+  income: string;
+  spent: string;
+  committed: string;
+  gap_to_target: string;
+  pct_spent_of_total: string;
+  categories: Array<{
+    id: number;
+    name: string;
+    allocated_amount: string;
+    spent: string;
+    pct_spent: string;
+  }>;
+}
+
+export function useBudgetCategories() {
+  return useQuery({
+    queryKey: ['budget-categories'],
+    queryFn: () => apiFetch<{ data: BudgetCategory[] }>('/budget-categories').then((r) => r.data),
+  });
+}
+
+export function useExpenseTransactions(dateFrom: string, dateTo: string) {
+  return useQuery({
+    queryKey: ['budget-transactions', 'expense', dateFrom, dateTo],
+    queryFn: () =>
+      apiFetch<{
+        data: BudgetTransaction[];
+        meta: { current_page: number; total: number; per_page: number; last_page: number };
+      }>(
+        `/budget-transactions?kind=expense&date_from=${dateFrom}&date_to=${dateTo}&per_page=100`,
+      ),
+  });
+}
+
+export function useBudgetSummary() {
+  return useQuery({
+    queryKey: ['budget-summary'],
+    queryFn: () => apiFetch<{ data: BudgetSummary }>('/budget/summary').then((r) => r.data),
+  });
+}
+
+export function useCreateExpenseTransaction() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (input: {
+      crusade_id: number;
+      budget_category_id: number | null;
+      description: string;
+      occurred_on: string;
+      amount: number;
+      receipt_photo: Blob | null;
+    }) => {
+      const fd = new FormData();
+      fd.set('crusade_id', String(input.crusade_id));
+      if (input.budget_category_id != null) fd.set('budget_category_id', String(input.budget_category_id));
+      fd.set('description', input.description);
+      fd.set('occurred_on', input.occurred_on);
+      fd.set('kind', 'expense');
+      fd.set('amount', String(input.amount));
+      if (input.receipt_photo) fd.set('receipt_photo', input.receipt_photo, 'receipt.jpg');
+      return apiFetch<{ data: BudgetTransaction }>('/budget-transactions', {
+        method: 'POST',
+        body: fd,
+      }).then((r) => r.data);
+    },
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['budget-transactions'] });
+      qc.invalidateQueries({ queryKey: ['budget-summary'] });
+      qc.invalidateQueries({ queryKey: ['mission-control'] });
+    },
+  });
+}
