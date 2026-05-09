@@ -1,15 +1,8 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ResponsiveShell, AppBar, TabBar, Drawer } from './Shell';
-import { getRecords, subscribe } from '../../lib/submitQueue';
+import { usePastors, useCommitteeMembers } from '../../api/hooks';
 import './app.css';
-
-// Minimal local types — only the fields PeopleScreen reads. The forms own
-// the canonical types (PCMRecord/BOTRecord/CPCRecord). Lift to a shared
-// types file if a third consumer ever needs them.
-type PCMRecord = { id?: string; fullName: string; role: string; phone: string };
-type BOTRecord = { id?: string; name: string; role: string; phone: string };
-type CPCRecord = { id?: string; fullName: string; role: string; phone: string };
 
 type PersonType = 'pcm' | 'bot' | 'cpc';
 
@@ -18,7 +11,7 @@ type Person = {
   role: string;
   phone: string;
   type: PersonType;
-  sourceId: string | undefined;
+  sourceId: number | string;
 };
 
 type ChipKey = 'all' | PersonType;
@@ -27,51 +20,46 @@ export function PeopleScreen() {
   const navigate = useNavigate();
   const [drawer, setDrawer] = useState(false);
 
-  const [pcmRecords, setPcmRecords] = useState<PCMRecord[]>(() => getRecords<PCMRecord>('pcm'));
-  const [botRecords, setBotRecords] = useState<BOTRecord[]>(() => getRecords<BOTRecord>('bot'));
-  const [cpcRecords, setCpcRecords] = useState<CPCRecord[]>(() => getRecords<CPCRecord>('cpc'));
+  const { data: pastorPage } = usePastors({ per_page: 100 });
+  const { data: botMembers } = useCommitteeMembers('bot');
+  const { data: cpcMembers } = useCommitteeMembers('cpc');
 
   const [search, setSearch] = useState('');
   const [activeChip, setActiveChip] = useState<ChipKey>('all');
 
-  useEffect(() => {
-    const unsubscribe = subscribe(() => {
-      setPcmRecords(getRecords<PCMRecord>('pcm'));
-      setBotRecords(getRecords<BOTRecord>('bot'));
-      setCpcRecords(getRecords<CPCRecord>('cpc'));
-    });
-    return () => { unsubscribe(); };
-  }, []);
+  const pastors = useMemo(() => pastorPage?.data ?? [], [pastorPage]);
+  const bots = useMemo(() => botMembers ?? [], [botMembers]);
+  const cpcs = useMemo(() => cpcMembers ?? [], [cpcMembers]);
 
   const allPeople = useMemo<Person[]>(() => {
-    const pcms: Person[] = pcmRecords.map((r) => ({
-      name: r.fullName,
-      role: r.role,
-      phone: r.phone,
+    const pcm: Person[] = pastors.map((p) => ({
+      name: p.full_name,
+      role: '',
+      phone: p.phone ?? '',
       type: 'pcm',
-      sourceId: r.id,
+      sourceId: p.id,
     }));
-    const bots: Person[] = botRecords.map((r) => ({
-      name: r.name,
-      role: r.role,
-      phone: r.phone,
+    const bot: Person[] = bots.map((m) => ({
+      name: m.name,
+      role: m.role,
+      phone: m.phone ?? '',
       type: 'bot',
-      sourceId: r.id,
+      sourceId: m.id,
     }));
-    const cpcs: Person[] = cpcRecords.map((r) => ({
-      name: r.fullName,
-      role: r.role,
-      phone: r.phone,
+    const cpc: Person[] = cpcs.map((m) => ({
+      name: m.name,
+      role: m.role,
+      phone: m.phone ?? '',
       type: 'cpc',
-      sourceId: r.id,
+      sourceId: m.id,
     }));
-    return [...pcms, ...bots, ...cpcs].sort((a, b) => a.name.localeCompare(b.name));
-  }, [pcmRecords, botRecords, cpcRecords]);
+    return [...pcm, ...bot, ...cpc].sort((a, b) => a.name.localeCompare(b.name));
+  }, [pastors, bots, cpcs]);
 
   const totalPeople = allPeople.length;
-  const pcmCount = pcmRecords.length;
-  const botCount = botRecords.length;
-  const cpcCount = cpcRecords.length;
+  const pcmCount = pastors.length;
+  const botCount = bots.length;
+  const cpcCount = cpcs.length;
 
   const filteredPeople = useMemo(() => {
     const q = search.trim().toLowerCase();
@@ -186,10 +174,10 @@ export function PeopleScreen() {
               </div>
             ) : (
               <div style={{ padding: '0 20px' }}>
-                {filteredPeople.map((p, i) => (
+                {filteredPeople.map((p) => (
                   <button
                     type="button"
-                    key={`${p.type}-${p.sourceId ?? p.name}-${i}`}
+                    key={`${p.type}-${p.sourceId}`}
                     className="form-list-row"
                     onClick={() => navigate(`/forms/${p.type}`)}
                     style={{
@@ -204,7 +192,7 @@ export function PeopleScreen() {
                   >
                     <div>
                       <div className="name">{p.name}</div>
-                      <div className="sub">{p.role}</div>
+                      <div className="sub">{p.role || (p.type === 'pcm' ? 'Pastor' : '—')}</div>
                     </div>
                     <div className="right">
                       <span style={{
