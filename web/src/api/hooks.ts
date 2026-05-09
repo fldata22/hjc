@@ -1150,3 +1150,57 @@ export function useUpsertSeatingPlan() {
     },
   });
 }
+
+// === Daily attendance ===
+export interface DailyAttendance {
+  id: number;
+  crusade_id: number;
+  counted_on: string;
+  count: number;
+  estimation_method: string | null;
+  notes: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
+export function useDailyAttendance(filters: { date_from?: string; date_to?: string } = {}) {
+  const params = new URLSearchParams();
+  if (filters.date_from) params.set('date_from', filters.date_from);
+  if (filters.date_to) params.set('date_to', filters.date_to);
+  const qs = params.toString();
+  return useQuery({
+    queryKey: ['daily-attendance', filters],
+    queryFn: () =>
+      apiFetch<{ data: DailyAttendance[] }>(`/daily-attendance${qs ? '?' + qs : ''}`).then((r) => r.data),
+  });
+}
+
+export function useCreateDailyAttendance() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (body: {
+      crusade_id: number;
+      counted_on: string;
+      count: number;
+      estimation_method?: string | null;
+      notes?: string | null;
+    }) =>
+      apiFetch<{ data: DailyAttendance }>('/daily-attendance', {
+        method: 'POST',
+        body: JSON.stringify(body),
+      }).then((r) => r.data),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['daily-attendance'] });
+    },
+  });
+}
+
+export function useDeleteDailyAttendance() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (id: number) => apiFetch(`/daily-attendance/${id}`, { method: 'DELETE' }),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['daily-attendance'] });
+    },
+  });
+}
