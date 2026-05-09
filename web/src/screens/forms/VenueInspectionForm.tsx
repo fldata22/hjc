@@ -12,6 +12,7 @@ import { ApiError } from '../../api/client';
 import { compressImage } from '../../lib/imageCompress';
 import { ReceiptModal } from './ReceiptModal';
 import { todayISO } from '../../lib/dateHelpers';
+import { useToast } from '../../lib/toast-context';
 import './forms.css';
 
 type Draft = {
@@ -61,6 +62,7 @@ const CHECKS: Array<{ key: 'capacity_verified' | 'exits_clear' | 'power_tested' 
 
 export function VenueInspectionForm() {
   const navigate = useNavigate();
+  const toast = useToast();
 
   const { data: crusade, isLoading: crusadeLoading, isError: crusadeError, refetch: refetchCrusade } = useCrusade();
   const { data: inspections, isLoading: inspectionsLoading, isError: inspectionsError, refetch: refetchList } = useVenueInspections();
@@ -94,7 +96,7 @@ export function VenueInspectionForm() {
       setDraft((d) => ({ ...d, photoPreview: dataUrl, photoBlob: blob }));
     } catch (err) {
       console.error('Photo compression failed:', err);
-      alert('Could not load that image. Try a different file.');
+      toast.show('Could not load that image. Try a different file.', 'error');
     } finally {
       setCapturing(false);
     }

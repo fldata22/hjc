@@ -14,6 +14,7 @@ import { ApiError } from '../../api/client';
 import { compressImage } from '../../lib/imageCompress';
 import { ReceiptModal } from './ReceiptModal';
 import { todayISO, last14Days, formatDayLabel } from '../../lib/dateHelpers';
+import { useToast } from '../../lib/toast-context';
 import './forms.css';
 
 type Draft = {
@@ -78,6 +79,7 @@ function composeDescription(vendor: string, notes: string): string {
 
 export function DailyExpensesForm() {
   const navigate = useNavigate();
+  const toast = useToast();
 
   const { data: crusade, isLoading: crusadeLoading, isError: crusadeError, refetch: refetchCrusade } = useCrusade();
   const { data: categories, isLoading: categoriesLoading, isError: categoriesError, refetch: refetchCategories } = useBudgetCategories();
@@ -121,7 +123,7 @@ export function DailyExpensesForm() {
       setDraft((d) => ({ ...d, receiptPreview: dataUrl, receiptBlob: blob }));
     } catch (err) {
       console.error('Receipt compression failed:', err);
-      alert('Could not load that image. Try a different file.');
+      toast.show('Could not load that image. Try a different file.', 'error');
     } finally {
       setCapturing(false);
     }

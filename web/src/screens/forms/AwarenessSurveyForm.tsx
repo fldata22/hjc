@@ -13,6 +13,7 @@ import {
 } from '../../api/hooks';
 import { ApiError } from '../../api/client';
 import { todayISO } from '../../lib/dateHelpers';
+import { useToast } from '../../lib/toast-context';
 import './forms.css';
 
 type RowDraft = {
@@ -97,6 +98,7 @@ function summarizeWaves(rows: AwarenessSurveyRow[]): WaveSummary[] {
 
 export function AwarenessSurveyForm() {
   const navigate = useNavigate();
+  const toast = useToast();
 
   const { data: crusade, isLoading: crusadeLoading, isError: crusadeError, refetch: refetchCrusade } = useCrusade();
   const { data: zones, isLoading: zonesLoading, isError: zonesError, refetch: refetchZones } = useZones();
@@ -196,7 +198,7 @@ export function AwarenessSurveyForm() {
       });
     }
     if (failures.length === 0) {
-      alert(`Wave ${waveNumber} logged · ${validRows.length} zone${validRows.length === 1 ? '' : 's'}`);
+      toast.show(`Wave ${waveNumber} logged · ${validRows.length} zone${validRows.length === 1 ? '' : 's'}`, 'success');
       closeForm();
       return;
     }
