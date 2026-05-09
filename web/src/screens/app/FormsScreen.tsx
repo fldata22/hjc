@@ -26,6 +26,7 @@ const VENUE: FormRow[] = [
   { n: 'Must-Do Checklist',          p: 'V10', meta: 'Pre-crusade items', due: 'OK', dueClass: 'ok', slug: 'must-do' },
   { n: 'Permits Tracker',            p: 'V11', meta: 'Police, fire, city, health', due: 'OK', dueClass: 'ok', slug: 'permits' },
   { n: 'Sound & Lighting Setup',     p: 'V12', meta: 'Providers + power plan',     due: 'OK', dueClass: 'ok', slug: 'sound-lighting' },
+  { n: 'Seating & Capacity Plan',    p: 'V13', meta: 'VIP / general / counsellor',  due: 'OK', dueClass: 'ok', slug: 'seating-plan' },
 ];
 
 const DAILY: FormRow[] = [
@@ -86,7 +87,7 @@ export function FormsScreen() {
               marginBottom: 10,
             }}
           >
-            16 forms · 4 categories
+            17 forms · 4 categories
           </div>
           <h1
             className="serif"
@@ -107,7 +108,7 @@ export function FormsScreen() {
         <FormGroup rows={AWARENESS}/>
 
         <div className="cat-group">
-          <div className="cat-head"><span>V · Venue & Logistics</span><span>4 forms</span></div>
+          <div className="cat-head"><span>V · Venue & Logistics</span><span>5 forms</span></div>
         </div>
         <FormGroup rows={VENUE}/>
 

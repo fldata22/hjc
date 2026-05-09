@@ -1107,3 +1107,46 @@ export function useUpsertSoundLightingPlan() {
     },
   });
 }
+
+// === Seating Plan (singleton) ===
+export interface SeatingPlan {
+  id: number;
+  crusade_id: number;
+  estimated_capacity: number | null;
+  vip_seating_count: number | null;
+  general_seating_count: number | null;
+  counsellor_area_count: number | null;
+  chair_source: string | null;
+  layout_notes: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
+export function useSeatingPlan() {
+  return useQuery({
+    queryKey: ['seating-plan'],
+    queryFn: () =>
+      apiFetch<{ data: SeatingPlan | null }>('/seating-plan').then((r) => r.data),
+  });
+}
+
+export function useUpsertSeatingPlan() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (body: Partial<{
+      estimated_capacity: number | null;
+      vip_seating_count: number | null;
+      general_seating_count: number | null;
+      counsellor_area_count: number | null;
+      chair_source: string | null;
+      layout_notes: string | null;
+    }>) =>
+      apiFetch<{ data: SeatingPlan }>('/seating-plan', {
+        method: 'PUT',
+        body: JSON.stringify(body),
+      }).then((r) => r.data),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['seating-plan'] });
+    },
+  });
+}
