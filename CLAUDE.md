@@ -26,3 +26,4 @@ This project lives in a multi-project workspace at `~/Projects/`. Other projects
 - `~/Projects/bishops-school/api` + `~/Projects/bishops-school/web` — Bishops School course tracker (Laravel + Next.js)
 - `~/Projects/voice-song-projection` — ProPresenter auto-advance tool (Python)
 - `~/Projects/pharmacist-evolve` — pharmacist mentoring site (Laravel+Vue)
+- `~/Projects/the-sahel-house/web` + `~/Projects/the-sahel-house/api` — The Sahel House luxury fashion site (CRA + React + TS ↔ Laravel)

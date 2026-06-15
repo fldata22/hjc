@@ -85,4 +85,24 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::patch('/conference-registrations/{conferenceRegistration}', [\App\Http\Controllers\Api\ConferenceRegistrationController::class, 'update']);
     Route::delete('/conference-registrations/{conferenceRegistration}', [\App\Http\Controllers\Api\ConferenceRegistrationController::class, 'destroy']);
     Route::get('/mission-control', [\App\Http\Controllers\Api\MissionControlController::class, 'show']);
+
+    // Worker shift scheduling (Tab 4)
+    Route::apiResource('worker-shifts', \App\Http\Controllers\Api\WorkerShiftController::class);
+
+    // Prayer groups & sessions (Tab 10)
+    Route::apiResource('prayer-groups', \App\Http\Controllers\Api\PrayerGroupController::class);
+    Route::get('/prayer-groups/{prayerGroup}/sessions', [\App\Http\Controllers\Api\PrayerSessionController::class, 'index']);
+    Route::post('/prayer-groups/{prayerGroup}/sessions', [\App\Http\Controllers\Api\PrayerSessionController::class, 'store']);
+    Route::patch('/prayer-groups/{prayerGroup}/sessions/{prayerSession}', [\App\Http\Controllers\Api\PrayerSessionController::class, 'update']);
+    Route::delete('/prayer-groups/{prayerGroup}/sessions/{prayerSession}', [\App\Http\Controllers\Api\PrayerSessionController::class, 'destroy']);
+
+    // Accommodation & welfare (Tab 8)
+    Route::apiResource('accommodations', \App\Http\Controllers\Api\AccommodationController::class);
+    Route::apiResource('welfare-items', \App\Http\Controllers\Api\WelfareItemController::class);
+
+    // Budget transaction approval (Tab 7)
+    Route::patch('/budget-transactions/{budgetTransaction}/approve', [\App\Http\Controllers\Api\BudgetTransactionController::class, 'approve']);
+
+    // Final crusade summary (Tab 12)
+    Route::get('/final-summary', [\App\Http\Controllers\Api\FinalSummaryController::class, 'show']);
 });

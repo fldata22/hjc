@@ -1,0 +1,52 @@
+{
+  "folders": [
+    { "name": "hjc", "path": "." },
+    { "name": "web", "path": "web" }
+  ],
+  "settings": {
+    "task.allowAutomaticTasks": "on"
+  },
+  "tasks": {
+    "version": "2.0.0",
+    "tasks": [
+      {
+        "label": "Backend: php artisan serve",
+        "type": "shell",
+        "command": "php artisan serve --port=8001",
+        "options": { "cwd": "${workspaceFolder:hjc}" },
+        "presentation": { "panel": "dedicated", "reveal": "always", "group": "services" },
+        "isBackground": true,
+        "problemMatcher": []
+      },
+      {
+        "label": "Frontend: vite (npm run dev)",
+        "type": "shell",
+        "command": "npm run dev",
+        "options": { "cwd": "${workspaceFolder:web}" },
+        "presentation": { "panel": "dedicated", "reveal": "always", "group": "services" },
+        "isBackground": true,
+        "problemMatcher": []
+      },
+      {
+        "label": "Claude session",
+        "type": "shell",
+        "command": "claude",
+        "options": { "cwd": "${workspaceFolder:hjc}" },
+        "presentation": { "panel": "dedicated", "reveal": "always", "group": "services" },
+        "isBackground": true,
+        "problemMatcher": []
+      },
+      {
+        "label": "Start All",
+        "dependsOn": [
+          "Backend: php artisan serve",
+          "Frontend: vite (npm run dev)",
+          "Claude session"
+        ],
+        "dependsOrder": "parallel",
+        "runOptions": { "runOn": "folderOpen" },
+        "problemMatcher": []
+      }
+    ]
+  }
+}

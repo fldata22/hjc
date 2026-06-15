@@ -70,6 +70,26 @@ class BudgetTransactionController extends Controller
         return response()->json(['data' => $budgetTransaction]);
     }
 
+    public function approve(Request $request, BudgetTransaction $budgetTransaction): JsonResponse
+    {
+        $v = $request->validate(['status' => 'required|in:approved,rejected']);
+
+        $budgetTransaction->update([
+            'status'      => $v['status'],
+            'approved_by' => $request->user()?->id,
+            'approved_at' => now(),
+        ]);
+
+        ActivityLogger::log(
+            $budgetTransaction->crusade_id,
+            $request->user()?->id,
+            'budget',
+            "Transaction {$v['status']}: {$budgetTransaction->description} (" . number_format((float) $budgetTransaction->amount, 0) . ")",
+        );
+
+        return response()->json(['data' => $budgetTransaction]);
+    }
+
     public function destroy(BudgetTransaction $budgetTransaction): JsonResponse
     {
         $budgetTransaction->delete();

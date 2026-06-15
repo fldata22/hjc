@@ -20,6 +20,13 @@ class TownProfile extends Model
         'prior_crusade_notes',
         'key_contacts',
         'notes',
+        'country',
+        'region',
+        'latitude',
+        'longitude',
+        'government_openness_rating',
+        'demographic_notes',
+        'population_estimate',
     ];
 
     public function zone(): BelongsTo
