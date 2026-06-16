@@ -4,94 +4,59 @@ import { useAuth } from '../../auth/useAuth';
 import { useCrusade } from '../../api/hooks';
 import { crusadeProgressLabel } from '../../lib/dateHelpers';
 
-const NAV_ROUTES: Record<TabKey, string> = {
-  home: '/',
-  forms: '/forms',
-  pillars: '/pillars',
-  weekly: '/weekly',
-  activity: '/activity',
-};
+const ITEMS: Array<{ key: TabKey; path: string; icon: string; label: string }> = [
+  { key: 'home',     path: '/',         icon: '⌂', label: 'Home' },
+  { key: 'forms',    path: '/forms',    icon: '≡', label: 'Forms' },
+  { key: 'pillars',  path: '/pillars',  icon: '◈', label: 'Pillars' },
+  { key: 'weekly',   path: '/weekly',   icon: '◷', label: 'Weekly' },
+  { key: 'activity', path: '/activity', icon: '◎', label: 'Activity log' },
+];
 
 export const Sidebar = ({ active }: { active: TabKey }) => {
   const navigate = useNavigate();
   const { logout } = useAuth();
   const { data: crusade } = useCrusade();
-  const goto = (key: TabKey) => () => navigate(NAV_ROUTES[key]);
+
+  const cityShort = crusade?.city ?? 'HJC';
+  const progress = crusadeProgressLabel(crusade?.opens_at, crusade?.closes_at);
 
   const handleSignOut = async () => {
     await logout();
     navigate('/login', { replace: true });
   };
 
-  const cityShort = crusade?.city ?? '';
-  const nameSuffix = crusade?.name?.replace(cityShort, '').trim() || crusade?.name || '';
-  const progress = crusadeProgressLabel(crusade?.opens_at, crusade?.closes_at);
-
   return (
-    <aside className="sidebar" aria-label="Primary navigation">
-      <div className="sidebar-head">
-        <div className="crusade-eyebrow">Crusade</div>
-        <h2 className="serif">
-          {cityShort || 'Crusade'}
-          {nameSuffix && (
-            <>
-              , <em style={{ fontStyle: 'italic', color: 'var(--ink-3)' }}>{nameSuffix}</em>
-            </>
-          )}
-        </h2>
-        {progress && <div className="day">{progress}</div>}
+    <aside className="sidebar">
+      <div className="sb-logo">
+        {cityShort}
+        {progress && <div style={{ fontSize: 11, fontWeight: 400, color: 'var(--ink-3)', marginTop: 2 }}>{progress}</div>}
       </div>
-      <div className="sidebar-section">Director</div>
-      <button
-        type="button"
-        className={'sidebar-item' + (active === 'home' ? ' on' : '')}
-        aria-current={active === 'home' ? 'page' : undefined}
-        onClick={goto('home')}
-      >
-        <span className="ico"><span className="gl-home"/></span>Home
+
+      <div className="drawer-section" style={{ marginTop: 8 }}>Director</div>
+      {ITEMS.map(({ key, path, icon, label }) => (
+        <button
+          key={key}
+          type="button"
+          className={'sb-item' + (active === key ? ' on' : '')}
+          onClick={() => navigate(path)}
+          aria-current={active === key ? 'page' : undefined}
+        >
+          <span className="sb-icon">{icon}</span>
+          {label}
+        </button>
+      ))}
+
+      <div className="drawer-section">Crusade</div>
+      <button type="button" className="sb-item" onClick={() => navigate('/people')}>
+        <span className="sb-icon">◉</span>People
       </button>
-      <button
-        type="button"
-        className={'sidebar-item' + (active === 'forms' ? ' on' : '')}
-        aria-current={active === 'forms' ? 'page' : undefined}
-        onClick={goto('forms')}
-      >
-        <span className="ico"><span className="gl-doc"/></span>Forms
+      <button type="button" className="sb-item" onClick={() => navigate('/budget')}>
+        <span className="sb-icon">◇</span>Budget
       </button>
-      <button
-        type="button"
-        className={'sidebar-item' + (active === 'pillars' ? ' on' : '')}
-        aria-current={active === 'pillars' ? 'page' : undefined}
-        onClick={goto('pillars')}
-      >
-        <span className="ico"><span className="gl-pillars"><i/><i/><i/><i/></span></span>Pillars
-      </button>
-      <button
-        type="button"
-        className={'sidebar-item' + (active === 'weekly' ? ' on' : '')}
-        aria-current={active === 'weekly' ? 'page' : undefined}
-        onClick={goto('weekly')}
-      >
-        <span className="ico"><span className="gl-cal"/></span>Weekly
-      </button>
-      <button
-        type="button"
-        className={'sidebar-item' + (active === 'activity' ? ' on' : '')}
-        aria-current={active === 'activity' ? 'page' : undefined}
-        onClick={goto('activity')}
-      >
-        <span className="ico"><span className="gl-list"/></span>Activity log
-      </button>
-      <div className="sidebar-section">Crusade</div>
-      <button type="button" className="sidebar-item" onClick={() => navigate('/people')}>
-        <span className="ico">◐</span>People
-      </button>
-      <button type="button" className="sidebar-item" onClick={() => navigate('/budget')}>
-        <span className="ico">◇</span>Budget
-      </button>
-      <div className="sidebar-section" style={{ marginTop: 'auto' }}>Account</div>
-      <button type="button" className="sidebar-item" onClick={handleSignOut}>
-        <span className="ico">⤴</span>Sign out
+
+      <div className="drawer-section" style={{ marginTop: 'auto' }}>Account</div>
+      <button type="button" className="sb-item" onClick={handleSignOut}>
+        <span className="sb-icon">↩</span>Sign out
       </button>
     </aside>
   );
