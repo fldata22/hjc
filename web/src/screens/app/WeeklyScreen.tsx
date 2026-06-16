@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
-import { AppBar, Drawer, ResponsiveShell } from './Shell';
+import { AppBar, Drawer, ResponsiveShell, useDrawer as useDrawerState } from './Shell';
 import {
   useCrusade,
   usePowers,
@@ -15,19 +15,10 @@ import './app.css';
 
 type RatingMap = Record<number, number>; // power_id -> 0..10
 
-function powerLetter(code: string): string {
-  if (['pastors', 'donors', 'committees', 'pledges', 'volunteers'].includes(code)) return 'P';
-  if (['awareness', 'publicity'].includes(code)) return 'A';
-  if (['equipment'].includes(code)) return 'V';
-  if (['govt'].includes(code)) return 'G';
-  return 'D';
-}
-
 export function WeeklyScreen() {
-  const [drawer, setDrawer] = useState(false);
   const { data: crusade } = useCrusade();
   const { data: powers } = usePowers();
-  const { data: weekly, isLoading: weeklyLoading, isError: weeklyError } = useWeeklyLatest();
+  const { data: weekly, isLoading: weeklyLoading } = useWeeklyLatest();
 
   const createMutation = useCreateWeeklyAssessment();
   const replaceReadingsMutation = useReplaceReadings();
@@ -100,7 +91,7 @@ export function WeeklyScreen() {
       setDecisionsNeeded('');
       setSavedAt(null);
     } catch {
-      toast.show('Couldn’t start a new week', 'error');
+      toast.show('Could not start a new week', 'error');
     }
   };
 
@@ -157,112 +148,87 @@ export function WeeklyScreen() {
   const weekLabel = weekly?.week_number ?? 1;
   const isPending = replaceReadingsMutation.isPending || updateMutation.isPending || createMutation.isPending || submitMutation.isPending;
 
+  const drawer2 = useDrawerState();
+
   return (
     <ResponsiveShell active="weekly">
-      <AppBar onMenu={() => setDrawer(true)}/>
+      <AppBar
+        title={`Week ${weekLabel}`}
+        sub={submitted ? 'submitted' : 'readiness check-in'}
+        onMenu={drawer2.show}
+      />
+
+      <div className="weekly-progress">
+        <span className="wp-label">{completed} / {total} rated</span>
+        <div className="wp-bar">
+          <div className="wp-fill" style={{ width: `${total > 0 ? Math.round((completed / total) * 100) : 0}%` }}/>
+        </div>
+        <span className="wp-count">{total > 0 ? Math.round((completed / total) * 100) : 0}%</span>
+      </div>
+
       <div className="scroll">
-        <div className="weekly-head">
-          <div
-            className="eyebrow"
-            style={{
-              fontSize: 10,
-              letterSpacing: '0.16em',
-              textTransform: 'uppercase',
-              color: 'var(--ink-3)',
-              fontWeight: 500,
-              marginBottom: 8,
-              display: 'inline-flex',
-              alignItems: 'center',
-              gap: 8,
-            }}
-          >
-            <span style={{ width: 6, height: 6, borderRadius: '50%', background: submitted ? 'var(--ok)' : 'var(--accent)' }}/>
-            {submitted ? `Submitted week ${weekLabel}` : `Week ${weekLabel} · readiness check-in`}
-          </div>
-          <h1 className="week serif">Week {weekLabel} <em>readiness</em></h1>
-          <p style={{ fontSize: 13, color: 'var(--ink-2)', marginTop: 6, lineHeight: 1.5 }}>
-            Rate each pillar 0–10. The 8 ops-derived pillars (pastors, awareness, donors, pledges, committees, publicity, govt, volunteers) auto-update from form data — your rating here is treated as the manual fallback for them and the primary signal for the 6 qualitative pillars.
-          </p>
-          <div className="progress">
-            <span><b>{completed}</b> of {total} rated</span>
-            <span>{total > 0 ? Math.round((completed / total) * 100) : 0}%</span>
-          </div>
-          <div className="ptrack"><i style={{ width: (total > 0 ? completed / total * 100 : 0) + '%' }}/></div>
+        <div className="weekly-desc">
+          Rate each pillar 0–10. Ops-derived pillars (pastors, awareness, donors, pledges, committees, publicity, govt, volunteers) auto-update from form data — your rating is the manual fallback and primary signal for the 6 qualitative pillars.
         </div>
 
-        {weeklyLoading && (
-          <div style={{ padding: '16px 20px', fontSize: 13, color: 'var(--ink-3)', textAlign: 'center' }}>Loading…</div>
-        )}
-        {weeklyError && !weekly && (
-          <div style={{ padding: '16px 20px', fontSize: 13, color: 'var(--ink-2)', textAlign: 'center' }}>
-            No assessment yet. Rate the pillars below and tap <b>Save</b> to start week 1.
-          </div>
-        )}
+        {weeklyLoading && <div className="empty-state">Loading…</div>}
 
-        <div className="rate-grid">
-          {sortedPowers.map((p: Power) => {
-            const r = ratings[p.id];
-            const hasRating = r !== undefined;
-            return (
-              <div className="rate-card" key={p.id}>
-                <div className="top">
-                  <span className="L serif">{powerLetter(p.code)}</span>
-                  <span className="nm">{p.name}</span>
-                  <span className="last">{p.description ?? ''}</span>
-                </div>
-                <div className="scale">
-                  {Array.from({ length: 11 }, (_, n) => (
-                    <span key={n} className={n === r ? 'on' : ''} onClick={() => setRating(p.id, n)}>{n}</span>
-                  ))}
-                </div>
-                <div className="delta">
-                  <span>Selected: <b>{hasRating ? `${r}/10` : '—'}</b></span>
-                  <span style={{ color: 'var(--ink-3)', fontSize: 11 }}>{hasRating ? `${r * 10}% pillar` : 'not rated'}</span>
-                </div>
+        {sortedPowers.map((p: Power) => {
+          const r = ratings[p.id];
+          return (
+            <div className="rating-row" key={p.id}>
+              <div className="rating-name">
+                {p.name}
+                {r !== undefined && (
+                  <span style={{ float: 'right', fontSize: 11, color: 'var(--ink-3)', fontWeight: 400 }}>
+                    {r}/10 · {r * 10}%
+                  </span>
+                )}
               </div>
-            );
-          })}
+              <div className="rating-pips">
+                {Array.from({ length: 11 }, (_, n) => (
+                  <button
+                    key={n}
+                    type="button"
+                    className={'rating-pip' + (n === r ? ' on' : '')}
+                    onClick={() => setRating(p.id, n)}
+                    disabled={submitted}
+                  >
+                    {n}
+                  </button>
+                ))}
+              </div>
+            </div>
+          );
+        })}
+
+        <div className="weekly-field">
+          <label>This week's notes</label>
+          <textarea
+            className="weekly-textarea"
+            placeholder="What moved? What's stuck? Wins, blockers."
+            value={notes}
+            onChange={(e) => setNotes(e.target.value)}
+            disabled={submitted}
+          />
         </div>
 
-        <div className="weekly-section" style={{ padding: '22px 20px 8px' }}>
-          <h2
-            className="serif"
-            style={{ fontSize: 22, fontWeight: 300, letterSpacing: '-0.025em', marginBottom: 4 }}
-          >
-            Narrative <em style={{ fontStyle: 'italic', color: 'var(--ink-3)' }}>notes</em>
-          </h2>
-          <p style={{ fontSize: 11, color: 'var(--ink-3)', letterSpacing: '0.04em', marginBottom: 8 }}>
-            Two short reflections — central office reads these.
-          </p>
-        </div>
-        <div className="fields narrative-grid" style={{ paddingTop: 0 }}>
-          <div className="field">
-            <div className="lbl"><span>This week's notes</span></div>
-            <textarea
-              className="input area"
-              placeholder="What moved? What's stuck? Wins, blockers."
-              value={notes}
-              onChange={(e) => setNotes(e.target.value)}
-              disabled={submitted}
-            />
-          </div>
-          <div className="field">
-            <div className="lbl"><span>Decisions you need from central office</span></div>
-            <textarea
-              className="input area"
-              placeholder="What do you need from us?"
-              value={decisionsNeeded}
-              onChange={(e) => setDecisionsNeeded(e.target.value)}
-              disabled={submitted}
-            />
-          </div>
+        <div className="weekly-field">
+          <label>Decisions needed from central office</label>
+          <textarea
+            className="weekly-textarea"
+            placeholder="What do you need from us?"
+            value={decisionsNeeded}
+            onChange={(e) => setDecisionsNeeded(e.target.value)}
+            disabled={submitted}
+          />
         </div>
 
         {submitted && (
-          <div style={{ padding: '14px 20px 0' }}>
+          <div style={{ padding: '16px 20px' }}>
             <button
               type="button"
-              className="btn primary"
+              className="btn-primary"
               style={{ width: '100%' }}
               onClick={startNextWeek}
               disabled={createMutation.isPending}
@@ -277,13 +243,13 @@ export function WeeklyScreen() {
 
       <div className="action-bar">
         <div className="save-status">{saveStatus}</div>
-        <button type="button" className="btn" onClick={handleSave} disabled={isPending || submitted}>Save</button>
-        <button type="button" className="btn primary" onClick={handleSubmit} disabled={isPending || submitted}>
-          {submitted ? `W${weekLabel} submitted` : `Submit W${weekLabel} →`}
+        <button type="button" className="btn-secondary" onClick={handleSave} disabled={isPending || submitted}>Save</button>
+        <button type="button" className="btn-primary" onClick={handleSubmit} disabled={isPending || submitted}>
+          {submitted ? `W${weekLabel} submitted` : `Submit →`}
         </button>
       </div>
 
-      {drawer && <Drawer active="weekly" onClose={() => setDrawer(false)}/>}
+      {drawer2.open && <Drawer active="weekly" onClose={drawer2.hide}/>}
     </ResponsiveShell>
   );
 }
