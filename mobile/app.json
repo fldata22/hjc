@@ -2,6 +2,7 @@
   "expo": {
     "name": "HJC Mission Control",
     "slug": "hjc-mission-control",
+    "owner": "emmanu-el",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
@@ -41,11 +42,18 @@
           }
         }
       ],
-      "expo-secure-store"
+      "expo-secure-store",
+      "expo-notifications"
     ],
     "experiments": {
       "typedRoutes": true,
       "reactCompiler": true
+    },
+    "extra": {
+      "router": {},
+      "eas": {
+        "projectId": "48fe34cd-7f54-4382-8c64-9a3dd99c4a94"
+      }
     }
   }
 }
