@@ -18,6 +18,7 @@ class StakeholderController extends Controller
     {
         $v = $request->validate([
             'crusade_id' => 'required|exists:crusades,id',
+            'contact_id' => 'nullable|exists:contacts,id',
             'name' => 'required|string|max:128',
             'org' => 'required|string|max:128',
             'role' => 'required|string|max:64',
@@ -41,6 +42,7 @@ class StakeholderController extends Controller
     public function update(Request $request, Stakeholder $stakeholder): JsonResponse
     {
         $v = $request->validate([
+            'contact_id' => 'sometimes|nullable|exists:contacts,id',
             'name' => 'sometimes|string|max:128',
             'org' => 'sometimes|string|max:128',
             'role' => 'sometimes|string|max:64',

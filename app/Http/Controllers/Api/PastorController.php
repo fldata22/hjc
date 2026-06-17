@@ -72,6 +72,7 @@ class PastorController extends Controller
     {
         $validated = $request->validate([
             'crusade_id' => 'required|exists:crusades,id',
+            'contact_id' => 'nullable|exists:contacts,id',
             'full_name' => 'required|string|max:255',
             'church_id' => 'nullable|exists:churches,id',
             'zone_id' => 'nullable|exists:zones,id',
@@ -105,6 +106,7 @@ class PastorController extends Controller
     public function update(Request $request, Pastor $pastor): JsonResponse
     {
         $validated = $request->validate([
+            'contact_id' => 'sometimes|nullable|exists:contacts,id',
             'full_name' => 'sometimes|required|string|max:255',
             'church_id' => 'sometimes|nullable|exists:churches,id',
             'zone_id' => 'sometimes|nullable|exists:zones,id',

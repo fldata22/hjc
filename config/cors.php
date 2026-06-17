@@ -24,7 +24,8 @@ return [
         'http://localhost:5173',
     ],
 
-    'allowed_origins_patterns' => [],
+    // Allow any localhost port in dev (Expo web preview uses 8081/8088, etc.).
+    'allowed_origins_patterns' => ['#^http://localhost:\d+$#'],
 
     'allowed_headers' => ['*'],
 

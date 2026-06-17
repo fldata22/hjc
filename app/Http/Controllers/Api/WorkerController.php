@@ -12,7 +12,7 @@ class WorkerController extends Controller
 {
     private const GROUP_TYPES = [
         'choir', 'ushers', 'security', 'counsellors', 'prayer_warriors',
-        'hospitality', 'technical', 'medical', 'childrens', 'general',
+        'hospitality', 'technical', 'medical', 'womens', 'general',
     ];
 
     private const STATUSES = ['active', 'inactive'];
@@ -40,6 +40,9 @@ class WorkerController extends Controller
     {
         $v = $request->validate([
             'crusade_id' => 'required|exists:crusades,id',
+            'contact_id' => 'nullable|exists:contacts,id',
+            'zone_id' => 'nullable|exists:zones,id',
+            'church_id' => 'nullable|exists:churches,id',
             'group_type' => 'required|in:' . implode(',', self::GROUP_TYPES),
             'name' => 'required|string|max:128',
             'role' => 'nullable|string|max:64',
@@ -69,6 +72,9 @@ class WorkerController extends Controller
     public function update(Request $request, Worker $worker): JsonResponse
     {
         $v = $request->validate([
+            'contact_id' => 'sometimes|nullable|exists:contacts,id',
+            'zone_id' => 'sometimes|nullable|exists:zones,id',
+            'church_id' => 'sometimes|nullable|exists:churches,id',
             'group_type' => 'sometimes|in:' . implode(',', self::GROUP_TYPES),
             'name' => 'sometimes|string|max:128',
             'role' => 'sometimes|nullable|string|max:64',

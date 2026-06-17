@@ -11,7 +11,7 @@ class LandElder extends Model
     use HasFactory;
 
     protected $fillable = [
-        'crusade_id', 'name', 'title', 'region',
+        'crusade_id', 'contact_id', 'name', 'title', 'region',
         'phone', 'email', 'status', 'last_contact_at', 'notes',
     ];
 
@@ -20,5 +20,10 @@ class LandElder extends Model
     public function crusade(): BelongsTo
     {
         return $this->belongsTo(Crusade::class);
+    }
+
+    public function contact(): BelongsTo
+    {
+        return $this->belongsTo(Contact::class);
     }
 }

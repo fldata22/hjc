@@ -32,6 +32,7 @@ class LandElderController extends Controller
     {
         $v = $request->validate([
             'crusade_id' => 'required|exists:crusades,id',
+            'contact_id' => 'nullable|exists:contacts,id',
             'name' => 'required|string|max:128',
             'title' => 'nullable|string|max:64',
             'region' => 'nullable|string|max:128',
@@ -63,6 +64,7 @@ class LandElderController extends Controller
     public function update(Request $request, LandElder $landElder): JsonResponse
     {
         $v = $request->validate([
+            'contact_id' => 'sometimes|nullable|exists:contacts,id',
             'name' => 'sometimes|string|max:128',
             'title' => 'sometimes|nullable|string|max:64',
             'region' => 'sometimes|nullable|string|max:128',

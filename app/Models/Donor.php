@@ -11,7 +11,7 @@ class Donor extends Model
     use HasFactory;
 
     protected $fillable = [
-        'crusade_id', 'name', 'organization', 'kind',
+        'crusade_id', 'contact_id', 'name', 'organization', 'kind',
         'pledge_amount', 'status', 'last_contact_at', 'notes',
     ];
 
@@ -23,5 +23,10 @@ class Donor extends Model
     public function crusade(): BelongsTo
     {
         return $this->belongsTo(Crusade::class);
+    }
+
+    public function contact(): BelongsTo
+    {
+        return $this->belongsTo(Contact::class);
     }
 }

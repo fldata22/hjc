@@ -13,7 +13,7 @@ class Pastor extends Model
     use HasFactory, SoftDeletes;
 
     protected $fillable = [
-        'crusade_id', 'full_name', 'church_id', 'zone_id',
+        'crusade_id', 'contact_id', 'full_name', 'church_id', 'zone_id',
         'phone', 'email', 'address', 'pastor_since',
         'pipeline_stage', 'last_contact_at',
     ];
@@ -25,6 +25,11 @@ class Pastor extends Model
     public function crusade(): BelongsTo
     {
         return $this->belongsTo(Crusade::class);
+    }
+
+    public function contact(): BelongsTo
+    {
+        return $this->belongsTo(Contact::class);
     }
 
     public function church(): BelongsTo

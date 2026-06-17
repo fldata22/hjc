@@ -11,12 +11,17 @@ class CommitteeMember extends Model
     use HasFactory;
 
     protected $fillable = [
-        'crusade_id', 'kind', 'name', 'role', 'org',
+        'crusade_id', 'contact_id', 'kind', 'name', 'role', 'org',
         'phone', 'email', 'status', 'notes',
     ];
 
     public function crusade(): BelongsTo
     {
         return $this->belongsTo(Crusade::class);
+    }
+
+    public function contact(): BelongsTo
+    {
+        return $this->belongsTo(Contact::class);
     }
 }

@@ -8,7 +8,8 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 class Stakeholder extends Model
 {
     use HasFactory;
-    protected $fillable = ['crusade_id', 'name', 'org', 'role', 'pipeline_stage', 'status_label', 'last_contact_at', 'notes'];
+    protected $fillable = ['crusade_id', 'contact_id', 'name', 'org', 'role', 'pipeline_stage', 'status_label', 'last_contact_at', 'notes'];
     protected $casts = ['last_contact_at' => 'datetime'];
     public function crusade(): BelongsTo { return $this->belongsTo(Crusade::class); }
+    public function contact(): BelongsTo { return $this->belongsTo(Contact::class); }
 }

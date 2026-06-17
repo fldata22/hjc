@@ -12,7 +12,7 @@ class WorkerShiftController extends Controller
 {
     private const GROUP_TYPES = [
         'choir', 'ushers', 'security', 'counsellors', 'prayer_warriors',
-        'hospitality', 'technical', 'medical', 'childrens', 'general',
+        'hospitality', 'technical', 'medical', 'womens', 'general',
     ];
 
     public function index(Request $request): JsonResponse

@@ -29,6 +29,7 @@ class CommitteeMemberController extends Controller
     {
         $validated = $request->validate([
             'crusade_id' => 'required|exists:crusades,id',
+            'contact_id' => 'nullable|exists:contacts,id',
             'kind' => ['required', Rule::in(array_keys(self::STATUS_BY_KIND))],
             'name' => 'required|string|max:128',
             'role' => 'required|string|max:64',
@@ -68,6 +69,7 @@ class CommitteeMemberController extends Controller
         $allowed = self::STATUS_BY_KIND[$committeeMember->kind] ?? [];
 
         $validated = $request->validate([
+            'contact_id' => 'sometimes|nullable|exists:contacts,id',
             'name' => 'sometimes|string|max:128',
             'role' => 'sometimes|string|max:64',
             'org' => 'sometimes|nullable|string|max:128',

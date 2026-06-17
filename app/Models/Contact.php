@@ -6,32 +6,24 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
-class Worker extends Model
+class Contact extends Model
 {
     use HasFactory;
 
     protected $fillable = [
         'crusade_id',
-        'contact_id',
         'zone_id',
         'church_id',
-        'group_type',
-        'name',
-        'role',
+        'full_name',
+        'title',
         'phone',
         'email',
-        'status',
         'notes',
     ];
 
     public function crusade(): BelongsTo
     {
         return $this->belongsTo(Crusade::class);
-    }
-
-    public function contact(): BelongsTo
-    {
-        return $this->belongsTo(Contact::class);
     }
 
     public function zone(): BelongsTo

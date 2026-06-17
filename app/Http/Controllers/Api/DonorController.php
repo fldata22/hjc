@@ -48,6 +48,7 @@ class DonorController extends Controller
     {
         $v = $request->validate([
             'crusade_id' => 'required|exists:crusades,id',
+            'contact_id' => 'nullable|exists:contacts,id',
             'name' => 'required|string|max:128',
             'organization' => 'nullable|string|max:128',
             'kind' => 'required|in:' . implode(',', self::KINDS),
@@ -78,6 +79,7 @@ class DonorController extends Controller
     public function update(Request $request, Donor $donor): JsonResponse
     {
         $v = $request->validate([
+            'contact_id' => 'sometimes|nullable|exists:contacts,id',
             'name' => 'sometimes|string|max:128',
             'organization' => 'sometimes|nullable|string|max:128',
             'kind' => 'sometimes|in:' . implode(',', self::KINDS),

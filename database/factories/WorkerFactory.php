@@ -13,7 +13,7 @@ class WorkerFactory extends Factory
             'crusade_id' => Crusade::factory(),
             'group_type' => $this->faker->randomElement([
                 'choir', 'ushers', 'security', 'counsellors', 'prayer_warriors',
-                'hospitality', 'technical', 'medical', 'childrens', 'general',
+                'hospitality', 'technical', 'medical', 'womens', 'general',
             ]),
             'name' => $this->faker->name(),
             'role' => $this->faker->boolean(60) ? $this->faker->jobTitle() : null,
