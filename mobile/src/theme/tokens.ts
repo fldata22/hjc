@@ -1,19 +1,23 @@
-// HJC "Evolved Sand" design system — warm editorial palette (chosen direction A).
+// HJC "Bold Sand" design system — warm sand palette (like the original) carried by the
+// new bold structure: filled header bands, filled fields, solid buttons, high contrast.
+// (Export name `sand` kept so the whole app re-skins from here without import churn.)
 import { type ViewStyle } from 'react-native';
 
 export const sand = {
-  bg: '#F2ECE1',
+  bg: '#F2ECE1',        // warm sand base (original)
   surface: '#FFFFFF',
   surface2: '#FBF6EE',
-  chipBg: '#F6F1E7',
-  ink: '#211C16',
-  ink2: '#5C554B',
-  ink3: '#9C9286',
+  chipBg: '#F3EAD8',    // warm cream — filled fields / chips
+  ink: '#211C16',       // warm near-black, high contrast
+  ink2: '#5C554B',      // muted body text
+  ink3: '#9C9286',      // placeholder / faint
   line: '#E7DECF',
   line2: '#D8CDB9',
-  accent: '#B45309',
-  accentBg: '#F6EAD9',
-  // Warmer, editorial status colours (olive / muted gold / terracotta) — more premium than bright RGB.
+  accent: '#B4530A',    // terracotta / burnt orange — the warm brand (filled boldly)
+  accentInk: '#8A3D06', // deeper terracotta — pressed / band shadow
+  accentBg: '#F6EAD9',  // soft warm wash
+  onAccent: '#FFFFFF',  // text/icon on the brand color
+  // Warm, editorial status colours (olive / gold / terracotta).
   ok: '#5C7A1E',
   okBg: '#EAF0DC',
   warn: '#B6852A',
@@ -47,13 +51,24 @@ export const font = {
   sub: { fontSize: 13, fontWeight: '400' as const },
 };
 
-// Soft elevation for cards (the "evolved" depth).
+// Warm soft elevation for cards.
 export const elevation: ViewStyle = {
-  shadowColor: '#8A7A5E',
-  shadowOpacity: 0.12,
-  shadowRadius: 16,
-  shadowOffset: { width: 0, height: 6 },
-  elevation: 2,
+  shadowColor: '#7A6443',
+  shadowOpacity: 0.14,
+  shadowRadius: 18,
+  shadowOffset: { width: 0, height: 8 },
+  elevation: 3,
+};
+
+// Bold colored header band (brand-filled) — spread by form screens for a vibrant top.
+export const headerBand: ViewStyle = {
+  backgroundColor: sand.accent,
+  borderRadius: radius.xl,
+  shadowColor: sand.accent,
+  shadowOpacity: 0.32,
+  shadowRadius: 20,
+  shadowOffset: { width: 0, height: 10 },
+  elevation: 6,
 };
 
 // Shared elevated surface — screens spread this so the look stays centralised.

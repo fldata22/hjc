@@ -1,5 +1,4 @@
 import { useMemo, useState } from 'react';
-import { useRouter } from 'expo-router';
 import { ActivityIndicator, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
@@ -12,8 +11,9 @@ import {
   useZones,
 } from '@/api/hooks';
 import { Button, DateField, NumberField } from '@/components/ui/fields';
+import { AddButton, FormHeader } from '@/components/ui/FormHeader';
 import { Sheet, SheetActions } from '@/components/ui/Sheet';
-import { cardSurface, radius, sand, space } from '@/theme/tokens';
+import { cardSurface, sand, space } from '@/theme/tokens';
 
 const today = () => new Date().toISOString().slice(0, 10);
 
@@ -58,7 +58,6 @@ function summarizeWaves(rows: AwarenessSurveyRow[]): WaveSummary[] {
 }
 
 export function AwarenessSurveyScreen() {
-  const router = useRouter();
   const { data: crusade } = useCrusade();
   const { data: zones } = useZones();
   const { data: surveys, isLoading } = useAwarenessSurveys();
@@ -156,21 +155,12 @@ export function AwarenessSurveyScreen() {
   return (
     <SafeAreaView style={styles.safe}>
       <ScrollView contentContainerStyle={styles.scroll} keyboardShouldPersistTaps="handled">
-        <Pressable onPress={() => router.back()} hitSlop={8}>
-          <Text style={styles.back}>‹ Back to forms</Text>
-        </Pressable>
-        <View style={styles.titleRow}>
-          <Text style={styles.title}>Awareness Survey</Text>
-          <View style={styles.pillarBadge}><Text style={styles.pillarText}>A9</Text></View>
-        </View>
-
-        <View style={styles.statStrip}>
-          <Text style={styles.statNum}>Wave {defaultWave}</Text>
-          <Text style={styles.statLabel}>
-            {currentWaveStats.zones_logged} zone{currentWaveStats.zones_logged === 1 ? '' : 's'} logged ·{' '}
-            <Text style={styles.statStrong}>{currentWaveStats.pct === null ? '—' : `${currentWaveStats.pct}%`}</Text> aware
-          </Text>
-        </View>
+        <FormHeader
+          title="Awareness Survey"
+          pillar="A9"
+          statNum={`Wave ${defaultWave}`}
+          statLabel={`${currentWaveStats.zones_logged} zone${currentWaveStats.zones_logged === 1 ? '' : 's'} logged · ${currentWaveStats.pct === null ? '—' : `${currentWaveStats.pct}%`} aware`}
+        />
 
         <Text style={styles.catHead}>Past waves</Text>
         <View style={styles.card}>
@@ -215,9 +205,7 @@ export function AwarenessSurveyScreen() {
           )}
         </View>
 
-        <Pressable style={styles.addToggle} onPress={openForm}>
-          <Text style={styles.addToggleText}>Log new wave</Text>
-        </Pressable>
+        <AddButton label="Log new wave" onPress={openForm} />
       </ScrollView>
 
       <Sheet open={showForm} onClose={closeForm} title="Log wave">
@@ -282,15 +270,6 @@ export function AwarenessSurveyScreen() {
 const styles = StyleSheet.create({
   safe: { flex: 1, backgroundColor: sand.bg },
   scroll: { padding: space.xl, paddingBottom: space.xxl },
-  back: { fontSize: 14, color: sand.ink2, marginBottom: space.md },
-  titleRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
-  title: { fontSize: 24, fontWeight: '800', color: sand.ink },
-  pillarBadge: { backgroundColor: sand.accentBg, borderRadius: radius.pill, paddingHorizontal: 10, paddingVertical: 4 },
-  pillarText: { fontSize: 11, fontWeight: '800', color: sand.accent },
-  statStrip: { flexDirection: 'row', alignItems: 'baseline', gap: space.sm, marginTop: space.lg, flexWrap: 'wrap' },
-  statNum: { fontSize: 30, fontWeight: '800', color: sand.ink },
-  statLabel: { fontSize: 13, color: sand.ink3 },
-  statStrong: { fontWeight: '700', color: sand.ink2 },
   catHead: { fontSize: 11, fontWeight: '800', letterSpacing: 1, color: sand.ink3, marginTop: space.xl, marginBottom: space.sm, textTransform: 'uppercase' },
   card: { ...cardSurface, paddingHorizontal: space.lg },
   row: { flexDirection: 'row', alignItems: 'center', gap: space.sm, paddingVertical: 12 },
@@ -302,8 +281,6 @@ const styles = StyleSheet.create({
   expandRow: { flexDirection: 'row', justifyContent: 'space-between', paddingVertical: 4 },
   expandText: { fontSize: 12, color: sand.ink2, fontVariant: ['tabular-nums'] },
   empty: { fontSize: 13, color: sand.ink3, textAlign: 'center', paddingVertical: space.lg },
-  addToggle: { marginTop: space.lg, borderWidth: 1.5, borderColor: sand.ink, borderRadius: radius.pill, paddingVertical: 13, alignItems: 'center' },
-  addToggleText: { fontSize: 14, fontWeight: '600', color: sand.ink },
 
   zonesHead: { fontSize: 11, fontWeight: '800', letterSpacing: 1, color: sand.ink3, marginTop: space.lg, marginBottom: space.xs, textTransform: 'uppercase' },
   zoneRow: { paddingVertical: 8, borderBottomWidth: 1, borderBottomColor: sand.line },

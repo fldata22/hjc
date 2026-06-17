@@ -1,5 +1,4 @@
 import { useEffect, useMemo, useState } from 'react';
-import { useRouter } from 'expo-router';
 import { ActivityIndicator, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
@@ -14,12 +13,12 @@ import {
   useWeeklyLatest,
 } from '@/api/hooks';
 import { Button, TextareaField } from '@/components/ui/fields';
-import { cardSurface, radius, sand, space } from '@/theme/tokens';
+import { FormHeader } from '@/components/ui/FormHeader';
+import { cardSurface, sand, space } from '@/theme/tokens';
 
 type RatingMap = Record<number, number>;
 
 export function WeeklyScreen() {
-  const router = useRouter();
   const { data: crusade } = useCrusade();
   const { data: powers } = usePowers();
   const { data: weekly, isLoading } = useWeeklyLatest();
@@ -114,9 +113,8 @@ export function WeeklyScreen() {
   return (
     <SafeAreaView style={styles.safe} edges={['top']}>
       <ScrollView contentContainerStyle={styles.scroll} keyboardShouldPersistTaps="handled">
-        <Pressable onPress={() => router.back()} hitSlop={8}><Text style={styles.back}>‹ Back to forms</Text></Pressable>
-        <View style={styles.titleRow}>
-          <Text style={styles.title}>Week {weekLabel}</Text>
+        <FormHeader title={`Week ${weekLabel}`} />
+        <View style={styles.progressRow}>
           <Text style={styles.progress}>{completed}/{total} · {pct}%</Text>
         </View>
         <View style={styles.track}><View style={[styles.fill, { width: `${pct}%` }]} /></View>
@@ -175,9 +173,7 @@ export function WeeklyScreen() {
 const styles = StyleSheet.create({
   safe: { flex: 1, backgroundColor: sand.bg },
   scroll: { padding: space.xl, paddingBottom: space.xxl },
-  back: { fontSize: 14, color: sand.ink2, marginBottom: space.md },
-  titleRow: { flexDirection: 'row', alignItems: 'baseline', justifyContent: 'space-between' },
-  title: { fontSize: 26, fontWeight: '800', color: sand.ink },
+  progressRow: { flexDirection: 'row', justifyContent: 'flex-end', marginTop: space.lg },
   progress: { fontSize: 13, fontWeight: '600', color: sand.ink3 },
   track: { height: 8, borderRadius: 4, backgroundColor: sand.line, marginTop: space.sm, overflow: 'hidden' },
   fill: { height: 8, borderRadius: 4, backgroundColor: sand.accent },

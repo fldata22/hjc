@@ -1,6 +1,5 @@
 import { useEffect, useState } from 'react';
-import { useRouter } from 'expo-router';
-import { ActivityIndicator, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { ActivityIndicator, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import {
@@ -10,7 +9,8 @@ import {
   useUpsertSoundLightingPlan,
 } from '@/api/hooks';
 import { Button, NumberField, SegmentedField, TextField, TextareaField } from '@/components/ui/fields';
-import { cardSurface, radius, sand, space } from '@/theme/tokens';
+import { FormHeader } from '@/components/ui/FormHeader';
+import { cardSurface, sand, space } from '@/theme/tokens';
 
 type Draft = {
   sound_provider: string;
@@ -37,7 +37,6 @@ const draftFromPlan = (p: SoundLightingPlan | null): Draft => ({
 });
 
 export function SoundLightingScreen() {
-  const router = useRouter();
   useCrusade();
   const { data: plan, isLoading } = useSoundLightingPlan();
   const upsert = useUpsertSoundLightingPlan();
@@ -72,11 +71,7 @@ export function SoundLightingScreen() {
   return (
     <SafeAreaView style={styles.safe}>
       <ScrollView contentContainerStyle={styles.scroll} keyboardShouldPersistTaps="handled">
-        <Pressable onPress={() => router.back()} hitSlop={8}><Text style={styles.back}>‹ Back to forms</Text></Pressable>
-        <View style={styles.titleRow}>
-          <Text style={styles.title}>Sound & Lighting</Text>
-          <View style={styles.pillarBadge}><Text style={styles.pillarText}>V12</Text></View>
-        </View>
+        <FormHeader title="Sound & Lighting" pillar="V12" />
 
         {isLoading || !hasHydrated ? (
           <ActivityIndicator style={{ marginTop: space.xxl }} />
@@ -130,11 +125,6 @@ export function SoundLightingScreen() {
 const styles = StyleSheet.create({
   safe: { flex: 1, backgroundColor: sand.bg },
   scroll: { padding: space.xl, paddingBottom: space.xxl },
-  back: { fontSize: 14, color: sand.ink2, marginBottom: space.md },
-  titleRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
-  title: { fontSize: 24, fontWeight: '800', color: sand.ink },
-  pillarBadge: { backgroundColor: sand.accentBg, borderRadius: radius.pill, paddingHorizontal: 10, paddingVertical: 4 },
-  pillarText: { fontSize: 11, fontWeight: '800', color: sand.accent },
   card: { ...cardSurface, paddingHorizontal: space.lg, paddingVertical: space.sm, marginTop: space.lg },
   section: { fontSize: 11, fontWeight: '700', letterSpacing: 1.4, textTransform: 'uppercase', color: sand.ink3, paddingTop: space.md, paddingBottom: 2 },
   saveOk: { fontSize: 12, color: sand.ok, marginTop: space.lg, textAlign: 'center' },

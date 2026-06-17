@@ -1,5 +1,4 @@
 import { useMemo, useState } from 'react';
-import { useRouter } from 'expo-router';
 import { ActivityIndicator, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
@@ -12,6 +11,7 @@ import {
   useZones,
 } from '@/api/hooks';
 import { Button, NumberField, TextField, TextareaField } from '@/components/ui/fields';
+import { FormHeader } from '@/components/ui/FormHeader';
 import { Sheet, SheetActions } from '@/components/ui/Sheet';
 import { cardSurface, radius, sand, space, statusColors } from '@/theme/tokens';
 
@@ -38,7 +38,6 @@ const draftFromProfile = (p: TownProfile | null): Draft => ({
 });
 
 export function TownProfileScreen() {
-  const router = useRouter();
   const { data: zones, isLoading: zonesLoading } = useZones();
   const { data: profiles, isLoading: profilesLoading } = useTownProfiles();
   const createProfile = useCreateTownProfile();
@@ -86,18 +85,7 @@ export function TownProfileScreen() {
   return (
     <SafeAreaView style={styles.safe}>
       <ScrollView contentContainerStyle={styles.scroll} keyboardShouldPersistTaps="handled">
-        <Pressable onPress={() => router.back()} hitSlop={8}>
-          <Text style={styles.back}>‹ Back to forms</Text>
-        </Pressable>
-        <View style={styles.titleRow}>
-          <Text style={styles.title}>Town Profile</Text>
-          <View style={styles.pillarBadge}><Text style={styles.pillarText}>A·all</Text></View>
-        </View>
-
-        <View style={styles.statStrip}>
-          <Text style={styles.statNum}>{profiledCount}</Text>
-          <Text style={styles.statLabel}>of {zoneList.length} zones profiled</Text>
-        </View>
+        <FormHeader title="Town Profile" pillar="A·all" statNum={profiledCount} statLabel={`of ${zoneList.length} zones profiled`} />
         <Text style={styles.hint}>Tap a zone to add or edit its profile</Text>
 
         <View style={styles.card}>
@@ -152,15 +140,7 @@ export function TownProfileScreen() {
 const styles = StyleSheet.create({
   safe: { flex: 1, backgroundColor: sand.bg },
   scroll: { padding: space.xl, paddingBottom: space.xxl },
-  back: { fontSize: 14, color: sand.ink2, marginBottom: space.md },
-  titleRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
-  title: { fontSize: 24, fontWeight: '800', color: sand.ink },
-  pillarBadge: { backgroundColor: sand.accentBg, borderRadius: radius.pill, paddingHorizontal: 10, paddingVertical: 4 },
-  pillarText: { fontSize: 11, fontWeight: '800', color: sand.accent },
-  statStrip: { flexDirection: 'row', alignItems: 'baseline', gap: space.sm, marginTop: space.lg },
-  statNum: { fontSize: 30, fontWeight: '800', color: sand.ink },
-  statLabel: { fontSize: 13, color: sand.ink3 },
-  hint: { fontSize: 12, color: sand.ink3, marginTop: 6 },
+  hint: { fontSize: 12, color: sand.ink3, marginTop: space.md },
   card: { ...cardSurface, paddingHorizontal: space.lg, marginTop: space.md },
   row: { flexDirection: 'row', alignItems: 'center', gap: space.sm, paddingVertical: 12 },
   divider: { borderTopWidth: 1, borderTopColor: sand.line },

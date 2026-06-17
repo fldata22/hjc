@@ -1,5 +1,4 @@
 import { useMemo, useState } from 'react';
-import { useRouter } from 'expo-router';
 import { ActivityIndicator, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
@@ -17,6 +16,7 @@ import {
 } from '@/api/hooks';
 import { Button, TextField, TextareaField } from '@/components/ui/fields';
 import { ContactPicker } from '@/components/ui/ContactPicker';
+import { AddButton, FormHeader } from '@/components/ui/FormHeader';
 import { Sheet, SheetActions } from '@/components/ui/Sheet';
 import { cardSurface, radius, sand, space } from '@/theme/tokens';
 
@@ -37,7 +37,6 @@ type Draft = { contact: Contact | null; role: string; notes: string };
 const empty: Draft = { contact: null, role: '', notes: '' };
 
 export function WorkersScreen() {
-  const router = useRouter();
   const { data: crusade } = useCrusade();
   const { data: zones } = useZones();
   const { data: churches } = useChurches();
@@ -92,15 +91,7 @@ export function WorkersScreen() {
   return (
     <SafeAreaView style={styles.safe}>
       <ScrollView contentContainerStyle={styles.scroll} keyboardShouldPersistTaps="handled">
-        <Pressable onPress={() => router.back()} hitSlop={8}>
-          <Text style={styles.back}>‹ Back to forms</Text>
-        </Pressable>
-        <View style={styles.titleRow}>
-          <Text style={styles.title}>Worker Groups</Text>
-          <View style={styles.pillarBadge}>
-            <Text style={styles.pillarText}>P6</Text>
-          </View>
-        </View>
+        <FormHeader title="Worker Groups" pillar="P6" />
 
         <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.tabs} contentContainerStyle={{ gap: space.sm }}>
           {GROUPS.map((g) => {
@@ -146,9 +137,7 @@ export function WorkersScreen() {
           )}
         </View>
 
-        <Pressable style={styles.addToggle} onPress={() => setShowAdd(true)}>
-          <Text style={styles.addToggleText}>Add to {groupLabel}</Text>
-        </Pressable>
+        <AddButton label={`Add to ${groupLabel}`} onPress={() => setShowAdd(true)} />
       </ScrollView>
 
       <Sheet open={showAdd} onClose={close} title={`Add to ${groupLabel}`}>
@@ -171,11 +160,6 @@ export function WorkersScreen() {
 const styles = StyleSheet.create({
   safe: { flex: 1, backgroundColor: sand.bg },
   scroll: { padding: space.xl, paddingBottom: space.xxl },
-  back: { fontSize: 14, color: sand.ink2, marginBottom: space.md },
-  titleRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
-  title: { fontSize: 24, fontWeight: '700', color: sand.ink },
-  pillarBadge: { backgroundColor: sand.accentBg, borderRadius: radius.pill, paddingHorizontal: 10, paddingVertical: 4 },
-  pillarText: { fontSize: 11, fontWeight: '700', color: sand.accent },
 
   tabs: { marginTop: space.lg },
   tab: { borderWidth: 1, borderColor: sand.line, borderRadius: radius.pill, paddingHorizontal: 12, paddingVertical: 6, height: 32 },
@@ -199,6 +183,4 @@ const styles = StyleSheet.create({
   remove: { fontSize: 18, color: sand.ink3 },
 
   empty: { fontSize: 13, color: sand.ink3, textAlign: 'center', paddingVertical: space.lg },
-  addToggle: { marginTop: space.lg, borderWidth: 1.5, borderColor: sand.ink, borderRadius: radius.pill, paddingVertical: 13, alignItems: 'center' },
-  addToggleText: { fontSize: 14, fontWeight: '600', color: sand.ink },
 });

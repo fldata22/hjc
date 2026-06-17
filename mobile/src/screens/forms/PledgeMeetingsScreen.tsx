@@ -1,5 +1,4 @@
 import { useMemo, useState } from 'react';
-import { useRouter } from 'expo-router';
 import { ActivityIndicator, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
@@ -14,6 +13,7 @@ import {
   useRecordPledges,
 } from '@/api/hooks';
 import { Button, CurrencyField, DateField, NumberField, SelectField, TextField } from '@/components/ui/fields';
+import { AddButton, FormHeader } from '@/components/ui/FormHeader';
 import { Sheet, SheetActions } from '@/components/ui/Sheet';
 import { cardSurface, radius, sand, space, statusColors } from '@/theme/tokens';
 
@@ -32,7 +32,6 @@ type PledgeDraft = { pastor_id: number | ''; resource: PledgeResource | ''; quan
 const emptyPledge: PledgeDraft = { pastor_id: '', resource: '', quantity: '' };
 
 export function PledgeMeetingsScreen() {
-  const router = useRouter();
   const { data: crusade } = useCrusade();
   const { data: meetingsPage, isLoading } = usePledgeMeetings();
   const { data: pastorsPage } = usePastors({ per_page: 100 });
@@ -93,16 +92,7 @@ export function PledgeMeetingsScreen() {
   return (
     <SafeAreaView style={styles.safe}>
       <ScrollView contentContainerStyle={styles.scroll} keyboardShouldPersistTaps="handled">
-        <Pressable onPress={() => router.back()} hitSlop={8}><Text style={styles.back}>‹ Back to forms</Text></Pressable>
-        <View style={styles.titleRow}>
-          <Text style={styles.title}>Pledges</Text>
-          <View style={styles.pillarBadge}><Text style={styles.pillarText}>P1</Text></View>
-        </View>
-
-        <View style={styles.statStrip}>
-          <Text style={styles.statNum}>{meetings.length}</Text>
-          <Text style={styles.statLabel}>meetings scheduled</Text>
-        </View>
+        <FormHeader title="Pledges" pillar="P1" statNum={meetings.length} statLabel="meetings scheduled" />
 
         <View style={styles.card}>
           {isLoading ? (
@@ -176,7 +166,7 @@ export function PledgeMeetingsScreen() {
           )}
         </View>
 
-        <Pressable style={styles.addToggle} onPress={() => setShowMeetingForm(true)}><Text style={styles.addToggleText}>Schedule meeting</Text></Pressable>
+        <AddButton label="Schedule meeting" onPress={() => setShowMeetingForm(true)} />
       </ScrollView>
 
       <Sheet open={showMeetingForm} onClose={closeMeeting} title="Schedule meeting">
@@ -196,14 +186,6 @@ export function PledgeMeetingsScreen() {
 const styles = StyleSheet.create({
   safe: { flex: 1, backgroundColor: sand.bg },
   scroll: { padding: space.xl, paddingBottom: space.xxl },
-  back: { fontSize: 14, color: sand.ink2, marginBottom: space.md },
-  titleRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
-  title: { fontSize: 24, fontWeight: '800', color: sand.ink },
-  pillarBadge: { backgroundColor: sand.accentBg, borderRadius: radius.pill, paddingHorizontal: 10, paddingVertical: 4 },
-  pillarText: { fontSize: 11, fontWeight: '800', color: sand.accent },
-  statStrip: { flexDirection: 'row', alignItems: 'baseline', gap: space.sm, marginTop: space.lg },
-  statNum: { fontSize: 30, fontWeight: '800', color: sand.ink },
-  statLabel: { fontSize: 13, color: sand.ink3 },
   card: { ...cardSurface, paddingHorizontal: space.lg, marginTop: space.lg },
   divider: { borderTopWidth: 1, borderTopColor: sand.line },
   row: { flexDirection: 'row', alignItems: 'center', gap: space.sm, paddingVertical: 14 },
@@ -220,6 +202,4 @@ const styles = StyleSheet.create({
   checkmark: { color: sand.surface, fontSize: 12, fontWeight: '800' },
   checkLabel: { fontSize: 14, color: sand.ink },
   okText: { fontSize: 12, color: sand.ok, marginTop: space.sm },
-  addToggle: { marginTop: space.lg, borderWidth: 1.5, borderColor: sand.ink, borderRadius: radius.pill, paddingVertical: 13, alignItems: 'center' },
-  addToggleText: { fontSize: 14, fontWeight: '600', color: sand.ink },
 });

@@ -9,7 +9,7 @@ import {
   View,
 } from 'react-native';
 
-import { radius, sand, space } from '@/theme/tokens';
+import { elevation, radius, sand, space } from '@/theme/tokens';
 
 type Option = { value: string; label: string };
 
@@ -270,38 +270,57 @@ export function Button({
 
 const styles = StyleSheet.create({
   field: { paddingVertical: space.md },
-  label: { fontSize: 10, fontWeight: '700', letterSpacing: 1, color: sand.ink3, marginBottom: 6 },
-  input: { borderBottomWidth: 1, borderBottomColor: sand.line2, paddingVertical: 8, fontSize: 15, color: sand.ink },
-  area: { minHeight: 64, textAlignVertical: 'top' },
-  error: { fontSize: 11, color: sand.risk, marginTop: 4 },
+  label: { fontSize: 10, fontWeight: '800', letterSpacing: 1, color: sand.ink2, marginBottom: 7 },
+  // Filled input rows — solid, rounded, with a clear border (no more thin underlines).
+  input: {
+    backgroundColor: sand.chipBg,
+    borderWidth: 1,
+    borderColor: sand.line,
+    borderRadius: radius.md,
+    paddingHorizontal: 14,
+    paddingVertical: 12,
+    fontSize: 15,
+    color: sand.ink,
+    fontWeight: '500',
+  },
+  area: { minHeight: 84, textAlignVertical: 'top', paddingTop: 12 },
+  error: { fontSize: 11, color: sand.risk, marginTop: 4, fontWeight: '600' },
 
   segRow: { flexDirection: 'row', flexWrap: 'wrap', gap: space.sm },
-  seg: { borderWidth: 1, borderColor: sand.line2, borderRadius: radius.pill, paddingHorizontal: 14, paddingVertical: 6 },
-  segOn: { backgroundColor: sand.ink, borderColor: sand.ink },
-  segText: { fontSize: 13, fontWeight: '500', color: sand.ink2 },
-  segTextOn: { color: sand.surface },
+  seg: {
+    borderWidth: 1.5,
+    borderColor: sand.line2,
+    backgroundColor: sand.surface,
+    borderRadius: radius.pill,
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+  },
+  segOn: { backgroundColor: sand.accent, borderColor: sand.accent },
+  segText: { fontSize: 13, fontWeight: '700', color: sand.ink2 },
+  segTextOn: { color: sand.onAccent },
 
   select: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
+    backgroundColor: sand.chipBg,
     borderWidth: 1,
-    borderColor: sand.line2,
+    borderColor: sand.line,
     borderRadius: radius.md,
     paddingHorizontal: 14,
-    paddingVertical: 11,
+    paddingVertical: 13,
   },
-  selectText: { fontSize: 15, color: sand.ink },
-  selectChevron: { fontSize: 16, color: sand.ink3 },
-  optBackdrop: { flex: 1, backgroundColor: 'rgba(0,0,0,0.35)', justifyContent: 'center', padding: space.xl },
+  selectText: { fontSize: 15, color: sand.ink, fontWeight: '500' },
+  selectChevron: { fontSize: 16, color: sand.accent },
+  optBackdrop: { flex: 1, backgroundColor: 'rgba(12,16,36,0.45)', justifyContent: 'center', padding: space.xl },
   optSheet: { backgroundColor: sand.surface, borderRadius: radius.lg, maxHeight: '70%', paddingVertical: space.sm },
   optRow: { paddingHorizontal: space.xl, paddingVertical: 14, borderBottomWidth: 1, borderBottomColor: sand.line },
   optText: { fontSize: 15, color: sand.ink },
 
-  btn: { flex: 1, borderRadius: radius.pill, paddingVertical: 13, alignItems: 'center' },
-  btnPrimary: { backgroundColor: sand.ink },
-  btnGhost: { borderWidth: 1.5, borderColor: sand.ink },
+  btn: { flex: 1, borderRadius: radius.pill, paddingVertical: 14, alignItems: 'center' },
+  btnPrimary: { backgroundColor: sand.accent, ...elevation, shadowColor: sand.accent, shadowOpacity: 0.4 },
+  btnGhost: { borderWidth: 1.5, borderColor: sand.line2, backgroundColor: sand.surface },
   btnDanger: { borderWidth: 1.5, borderColor: sand.risk },
-  btnText: { fontSize: 14, fontWeight: '600' },
+  btnText: { fontSize: 15, fontWeight: '700' },
   btnDisabled: { opacity: 0.4 },
 });

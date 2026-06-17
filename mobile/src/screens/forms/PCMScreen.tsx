@@ -1,5 +1,4 @@
 import { useMemo, useState } from 'react';
-import { useRouter } from 'expo-router';
 import { ActivityIndicator, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
@@ -15,6 +14,7 @@ import {
 } from '@/api/hooks';
 import { Button, DateField, SegmentedField, SelectField, TextField, TextareaField } from '@/components/ui/fields';
 import { ContactPicker } from '@/components/ui/ContactPicker';
+import { AddButton, FormHeader } from '@/components/ui/FormHeader';
 import { Sheet, SheetActions } from '@/components/ui/Sheet';
 import { cardSurface, radius, sand, space, statusColors } from '@/theme/tokens';
 
@@ -40,7 +40,6 @@ type EditDraft = { pipeline_stage: Stage; zone_id: number | ''; last_contact_at:
 type AddDraft = { contact: Contact | null; role: string };
 
 export function PCMScreen() {
-  const router = useRouter();
   const { data: page, isLoading } = usePastors({ per_page: 50 });
   const { data: zones } = useZones();
   const { data: crusade } = useCrusade();
@@ -108,18 +107,7 @@ export function PCMScreen() {
   return (
     <SafeAreaView style={styles.safe}>
       <ScrollView contentContainerStyle={styles.scroll} keyboardShouldPersistTaps="handled">
-        <Pressable onPress={() => router.back()} hitSlop={8}>
-          <Text style={styles.back}>‹ Back to forms</Text>
-        </Pressable>
-        <View style={styles.titleRow}>
-          <Text style={styles.title}>Primary Committee</Text>
-          <View style={styles.pillarBadge}><Text style={styles.pillarText}>P1</Text></View>
-        </View>
-
-        <View style={styles.statStrip}>
-          <Text style={styles.statNum}>{confirmed}</Text>
-          <Text style={styles.statLabel}>of {pastors.length} confirmed</Text>
-        </View>
+        <FormHeader title="Primary Committee" pillar="P1" statNum={confirmed} statLabel={`of ${pastors.length} confirmed`} />
         <Text style={styles.hint}>Tap a pastor to edit · tap the stage pill to advance</Text>
 
         <View style={styles.card}>
@@ -148,9 +136,7 @@ export function PCMScreen() {
           )}
         </View>
 
-        <Pressable style={styles.addToggle} onPress={() => setShowAdd(true)}>
-          <Text style={styles.addToggleText}>Add new PCM</Text>
-        </Pressable>
+        <AddButton label="Add new PCM" onPress={() => setShowAdd(true)} />
       </ScrollView>
 
       {/* Edit */}
@@ -185,14 +171,6 @@ export function PCMScreen() {
 const styles = StyleSheet.create({
   safe: { flex: 1, backgroundColor: sand.bg },
   scroll: { padding: space.xl, paddingBottom: space.xxl },
-  back: { fontSize: 14, color: sand.ink2, marginBottom: space.md },
-  titleRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
-  title: { fontSize: 24, fontWeight: '800', color: sand.ink },
-  pillarBadge: { backgroundColor: sand.accentBg, borderRadius: radius.pill, paddingHorizontal: 10, paddingVertical: 4 },
-  pillarText: { fontSize: 11, fontWeight: '800', color: sand.accent },
-  statStrip: { flexDirection: 'row', alignItems: 'baseline', gap: space.sm, marginTop: space.lg },
-  statNum: { fontSize: 30, fontWeight: '800', color: sand.ink },
-  statLabel: { fontSize: 13, color: sand.ink3 },
   hint: { fontSize: 12, color: sand.ink3, marginTop: 6 },
   card: { ...cardSurface, paddingHorizontal: space.lg, marginTop: space.md },
   row: { flexDirection: 'row', alignItems: 'center', gap: space.sm, paddingVertical: 12 },
@@ -201,6 +179,4 @@ const styles = StyleSheet.create({
   sub: { fontSize: 12, color: sand.ink3, marginTop: 2 },
   stagePill: { borderRadius: radius.pill, paddingHorizontal: 10, paddingVertical: 4 },
   empty: { fontSize: 13, color: sand.ink3, textAlign: 'center', paddingVertical: space.lg },
-  addToggle: { marginTop: space.lg, borderWidth: 1.5, borderColor: sand.ink, borderRadius: radius.pill, paddingVertical: 13, alignItems: 'center' },
-  addToggleText: { fontSize: 14, fontWeight: '600', color: sand.ink },
 });

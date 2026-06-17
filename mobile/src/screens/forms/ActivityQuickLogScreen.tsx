@@ -1,6 +1,5 @@
 import { useMemo, useState } from 'react';
-import { useRouter } from 'expo-router';
-import { ActivityIndicator, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { ActivityIndicator, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import {
@@ -12,6 +11,7 @@ import {
 } from '@/api/hooks';
 import { ApiError } from '@/api/client';
 import { Button, SegmentedField, SelectField, TextareaField } from '@/components/ui/fields';
+import { FormHeader } from '@/components/ui/FormHeader';
 import { cardSurface, radius, sand, space, statusColors } from '@/theme/tokens';
 
 type Status = 'done' | 'running';
@@ -35,7 +35,6 @@ function whenLabel(iso: string): string {
 }
 
 export function ActivityQuickLogScreen() {
-  const router = useRouter();
   const { data: crusade, isLoading: crusadeLoading, isError: crusadeError } = useCrusade();
   const { data: powers } = usePowers();
   const { data: recent } = useActivityEntries({ per_page: 10 });
@@ -76,11 +75,7 @@ export function ActivityQuickLogScreen() {
   return (
     <SafeAreaView style={styles.safe}>
       <ScrollView contentContainerStyle={styles.scroll} keyboardShouldPersistTaps="handled">
-        <Pressable onPress={() => router.back()} hitSlop={8}><Text style={styles.back}>‹ Back to forms</Text></Pressable>
-        <View style={styles.titleRow}>
-          <Text style={styles.title}>Activity Quick-Log</Text>
-          <View style={styles.pillarBadge}><Text style={styles.pillarText}>D19</Text></View>
-        </View>
+        <FormHeader title="Activity Quick-Log" pillar="D19" />
 
         {crusadeError ? (
           <View style={styles.card}><Text style={styles.errorText}>Couldn’t load crusade.</Text></View>
@@ -166,11 +161,6 @@ export function ActivityQuickLogScreen() {
 const styles = StyleSheet.create({
   safe: { flex: 1, backgroundColor: sand.bg },
   scroll: { padding: space.xl, paddingBottom: space.xxl },
-  back: { fontSize: 14, color: sand.ink2, marginBottom: space.md },
-  titleRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
-  title: { fontSize: 24, fontWeight: '800', color: sand.ink },
-  pillarBadge: { backgroundColor: sand.accentBg, borderRadius: radius.pill, paddingHorizontal: 10, paddingVertical: 4 },
-  pillarText: { fontSize: 11, fontWeight: '800', color: sand.accent },
 
   intro: { fontSize: 13, color: sand.ink3, lineHeight: 19, marginTop: space.lg },
   exampleList: { marginTop: space.sm, gap: 4 },
