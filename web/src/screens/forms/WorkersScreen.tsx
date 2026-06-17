@@ -2,17 +2,22 @@ import { useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ResponsiveShell } from '../app/Shell';
 import { FormShell } from './FormShell';
-import { TextField, TextareaField, PhoneField } from './fields';
+import { TextField, TextareaField } from './fields';
+import { ContactPicker } from './ContactPicker';
 import {
   useCrusade,
   useWorkers,
   useCreateWorker,
   useUpdateWorker,
   useDeleteWorker,
+  useZones,
+  useChurches,
   type WorkerGroup,
   type Worker,
+  type Contact,
 } from '../../api/hooks';
 import { ApiError } from '../../api/client';
+import { InlineSheet } from './InlineSheet';
 import './forms.css';
 
 const GROUPS: Array<{ value: WorkerGroup; label: string }> = [
@@ -24,19 +29,17 @@ const GROUPS: Array<{ value: WorkerGroup; label: string }> = [
   { value: 'hospitality', label: 'Hospitality' },
   { value: 'technical', label: 'Technical' },
   { value: 'medical', label: 'Medical' },
-  { value: 'childrens', label: "Children's" },
+  { value: 'womens', label: "Women's" },
   { value: 'general', label: 'General' },
 ];
 
 type Draft = {
-  name: string;
+  contact: Contact | null;
   role: string;
-  phone: string;
-  email: string;
   notes: string;
 };
 
-const emptyDraft: Draft = { name: '', role: '', phone: '', email: '', notes: '' };
+const emptyDraft: Draft = { contact: null, role: '', notes: '' };
 
 function extractApiMessage(e: unknown, fallback = 'Failed'): string {
   if (e instanceof ApiError) {
@@ -53,6 +56,8 @@ function extractApiMessage(e: unknown, fallback = 'Failed'): string {
 export function WorkersScreen() {
   const navigate = useNavigate();
   const { data: crusade, isLoading: crusadeLoading, isError: crusadeError } = useCrusade();
+  const { data: zones } = useZones();
+  const { data: churches } = useChurches();
   const [activeGroup, setActiveGroup] = useState<WorkerGroup>('choir');
   const { data: workers, isLoading: workersLoading, isError: workersError, refetch } = useWorkers({ group_type: activeGroup });
   const createMutation = useCreateWorker();
@@ -67,17 +72,35 @@ export function WorkersScreen() {
   const activeCount = list.filter((w) => w.status === 'active').length;
   const groupLabel = GROUPS.find((g) => g.value === activeGroup)?.label ?? activeGroup;
 
+  const zoneById = useMemo(() => new Map((zones ?? []).map((z) => [z.id, z] as const)), [zones]);
+  const churchById = useMemo(() => new Map((churches ?? []).map((c) => [c.id, c] as const)), [churches]);
+
+  const subLine = (w: Worker): string => {
+    const parts: string[] = [];
+    if (w.role) parts.push(w.role);
+    const zoneName = w.zone_id != null ? (zoneById.get(w.zone_id)?.name ?? zoneById.get(w.zone_id)?.code) : null;
+    const churchName = w.church_id != null ? churchById.get(w.church_id)?.name : null;
+    if (zoneName) parts.push(zoneName);
+    if (churchName) parts.push(churchName);
+    if (w.phone) parts.push(w.phone);
+    return parts.length ? parts.join(' · ') : '—';
+  };
+
   const handleAdd = async () => {
-    if (!crusade || draft.name.trim() === '' || createMutation.isPending) return;
+    if (!crusade || !draft.contact || createMutation.isPending) return;
+    const c = draft.contact;
     setSaveError(null);
     try {
       await createMutation.mutateAsync({
         crusade_id: crusade.id,
+        contact_id: c.id,
+        zone_id: c.zone_id,
+        church_id: c.church_id,
         group_type: activeGroup,
-        name: draft.name.trim(),
-        role: draft.role.trim() || null,
-        phone: draft.phone.trim() || null,
-        email: draft.email.trim() || null,
+        name: c.full_name,
+        role: draft.role.trim() || c.title || null,
+        phone: c.phone,
+        email: c.email,
         notes: draft.notes.trim() || null,
       });
       setDraft(emptyDraft);
@@ -175,7 +198,7 @@ export function WorkersScreen() {
               <div key={w.id} className="form-list-row">
                 <div>
                   <div className="name" style={{ color: w.status === 'inactive' ? 'var(--ink-3)' : 'var(--ink)' }}>{w.name}</div>
-                  <div className="sub">{w.role ?? '—'}{w.phone ? ` · ${w.phone}` : ''}</div>
+                  <div className="sub">{subLine(w)}</div>
                 </div>
                 <div className="right" style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
                   <button
@@ -204,44 +227,39 @@ export function WorkersScreen() {
         <button
           type="button"
           className="add-toggle"
-          onClick={() => {
-            if (showForm) {
-              setDraft(emptyDraft);
-              setSaveError(null);
-            }
-            setShowForm((s) => !s);
-          }}
+          onClick={() => setShowForm(true)}
         >
-          {showForm ? 'Cancel' : `Add to ${groupLabel}`}
+          {`Add to ${groupLabel}`}
         </button>
 
-        {showForm && (
-          <div className="inline-form">
-            <div className="fields" style={{ padding: 0 }}>
-              <TextField label="Name" required placeholder="e.g. Sister Akua" value={draft.name} onChange={(v) => setDraft({ ...draft, name: v })}/>
-              <TextField label="Role" placeholder="optional" value={draft.role} onChange={(v) => setDraft({ ...draft, role: v })}/>
-              <PhoneField label="Phone" value={draft.phone} onChange={(v) => setDraft({ ...draft, phone: v })}/>
-              <TextField label="Email" type="email" value={draft.email} onChange={(v) => setDraft({ ...draft, email: v })}/>
-              <TextareaField label="Notes" value={draft.notes} onChange={(v) => setDraft({ ...draft, notes: v })}/>
-            </div>
-
-            {saveError && (
-              <div className="field-error" style={{ margin: '8px 0' }}>{saveError}</div>
-            )}
-
-            <div className="row">
-              <button type="button" className="btn" onClick={() => { setDraft(emptyDraft); setSaveError(null); }}>Clear</button>
-              <button
-                type="button"
-                className="btn primary"
-                onClick={handleAdd}
-                disabled={createMutation.isPending || draft.name.trim() === ''}
-              >
-                {createMutation.isPending ? 'Saving…' : `Add to ${groupLabel}`}
-              </button>
-            </div>
+        <InlineSheet open={showForm} onClose={() => { setDraft(emptyDraft); setShowForm(false); setSaveError(null); }}>
+          <div className="fields" style={{ padding: 0 }}>
+            <ContactPicker
+              label="Person"
+              required
+              value={draft.contact}
+              onChange={(c) => setDraft({ ...draft, contact: c })}
+            />
+            <TextField label="Role in group" placeholder="optional — e.g. Lead, Section head" value={draft.role} onChange={(v) => setDraft({ ...draft, role: v })}/>
+            <TextareaField label="Notes" value={draft.notes} onChange={(v) => setDraft({ ...draft, notes: v })}/>
           </div>
-        )}
+
+          {saveError && (
+            <div className="field-error" style={{ margin: '8px 0' }}>{saveError}</div>
+          )}
+
+          <div className="row">
+            <button type="button" className="btn" onClick={() => { setDraft(emptyDraft); setSaveError(null); }}>Clear</button>
+            <button
+              type="button"
+              className="btn primary"
+              onClick={handleAdd}
+              disabled={createMutation.isPending || !draft.contact}
+            >
+              {createMutation.isPending ? 'Saving…' : `Add to ${groupLabel}`}
+            </button>
+          </div>
+        </InlineSheet>
 
         <div className="bot-pad"/>
       </FormShell>

@@ -13,6 +13,7 @@ import { compressImage } from '../../lib/imageCompress';
 import { ReceiptModal } from './ReceiptModal';
 import { todayISO } from '../../lib/dateHelpers';
 import { useToast } from '../../lib/toast-context';
+import { InlineSheet } from './InlineSheet';
 import './forms.css';
 
 type Draft = {
@@ -223,100 +224,92 @@ export function VenueInspectionForm() {
         <button
           type="button"
           className="add-toggle"
-          onClick={() => {
-            if (showForm) {
-              setDraft(emptyDraft(todayISO()));
-              setSaveError(null);
-            }
-            setShowForm((s) => !s);
-          }}
+          onClick={() => setShowForm(true)}
         >
-          {showForm ? 'Cancel' : 'Add inspection'}
+          Add inspection
         </button>
 
-        {showForm && (
-          <div className="inline-form">
-            <div className="fields" style={{ padding: 0 }}>
-              <DateField label="Inspected on" value={draft.inspected_at} onChange={(v) => setDraft({ ...draft, inspected_at: v })} required/>
-              <TextField label="Inspector name" placeholder="e.g. Director Adebimpe" value={draft.inspector_name} onChange={(v) => setDraft({ ...draft, inspector_name: v })} required/>
+        <InlineSheet open={showForm} onClose={() => { setDraft(emptyDraft(todayISO())); setShowForm(false); setSaveError(null); }}>
+          <div className="fields" style={{ padding: 0 }}>
+            <DateField label="Inspected on" value={draft.inspected_at} onChange={(v) => setDraft({ ...draft, inspected_at: v })} required/>
+            <TextField label="Inspector name" placeholder="e.g. Director Adebimpe" value={draft.inspector_name} onChange={(v) => setDraft({ ...draft, inspector_name: v })} required/>
 
-              <div className="field">
-                <div className="lbl"><span>Checks</span></div>
-                <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-                  {CHECKS.map((c) => (
-                    <label
-                      key={c.key}
-                      style={{
-                        display: 'flex',
-                        alignItems: 'center',
-                        gap: 10,
-                        padding: '8px 10px',
-                        border: '1px solid var(--line)',
-                        borderRadius: 6,
-                        cursor: 'pointer',
-                        fontSize: 13,
-                        background: draft[c.key] ? 'var(--bg-2)' : 'transparent',
-                      }}
-                    >
-                      <input
-                        type="checkbox"
-                        checked={draft[c.key]}
-                        onChange={() => toggleCheck(c.key)}
-                        style={{ margin: 0 }}
-                      />
-                      <span>{c.label}</span>
-                    </label>
-                  ))}
-                </div>
-              </div>
-
-              <TextareaField label="Permits status" placeholder="e.g. Police: approved, Fire: pending, City: approved" value={draft.permits_status} onChange={(v) => setDraft({ ...draft, permits_status: v })}/>
-              <TextareaField label="Notes" value={draft.notes} onChange={(v) => setDraft({ ...draft, notes: v })}/>
-            </div>
-
-            <div style={{ padding: '12px 0' }}>
-              {draft.photoPreview ? (
-                <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-                  <img
-                    src={draft.photoPreview}
-                    alt="Inspection preview"
-                    style={{ width: 60, height: 60, objectFit: 'cover', borderRadius: 6, border: '1px solid var(--line)' }}
-                  />
-                  <button
-                    type="button"
-                    onClick={() => setDraft((d) => ({ ...d, photoPreview: null, photoBlob: null }))}
-                    style={{ background: 'transparent', border: 0, color: 'var(--accent)', cursor: 'pointer', fontSize: 12, fontFamily: 'inherit' }}
+            <div className="field">
+              <div className="lbl"><span>Checks</span></div>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                {CHECKS.map((c) => (
+                  <label
+                    key={c.key}
+                    style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: 10,
+                      padding: '8px 10px',
+                      border: '1px solid var(--line)',
+                      borderRadius: 6,
+                      cursor: 'pointer',
+                      fontSize: 13,
+                      background: draft[c.key] ? 'var(--bg-2)' : 'transparent',
+                    }}
                   >
-                    Remove
-                  </button>
-                </div>
-              ) : (
-                <label style={{ display: 'inline-block', padding: '8px 12px', border: '1px solid var(--line)', borderRadius: 6, cursor: 'pointer', fontSize: 12 }}>
-                  <input
-                    type="file"
-                    accept="image/*"
-                    capture="environment"
-                    style={{ display: 'none' }}
-                    onChange={handlePhotoChange}
-                    disabled={capturing}
-                  />
-                  {capturing ? 'Processing…' : '+ Add photo'}
-                </label>
-              )}
+                    <input
+                      type="checkbox"
+                      checked={draft[c.key]}
+                      onChange={() => toggleCheck(c.key)}
+                      style={{ margin: 0 }}
+                    />
+                    <span>{c.label}</span>
+                  </label>
+                ))}
+              </div>
             </div>
 
-            {saveError && (
-              <div className="field-error" style={{ margin: '4px 0' }}>{saveError}</div>
-            )}
-
-            <div className="row">
-              <button type="button" className="btn" onClick={() => { setDraft(emptyDraft(todayISO())); setSaveError(null); }}>Clear</button>
-              <button type="button" className="btn primary" onClick={handleSave} disabled={!canSave}>
-                {createMutation.isPending ? 'Saving…' : 'Save inspection'}
-              </button>
-            </div>
+            <TextareaField label="Permits status" placeholder="e.g. Police: approved, Fire: pending, City: approved" value={draft.permits_status} onChange={(v) => setDraft({ ...draft, permits_status: v })}/>
+            <TextareaField label="Notes" value={draft.notes} onChange={(v) => setDraft({ ...draft, notes: v })}/>
           </div>
-        )}
+
+          <div style={{ padding: '12px 0' }}>
+            {draft.photoPreview ? (
+              <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+                <img
+                  src={draft.photoPreview}
+                  alt="Inspection preview"
+                  style={{ width: 60, height: 60, objectFit: 'cover', borderRadius: 6, border: '1px solid var(--line)' }}
+                />
+                <button
+                  type="button"
+                  onClick={() => setDraft((d) => ({ ...d, photoPreview: null, photoBlob: null }))}
+                  style={{ background: 'transparent', border: 0, color: 'var(--accent)', cursor: 'pointer', fontSize: 12, fontFamily: 'inherit' }}
+                >
+                  Remove
+                </button>
+              </div>
+            ) : (
+              <label style={{ display: 'inline-block', padding: '8px 12px', border: '1px solid var(--line)', borderRadius: 6, cursor: 'pointer', fontSize: 12 }}>
+                <input
+                  type="file"
+                  accept="image/*"
+                  capture="environment"
+                  style={{ display: 'none' }}
+                  onChange={handlePhotoChange}
+                  disabled={capturing}
+                />
+                {capturing ? 'Processing…' : '+ Add photo'}
+              </label>
+            )}
+          </div>
+
+          {saveError && (
+            <div className="field-error" style={{ margin: '4px 0' }}>{saveError}</div>
+          )}
+
+          <div className="row">
+            <button type="button" className="btn" onClick={() => { setDraft(emptyDraft(todayISO())); setSaveError(null); }}>Clear</button>
+            <button type="button" className="btn primary" onClick={handleSave} disabled={!canSave}>
+              {createMutation.isPending ? 'Saving…' : 'Save inspection'}
+            </button>
+          </div>
+        </InlineSheet>
 
         {openPhoto && <ReceiptModal photo={openPhoto} onClose={() => setOpenPhoto(null)}/>}
         <div className="bot-pad"/>

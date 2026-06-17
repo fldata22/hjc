@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ResponsiveShell, AppBar, TabBar, Drawer } from './Shell';
+import { ResponsiveShell, AppBar, TabBar, Drawer, useDrawer } from './Shell';
 import { useBudgetCategories, useBudgetSummary, useExpenseTransactions } from '../../api/hooks';
 import { ReceiptModal } from '../forms/ReceiptModal';
 import './app.css';
@@ -16,7 +16,7 @@ function formatRelativeDate(iso: string): string {
 
 export function BudgetScreen() {
   const navigate = useNavigate();
-  const [drawer, setDrawer] = useState(false);
+  const drawer = useDrawer();
   const [openReceipt, setOpenReceipt] = useState<string | null>(null);
 
   const [dateRange] = useState(() => ({
@@ -48,9 +48,10 @@ export function BudgetScreen() {
   const totalBudget = summary ? Number(summary.total_budget) : 0;
   const totalSpent = summary ? Number(summary.spent) : 0;
   const overBudget = totalSpent > totalBudget;
+  const pct = totalBudget > 0 ? Math.min(100, Math.round((totalSpent / totalBudget) * 100)) : 0;
   const remainingOrOver = overBudget
-    ? `₵${Math.round(totalSpent - totalBudget).toLocaleString()} over`
-    : `₵${Math.round(Math.max(0, totalBudget - totalSpent)).toLocaleString()} left`;
+    ? `₵${Math.round(totalSpent - totalBudget).toLocaleString()} over budget`
+    : `₵${Math.round(Math.max(0, totalBudget - totalSpent)).toLocaleString()} remaining`;
 
   const categoriesWithSpend = useMemo(() => {
     if (!summary) return [];
@@ -69,172 +70,104 @@ export function BudgetScreen() {
 
   return (
     <ResponsiveShell active="home">
-      <AppBar onMenu={() => setDrawer(true)}/>
+      <AppBar title="Budget" sub="advance work" onMenu={drawer.show}/>
       <div className="scroll">
-        <div style={{ padding: '20px 20px 0' }}>
-          <div
-            className="eyebrow"
-            style={{
-              fontSize: 10,
-              letterSpacing: '0.16em',
-              textTransform: 'uppercase',
-              color: 'var(--ink-3)',
-              fontWeight: 500,
-              marginBottom: 10,
-            }}
-          >
-            Budget · advance work
-          </div>
-          <h1
-            className="serif"
-            style={{ fontSize: 34, fontWeight: 300, letterSpacing: '-0.035em', lineHeight: 1.02 }}
-          >
-            Spend.
-          </h1>
-        </div>
 
-        <div className="composite">
-          <div className="label">Total spent · all-time</div>
-          <div className="row">
-            <div className="num serif">₵{Math.round(totalSpent).toLocaleString()}</div>
-            <div className="delta">
-              <b>{remainingOrOver}</b>
-              of ₵{Math.round(totalBudget).toLocaleString()} budget
-            </div>
+        <div className="readiness-stat">
+          <div className="stat-row">
+            <span className="stat-num">
+              ₵{totalSpent >= 1000 ? `${(totalSpent / 1000).toFixed(1)}k` : Math.round(totalSpent).toLocaleString()}
+            </span>
           </div>
-          <div className="track">
-            <i style={{ width: `${totalBudget > 0 ? Math.min(100, (totalSpent / totalBudget) * 100) : 0}%` }}/>
+          <div className="stat-sub">
+            Total spent · <b>{remainingOrOver}</b>
+          </div>
+          <div className="progress-track">
+            <div
+              className={'progress-fill' + (overBudget ? ' risk' : pct > 80 ? ' hold' : '')}
+              style={{ width: `${pct}%` }}
+            />
           </div>
         </div>
 
-        <div className="sec">
-          <h2 className="serif">Spend by <em>category</em></h2>
-          <span className="more">{categoriesWithSpend.length} categories</span>
+        <div className="sec-label">
+          Spend by category
+          <span className="sec-count">{categoriesWithSpend.length}</span>
         </div>
 
         {isEmpty ? (
-          <div style={{ padding: '24px 20px', textAlign: 'center', fontSize: 13, color: 'var(--ink-3)' }}>
+          <div className="empty-state">
             No expenses logged yet.
             <button
               type="button"
+              className="btn-primary"
+              style={{ marginTop: 12, display: 'block', width: '100%' }}
               onClick={() => navigate('/forms/daily-expenses')}
-              style={{
-                display: 'block',
-                margin: '12px auto 0',
-                padding: '10px 16px',
-                fontSize: 13,
-                fontWeight: 500,
-                borderRadius: 999,
-                border: '1px solid var(--ink)',
-                background: 'var(--ink)',
-                color: 'var(--bg)',
-                fontFamily: 'inherit',
-                cursor: 'pointer',
-              }}
             >
               Log first expense →
             </button>
           </div>
         ) : (
-          <div style={{ padding: '0 20px' }}>
-            {categoriesWithSpend.map((cat) => {
-              const isDominating = totalSpent > 0 && cat.amount / totalSpent > 0.25;
-              return (
-                <div
-                  key={cat.id}
-                  style={{
-                    display: 'grid',
-                    gridTemplateColumns: '24px 1fr auto',
-                    gap: 12,
-                    padding: '14px 0',
-                    borderBottom: '1px solid var(--line)',
-                    alignItems: 'center',
-                  }}
-                >
-                  <span
-                    className="serif"
-                    style={{ fontSize: 18, color: 'var(--ink-3)', lineHeight: 1 }}
-                  >
-                    {cat.label.charAt(0).toUpperCase()}
-                  </span>
-                  <div>
-                    <div style={{ fontSize: 13, fontWeight: 500, color: 'var(--ink)', marginBottom: 6 }}>
-                      {cat.label}
-                    </div>
+          categoriesWithSpend.map((cat) => {
+            const isDominating = totalSpent > 0 && cat.amount / totalSpent > 0.25;
+            return (
+              <div key={cat.id} className="list-row">
+                <div className="pillar-badge">{cat.label.charAt(0).toUpperCase()}</div>
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  <div className="row-label">{cat.label}</div>
+                  <div className="mini-bar">
                     <div
-                      style={{
-                        height: 3,
-                        background: 'var(--bg-2)',
-                        position: 'relative',
-                      }}
-                    >
-                      <i
-                        style={{
-                          position: 'absolute',
-                          left: 0, top: 0, bottom: 0,
-                          width: `${maxCategoryAmount > 0 ? (cat.amount / maxCategoryAmount) * 100 : 0}%`,
-                          background: isDominating ? 'var(--accent)' : 'var(--ink)',
-                        }}
-                      />
-                    </div>
+                      className={'mini-bar-fill' + (isDominating ? ' risk' : '')}
+                      style={{ width: `${maxCategoryAmount > 0 ? (cat.amount / maxCategoryAmount) * 100 : 0}%` }}
+                    />
                   </div>
-                  <span
-                    className="serif"
-                    style={{
-                      fontSize: 22,
-                      fontWeight: 300,
-                      color: 'var(--ink)',
-                      letterSpacing: '-0.03em',
-                    }}
-                  >
-                    ₵{Math.round(cat.amount).toLocaleString()}
-                  </span>
                 </div>
-              );
-            })}
-          </div>
+                <div className="row-val">
+                  ₵{Math.round(cat.amount).toLocaleString()}
+                </div>
+              </div>
+            );
+          })
         )}
 
         {recent.length > 0 && (
           <>
-            <div className="sec">
-              <h2 className="serif">Recent <em>· 5 latest</em></h2>
-              <span className="more">{entries.length} in last 30 days</span>
+            <div className="sec-label" style={{ marginTop: 4 }}>
+              Recent expenses
+              <span className="sec-count">{entries.length} in 30 days</span>
             </div>
 
-            <div style={{ padding: '0 20px' }}>
-              {recent.map((e) => {
-                const cat = e.budget_category_id != null ? categoryById.get(e.budget_category_id) : null;
-                return (
-                  <div key={e.id} className="form-list-row">
-                    <div>
-                      <div className="name">{e.description}</div>
-                      <div className="sub" style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}>
-                        <span>{cat?.name ?? 'Uncategorized'}</span>
-                        {e.receipt_photo_url && (
-                          <button
-                            type="button"
-                            onClick={(ev) => { ev.stopPropagation(); setOpenReceipt(e.receipt_photo_url); }}
-                            aria-label="View receipt"
-                            style={{ background: 'transparent', border: 0, padding: 0, fontSize: 14, cursor: 'pointer', lineHeight: 1 }}
-                          >
-                            📷
-                          </button>
-                        )}
-                      </div>
-                    </div>
-                    <div className="right">
-                      <div style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: 13, fontWeight: 600, color: 'var(--ink)' }}>
-                        ₵{Number(e.amount).toLocaleString()}
-                      </div>
-                      <div style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: 11, color: 'var(--ink-3)' }}>
-                        {formatRelativeDate(e.occurred_on)}
-                      </div>
+            {recent.map((e) => {
+              const cat = e.budget_category_id != null ? categoryById.get(e.budget_category_id) : null;
+              return (
+                <div key={e.id} className="form-list-row" style={{ cursor: 'default' }}>
+                  <div>
+                    <div className="flr-name">{e.description}</div>
+                    <div className="flr-meta" style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}>
+                      <span>{cat?.name ?? 'Uncategorized'}</span>
+                      {e.receipt_photo_url && (
+                        <button
+                          type="button"
+                          onClick={(ev) => { ev.stopPropagation(); setOpenReceipt(e.receipt_photo_url); }}
+                          aria-label="View receipt"
+                          style={{ background: 'transparent', border: 0, padding: 0, fontSize: 14, cursor: 'pointer', lineHeight: 1 }}
+                        >
+                          📷
+                        </button>
+                      )}
                     </div>
                   </div>
-                );
-              })}
-            </div>
+                  <div className="flr-right">
+                    <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--ink)' }}>
+                      ₵{Number(e.amount).toLocaleString()}
+                    </div>
+                    <div style={{ fontSize: 11, color: 'var(--ink-3)', marginTop: 2 }}>
+                      {formatRelativeDate(e.occurred_on)}
+                    </div>
+                  </div>
+                </div>
+              );
+            })}
 
             <button
               type="button"
@@ -244,7 +177,7 @@ export function BudgetScreen() {
                 width: '100%',
                 padding: '14px 20px',
                 textAlign: 'center',
-                fontSize: 12,
+                fontSize: 11,
                 color: 'var(--ink-3)',
                 letterSpacing: '0.06em',
                 textTransform: 'uppercase',
@@ -263,7 +196,7 @@ export function BudgetScreen() {
         <div className="bot-pad"/>
       </div>
       <TabBar active="home"/>
-      {drawer && <Drawer active="home" onClose={() => setDrawer(false)}/>}
+      {drawer.open && <Drawer active="home" onClose={drawer.hide}/>}
       {openReceipt && <ReceiptModal photo={openReceipt} onClose={() => setOpenReceipt(null)}/>}
     </ResponsiveShell>
   );

@@ -12,6 +12,7 @@ import {
 } from '../../api/hooks';
 import { ApiError } from '../../api/client';
 import { todayISO } from '../../lib/dateHelpers';
+import { InlineSheet } from './InlineSheet';
 import './forms.css';
 
 type Draft = {
@@ -156,43 +157,35 @@ export function DailyDecisionsScreen() {
         <button
           type="button"
           className="add-toggle"
-          onClick={() => {
-            if (showForm) {
-              setDraft(emptyDraft());
-              setSaveError(null);
-            }
-            setShowForm((s) => !s);
-          }}
+          onClick={() => setShowForm(true)}
         >
-          {showForm ? 'Cancel' : 'Log decisions'}
+          Log decisions
         </button>
 
-        {showForm && (
-          <div className="inline-form">
-            <div className="fields" style={{ padding: 0 }}>
-              <DateField label="Decisions on" required value={draft.decided_on} onChange={(v) => setDraft({ ...draft, decided_on: v })}/>
-              <NumberField label="Salvations" suffix="people" value={draft.salvations} onChange={(v) => setDraft({ ...draft, salvations: v })}/>
-              <NumberField label="Rededications" suffix="people" value={draft.rededications} onChange={(v) => setDraft({ ...draft, rededications: v })}/>
-              <NumberField label="Healings" suffix="people" value={draft.healings} onChange={(v) => setDraft({ ...draft, healings: v })}/>
-              <NumberField label="Counselled" suffix="people" value={draft.counselled} onChange={(v) => setDraft({ ...draft, counselled: v })}/>
-              <TextareaField label="Notes" value={draft.notes} onChange={(v) => setDraft({ ...draft, notes: v })}/>
-            </div>
-
-            {saveError && <div className="field-error" style={{ margin: '8px 0' }}>{saveError}</div>}
-
-            <div className="row">
-              <button type="button" className="btn" onClick={() => { setDraft(emptyDraft()); setSaveError(null); }}>Clear</button>
-              <button
-                type="button"
-                className="btn primary"
-                onClick={handleAdd}
-                disabled={createMutation.isPending || draft.decided_on === ''}
-              >
-                {createMutation.isPending ? 'Saving…' : 'Save decisions'}
-              </button>
-            </div>
+        <InlineSheet open={showForm} onClose={() => { setDraft(emptyDraft()); setShowForm(false); setSaveError(null); }}>
+          <div className="fields" style={{ padding: 0 }}>
+            <DateField label="Decisions on" required value={draft.decided_on} onChange={(v) => setDraft({ ...draft, decided_on: v })}/>
+            <NumberField label="Salvations" suffix="people" value={draft.salvations} onChange={(v) => setDraft({ ...draft, salvations: v })}/>
+            <NumberField label="Rededications" suffix="people" value={draft.rededications} onChange={(v) => setDraft({ ...draft, rededications: v })}/>
+            <NumberField label="Healings" suffix="people" value={draft.healings} onChange={(v) => setDraft({ ...draft, healings: v })}/>
+            <NumberField label="Counselled" suffix="people" value={draft.counselled} onChange={(v) => setDraft({ ...draft, counselled: v })}/>
+            <TextareaField label="Notes" value={draft.notes} onChange={(v) => setDraft({ ...draft, notes: v })}/>
           </div>
-        )}
+
+          {saveError && <div className="field-error" style={{ margin: '8px 0' }}>{saveError}</div>}
+
+          <div className="row">
+            <button type="button" className="btn" onClick={() => { setDraft(emptyDraft()); setSaveError(null); }}>Clear</button>
+            <button
+              type="button"
+              className="btn primary"
+              onClick={handleAdd}
+              disabled={createMutation.isPending || draft.decided_on === ''}
+            >
+              {createMutation.isPending ? 'Saving…' : 'Save decisions'}
+            </button>
+          </div>
+        </InlineSheet>
 
         <div className="bot-pad"/>
       </FormShell>

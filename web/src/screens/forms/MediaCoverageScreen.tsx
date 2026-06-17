@@ -14,6 +14,7 @@ import {
 } from '../../api/hooks';
 import { ApiError } from '../../api/client';
 import { todayISO } from '../../lib/dateHelpers';
+import { InlineSheet } from './InlineSheet';
 import './forms.css';
 
 const KINDS: Array<{ value: MediaKind; label: string }> = [
@@ -193,56 +194,48 @@ export function MediaCoverageScreen() {
         <button
           type="button"
           className="add-toggle"
-          onClick={() => {
-            if (showForm) {
-              setDraft(emptyDraft());
-              setSaveError(null);
-            }
-            setShowForm((s) => !s);
-          }}
+          onClick={() => setShowForm(true)}
         >
-          {showForm ? 'Cancel' : 'Log mention'}
+          Log mention
         </button>
 
-        {showForm && (
-          <div className="inline-form">
-            <div className="fields" style={{ padding: 0 }}>
-              <DateField label="Mentioned on" required value={draft.mentioned_on} onChange={(v) => setDraft({ ...draft, mentioned_on: v })}/>
-              <SelectField
-                label="Kind"
-                required
-                options={KINDS}
-                value={draft.kind}
-                onChange={(v) => setDraft({ ...draft, kind: v as MediaKind | '' })}
-                placeholder="Select…"
-              />
-              <TextField label="Outlet" required placeholder="e.g. Daily Graphic" value={draft.outlet} onChange={(v) => setDraft({ ...draft, outlet: v })}/>
-              <TextField label="Headline" required placeholder="The lead line" value={draft.headline} onChange={(v) => setDraft({ ...draft, headline: v })}/>
-              <TextField label="URL" placeholder="optional · https://…" value={draft.url} onChange={(v) => setDraft({ ...draft, url: v })}/>
-              <SegmentedField
-                label="Sentiment"
-                options={[...SENTIMENTS, { value: '', label: 'Skip' } as { value: ''; label: string }]}
-                value={draft.sentiment}
-                onChange={(v) => setDraft({ ...draft, sentiment: v as MediaSentiment | '' })}
-              />
-              <TextareaField label="Summary" value={draft.summary} onChange={(v) => setDraft({ ...draft, summary: v })}/>
-            </div>
-
-            {saveError && <div className="field-error" style={{ margin: '8px 0' }}>{saveError}</div>}
-
-            <div className="row">
-              <button type="button" className="btn" onClick={() => { setDraft(emptyDraft()); setSaveError(null); }}>Clear</button>
-              <button
-                type="button"
-                className="btn primary"
-                onClick={handleAdd}
-                disabled={createMutation.isPending || draft.kind === '' || draft.outlet.trim() === '' || draft.headline.trim() === ''}
-              >
-                {createMutation.isPending ? 'Saving…' : 'Log mention'}
-              </button>
-            </div>
+        <InlineSheet open={showForm} onClose={() => { setDraft(emptyDraft()); setShowForm(false); setSaveError(null); }}>
+          <div className="fields" style={{ padding: 0 }}>
+            <DateField label="Mentioned on" required value={draft.mentioned_on} onChange={(v) => setDraft({ ...draft, mentioned_on: v })}/>
+            <SelectField
+              label="Kind"
+              required
+              options={KINDS}
+              value={draft.kind}
+              onChange={(v) => setDraft({ ...draft, kind: v as MediaKind | '' })}
+              placeholder="Select…"
+            />
+            <TextField label="Outlet" required placeholder="e.g. Daily Graphic" value={draft.outlet} onChange={(v) => setDraft({ ...draft, outlet: v })}/>
+            <TextField label="Headline" required placeholder="The lead line" value={draft.headline} onChange={(v) => setDraft({ ...draft, headline: v })}/>
+            <TextField label="URL" placeholder="optional · https://…" value={draft.url} onChange={(v) => setDraft({ ...draft, url: v })}/>
+            <SegmentedField
+              label="Sentiment"
+              options={[...SENTIMENTS, { value: '', label: 'Skip' } as { value: ''; label: string }]}
+              value={draft.sentiment}
+              onChange={(v) => setDraft({ ...draft, sentiment: v as MediaSentiment | '' })}
+            />
+            <TextareaField label="Summary" value={draft.summary} onChange={(v) => setDraft({ ...draft, summary: v })}/>
           </div>
-        )}
+
+          {saveError && <div className="field-error" style={{ margin: '8px 0' }}>{saveError}</div>}
+
+          <div className="row">
+            <button type="button" className="btn" onClick={() => { setDraft(emptyDraft()); setSaveError(null); }}>Clear</button>
+            <button
+              type="button"
+              className="btn primary"
+              onClick={handleAdd}
+              disabled={createMutation.isPending || draft.kind === '' || draft.outlet.trim() === '' || draft.headline.trim() === ''}
+            >
+              {createMutation.isPending ? 'Saving…' : 'Log mention'}
+            </button>
+          </div>
+        </InlineSheet>
 
         <div className="bot-pad"/>
       </FormShell>

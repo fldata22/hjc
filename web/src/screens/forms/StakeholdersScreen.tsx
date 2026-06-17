@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { ResponsiveShell } from '../app/Shell';
 import { FormShell } from './FormShell';
 import { TextField, TextareaField, SegmentedField } from './fields';
+import { ContactPicker } from './ContactPicker';
 import {
   useCrusade,
   useStakeholders,
@@ -11,8 +12,10 @@ import {
   useDeleteStakeholder,
   type StakeholderStatus,
   type Stakeholder,
+  type Contact,
 } from '../../api/hooks';
 import { ApiError } from '../../api/client';
+import { InlineSheet } from './InlineSheet';
 import './forms.css';
 
 const STATUSES: Array<{ value: StakeholderStatus; label: string }> = [
@@ -30,14 +33,14 @@ const STATUS_CLASS: Record<StakeholderStatus, string> = {
 };
 
 type Draft = {
-  name: string;
+  contact: Contact | null;
   org: string;
   role: string;
   status_label: StakeholderStatus;
   notes: string;
 };
 
-const emptyDraft: Draft = { name: '', org: '', role: '', status_label: 'identified', notes: '' };
+const emptyDraft: Draft = { contact: null, org: '', role: '', status_label: 'identified', notes: '' };
 
 function extractApiMessage(e: unknown, fallback = 'Failed'): string {
   if (e instanceof ApiError) {
@@ -72,14 +75,16 @@ export function StakeholdersScreen() {
     current === 'committed' ? 'won' : 'identified';
 
   const handleAdd = async () => {
-    if (!crusade || draft.name.trim() === '' || draft.org.trim() === '' || draft.role.trim() === '' || createMutation.isPending) return;
+    if (!crusade || !draft.contact || draft.org.trim() === '' || draft.role.trim() === '' || createMutation.isPending) return;
+    const c = draft.contact;
     setSaveError(null);
     try {
       await createMutation.mutateAsync({
         crusade_id: crusade.id,
-        name: draft.name.trim(),
+        contact_id: c.id,
+        name: c.full_name,
         org: draft.org.trim(),
-        role: draft.role.trim(),
+        role: draft.role.trim() || c.title || '',
         status_label: draft.status_label,
         notes: draft.notes.trim() || null,
       });
@@ -104,7 +109,7 @@ export function StakeholdersScreen() {
   if (crusadeError) {
     return (
       <ResponsiveShell active="forms">
-        <FormShell title={<>Stakeholders <em>VIP Funnel</em></>} pillar="P5" primaryAction={{ label: 'Done', onClick: () => navigate('/forms') }}>
+        <FormShell title={<>Governmental <em>Participation</em></>} pillar="P5" primaryAction={{ label: 'Done', onClick: () => navigate('/forms') }}>
           <div style={{ padding: '24px 20px', fontSize: 13, color: 'var(--accent)', textAlign: 'center' }}>Couldn't load crusade.</div>
         </FormShell>
       </ResponsiveShell>
@@ -114,7 +119,7 @@ export function StakeholdersScreen() {
   if (crusadeLoading || !crusade) {
     return (
       <ResponsiveShell active="forms">
-        <FormShell title={<>Stakeholders <em>VIP Funnel</em></>} pillar="P5" primaryAction={{ label: 'Done', onClick: () => navigate('/forms') }}>
+        <FormShell title={<>Governmental <em>Participation</em></>} pillar="P5" primaryAction={{ label: 'Done', onClick: () => navigate('/forms') }}>
           <div style={{ padding: '24px 20px', fontSize: 13, color: 'var(--ink-3)', textAlign: 'center' }}>Loading…</div>
         </FormShell>
       </ResponsiveShell>
@@ -123,7 +128,7 @@ export function StakeholdersScreen() {
 
   return (
     <ResponsiveShell active="forms">
-      <FormShell title={<>Stakeholders <em>VIP Funnel</em></>} pillar="P5" primaryAction={{ label: 'Done', onClick: () => navigate('/forms') }}>
+      <FormShell title={<>Governmental <em>Participation</em></>} pillar="P5" primaryAction={{ label: 'Done', onClick: () => navigate('/forms') }}>
         <div className="stat-strip">
           <div>
             <div className="num">{wonCount}</div>
@@ -175,50 +180,42 @@ export function StakeholdersScreen() {
         <button
           type="button"
           className="add-toggle"
-          onClick={() => {
-            if (showForm) {
-              setDraft(emptyDraft);
-              setSaveError(null);
-            }
-            setShowForm((s) => !s);
-          }}
+          onClick={() => setShowForm(true)}
         >
-          {showForm ? 'Cancel' : 'Add stakeholder'}
+          Add stakeholder
         </button>
 
-        {showForm && (
-          <div className="inline-form">
-            <div className="fields" style={{ padding: 0 }}>
-              <TextField label="Name" required placeholder="e.g. Hon. Mayor Mahama" value={draft.name} onChange={(v) => setDraft({ ...draft, name: v })}/>
-              <TextField label="Organisation" required placeholder="e.g. Wa Municipal Assembly" value={draft.org} onChange={(v) => setDraft({ ...draft, org: v })}/>
-              <TextField label="Role / title" required placeholder="e.g. Mayor" value={draft.role} onChange={(v) => setDraft({ ...draft, role: v })}/>
-              <SegmentedField
-                label="Funnel stage"
-                required
-                options={STATUSES}
-                value={draft.status_label}
-                onChange={(v) => setDraft({ ...draft, status_label: v as StakeholderStatus })}
-              />
-              <TextareaField label="Notes" value={draft.notes} onChange={(v) => setDraft({ ...draft, notes: v })}/>
-            </div>
-
-            {saveError && (
-              <div className="field-error" style={{ margin: '8px 0' }}>{saveError}</div>
-            )}
-
-            <div className="row">
-              <button type="button" className="btn" onClick={() => { setDraft(emptyDraft); setSaveError(null); }}>Clear</button>
-              <button
-                type="button"
-                className="btn primary"
-                onClick={handleAdd}
-                disabled={createMutation.isPending || draft.name.trim() === '' || draft.org.trim() === '' || draft.role.trim() === ''}
-              >
-                {createMutation.isPending ? 'Saving…' : 'Add stakeholder'}
-              </button>
-            </div>
+        <InlineSheet open={showForm} onClose={() => { setDraft(emptyDraft); setShowForm(false); setSaveError(null); }}>
+          <div className="fields" style={{ padding: 0 }}>
+            <ContactPicker label="Person" required value={draft.contact} onChange={(c) => setDraft({ ...draft, contact: c })}/>
+            <TextField label="Organisation" required placeholder="e.g. Wa Municipal Assembly" value={draft.org} onChange={(v) => setDraft({ ...draft, org: v })}/>
+            <TextField label="Role / title" required placeholder="e.g. Mayor" value={draft.role} onChange={(v) => setDraft({ ...draft, role: v })}/>
+            <SegmentedField
+              label="Funnel stage"
+              required
+              options={STATUSES}
+              value={draft.status_label}
+              onChange={(v) => setDraft({ ...draft, status_label: v as StakeholderStatus })}
+            />
+            <TextareaField label="Notes" value={draft.notes} onChange={(v) => setDraft({ ...draft, notes: v })}/>
           </div>
-        )}
+
+          {saveError && (
+            <div className="field-error" style={{ margin: '8px 0' }}>{saveError}</div>
+          )}
+
+          <div className="row">
+            <button type="button" className="btn" onClick={() => { setDraft(emptyDraft); setSaveError(null); }}>Clear</button>
+            <button
+              type="button"
+              className="btn primary"
+              onClick={handleAdd}
+              disabled={createMutation.isPending || !draft.contact || draft.org.trim() === '' || draft.role.trim() === ''}
+            >
+              {createMutation.isPending ? 'Saving…' : 'Add stakeholder'}
+            </button>
+          </div>
+        </InlineSheet>
 
         <div className="bot-pad"/>
       </FormShell>

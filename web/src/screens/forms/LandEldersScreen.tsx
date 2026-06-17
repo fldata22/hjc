@@ -2,7 +2,8 @@ import { useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ResponsiveShell } from '../app/Shell';
 import { FormShell } from './FormShell';
-import { TextField, TextareaField, PhoneField, SegmentedField } from './fields';
+import { TextField, TextareaField, SegmentedField } from './fields';
+import { ContactPicker } from './ContactPicker';
 import {
   useCrusade,
   useLandElders,
@@ -11,8 +12,10 @@ import {
   useDeleteLandElder,
   type LandElderStatus,
   type LandElder,
+  type Contact,
 } from '../../api/hooks';
 import { ApiError } from '../../api/client';
+import { InlineSheet } from './InlineSheet';
 import './forms.css';
 
 const STATUSES: Array<{ value: LandElderStatus; label: string }> = [
@@ -32,16 +35,14 @@ const STATUS_CLASS: Record<LandElderStatus, string> = {
 };
 
 type Draft = {
-  name: string;
+  contact: Contact | null;
   title: string;
   region: string;
-  phone: string;
-  email: string;
   status: LandElderStatus;
   notes: string;
 };
 
-const emptyDraft: Draft = { name: '', title: '', region: '', phone: '', email: '', status: 'identified', notes: '' };
+const emptyDraft: Draft = { contact: null, title: '', region: '', status: 'identified', notes: '' };
 
 function extractApiMessage(e: unknown, fallback = 'Failed'): string {
   if (e instanceof ApiError) {
@@ -76,16 +77,18 @@ export function LandEldersScreen() {
     s === 'courted' ? 'blessed' : s;
 
   const handleAdd = async () => {
-    if (!crusade || draft.name.trim() === '' || createMutation.isPending) return;
+    if (!crusade || !draft.contact || createMutation.isPending) return;
+    const c = draft.contact;
     setSaveError(null);
     try {
       await createMutation.mutateAsync({
         crusade_id: crusade.id,
-        name: draft.name.trim(),
-        title: draft.title.trim() || null,
+        contact_id: c.id,
+        name: c.full_name,
+        title: draft.title.trim() || c.title || null,
         region: draft.region.trim() || null,
-        phone: draft.phone.trim() || null,
-        email: draft.email.trim() || null,
+        phone: c.phone,
+        email: c.email,
         status: draft.status,
         notes: draft.notes.trim() || null,
       });
@@ -187,50 +190,40 @@ export function LandEldersScreen() {
         <button
           type="button"
           className="add-toggle"
-          onClick={() => {
-            if (showForm) {
-              setDraft(emptyDraft);
-              setSaveError(null);
-            }
-            setShowForm((s) => !s);
-          }}
+          onClick={() => setShowForm(true)}
         >
-          {showForm ? 'Cancel' : 'Add elder'}
+          Add elder
         </button>
 
-        {showForm && (
-          <div className="inline-form">
-            <div className="fields" style={{ padding: 0 }}>
-              <TextField label="Name" required placeholder="e.g. Yagbon-Wura" value={draft.name} onChange={(v) => setDraft({ ...draft, name: v })}/>
-              <TextField label="Title" placeholder="e.g. Naa, Chief, Tindana, Elder" value={draft.title} onChange={(v) => setDraft({ ...draft, title: v })}/>
-              <TextField label="Region / area" placeholder="e.g. Wa Central" value={draft.region} onChange={(v) => setDraft({ ...draft, region: v })}/>
-              <PhoneField label="Phone" value={draft.phone} onChange={(v) => setDraft({ ...draft, phone: v })}/>
-              <TextField label="Email" type="email" value={draft.email} onChange={(v) => setDraft({ ...draft, email: v })}/>
-              <SegmentedField
-                label="Status"
-                required
-                options={STATUSES}
-                value={draft.status}
-                onChange={(v) => setDraft({ ...draft, status: v as LandElderStatus })}
-              />
-              <TextareaField label="Notes" value={draft.notes} onChange={(v) => setDraft({ ...draft, notes: v })}/>
-            </div>
-
-            {saveError && <div className="field-error" style={{ margin: '8px 0' }}>{saveError}</div>}
-
-            <div className="row">
-              <button type="button" className="btn" onClick={() => { setDraft(emptyDraft); setSaveError(null); }}>Clear</button>
-              <button
-                type="button"
-                className="btn primary"
-                onClick={handleAdd}
-                disabled={createMutation.isPending || draft.name.trim() === ''}
-              >
-                {createMutation.isPending ? 'Saving…' : 'Add elder'}
-              </button>
-            </div>
+        <InlineSheet open={showForm} onClose={() => { setDraft(emptyDraft); setShowForm(false); setSaveError(null); }}>
+          <div className="fields" style={{ padding: 0 }}>
+            <ContactPicker label="Elder" required value={draft.contact} onChange={(c) => setDraft({ ...draft, contact: c })}/>
+            <TextField label="Title" placeholder="e.g. Naa, Chief, Tindana, Elder" value={draft.title} onChange={(v) => setDraft({ ...draft, title: v })}/>
+            <TextField label="Region / area" placeholder="e.g. Wa Central" value={draft.region} onChange={(v) => setDraft({ ...draft, region: v })}/>
+            <SegmentedField
+              label="Status"
+              required
+              options={STATUSES}
+              value={draft.status}
+              onChange={(v) => setDraft({ ...draft, status: v as LandElderStatus })}
+            />
+            <TextareaField label="Notes" value={draft.notes} onChange={(v) => setDraft({ ...draft, notes: v })}/>
           </div>
-        )}
+
+          {saveError && <div className="field-error" style={{ margin: '8px 0' }}>{saveError}</div>}
+
+          <div className="row">
+            <button type="button" className="btn" onClick={() => { setDraft(emptyDraft); setSaveError(null); }}>Clear</button>
+            <button
+              type="button"
+              className="btn primary"
+              onClick={handleAdd}
+              disabled={createMutation.isPending || !draft.contact}
+            >
+              {createMutation.isPending ? 'Saving…' : 'Add elder'}
+            </button>
+          </div>
+        </InlineSheet>
 
         <div className="bot-pad"/>
       </FormShell>

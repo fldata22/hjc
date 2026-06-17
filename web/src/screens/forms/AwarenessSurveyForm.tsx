@@ -14,6 +14,7 @@ import {
 import { ApiError } from '../../api/client';
 import { todayISO } from '../../lib/dateHelpers';
 import { useToast } from '../../lib/toast-context';
+import { InlineSheet } from './InlineSheet';
 import './forms.css';
 
 type RowDraft = {
@@ -317,80 +318,78 @@ export function AwarenessSurveyForm() {
           )}
         </div>
 
-        <button type="button" className="add-toggle" onClick={showForm ? closeForm : openForm}>
-          {showForm ? 'Cancel' : 'Log new wave'}
+        <button type="button" className="add-toggle" onClick={openForm}>
+          Log new wave
         </button>
 
-        {showForm && (
-          <div className="inline-form">
-            <div className="cat-head" style={{ padding: '8px 0', marginBottom: 4 }}>
-              <span>Log wave</span>
-            </div>
-            <div className="fields" style={{ padding: 0 }}>
-              <NumberField
-                label="Wave number"
-                value={waveNumber}
-                onChange={(v) => setWaveNumber(v)}
-                required
-              />
-              <DateField
-                label="Taken on"
-                value={takenOn}
-                onChange={(v) => setTakenOn(v)}
-                required
-              />
-            </div>
-
-            <div className="cat-head" style={{ padding: '20px 0 8px', marginBottom: 4 }}>
-              <span>Zones</span>
-            </div>
-            <div className="fields" style={{ padding: 0 }}>
-              {rows.map((r) => {
-                const zone = zoneById.get(r.zone_id);
-                const mismatch = rowHasMismatch(r);
-                const apiError = rowErrors[r.zone_id];
-                return (
-                  <div key={r.zone_id} style={{ padding: '8px 0', borderBottom: '1px solid var(--line)' }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-                      <div style={{ flex: '0 0 96px', fontSize: 13, color: 'var(--ink-2)' }}>{zone?.name ?? `Zone #${r.zone_id}`}</div>
-                      <div style={{ flex: 1, display: 'flex', gap: 8 }}>
-                        <input
-                          type="number"
-                          className="input"
-                          placeholder="surveyed"
-                          value={r.surveyed}
-                          onChange={(e) => updateRow(r.zone_id, { surveyed: e.target.value === '' ? '' : Number(e.target.value) })}
-                          style={{ width: '50%' }}
-                        />
-                        <input
-                          type="number"
-                          className="input"
-                          placeholder="attending"
-                          value={r.attending}
-                          onChange={(e) => updateRow(r.zone_id, { attending: e.target.value === '' ? '' : Number(e.target.value) })}
-                          style={{ width: '50%' }}
-                        />
-                      </div>
-                    </div>
-                    {mismatch && (
-                      <div className="field-error" style={{ marginTop: 4 }}>can't exceed surveyed</div>
-                    )}
-                    {apiError && (
-                      <div className="field-error" style={{ marginTop: 4 }}>{apiError}</div>
-                    )}
-                  </div>
-                );
-              })}
-            </div>
-
-            <div className="row">
-              <button type="button" className="btn" onClick={closeForm}>Cancel</button>
-              <button type="button" className="btn primary" onClick={handleSubmit} disabled={!canSubmit}>
-                {createMutation.isPending ? 'Submitting…' : 'Submit wave'}
-              </button>
-            </div>
+        <InlineSheet open={showForm} onClose={closeForm}>
+          <div className="cat-head" style={{ padding: '8px 0', marginBottom: 4 }}>
+            <span>Log wave</span>
           </div>
-        )}
+          <div className="fields" style={{ padding: 0 }}>
+            <NumberField
+              label="Wave number"
+              value={waveNumber}
+              onChange={(v) => setWaveNumber(v)}
+              required
+            />
+            <DateField
+              label="Taken on"
+              value={takenOn}
+              onChange={(v) => setTakenOn(v)}
+              required
+            />
+          </div>
+
+          <div className="cat-head" style={{ padding: '20px 0 8px', marginBottom: 4 }}>
+            <span>Zones</span>
+          </div>
+          <div className="fields" style={{ padding: 0 }}>
+            {rows.map((r) => {
+              const zone = zoneById.get(r.zone_id);
+              const mismatch = rowHasMismatch(r);
+              const apiError = rowErrors[r.zone_id];
+              return (
+                <div key={r.zone_id} style={{ padding: '8px 0', borderBottom: '1px solid var(--line)' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+                    <div style={{ flex: '0 0 96px', fontSize: 13, color: 'var(--ink-2)' }}>{zone?.name ?? `Zone #${r.zone_id}`}</div>
+                    <div style={{ flex: 1, display: 'flex', gap: 8 }}>
+                      <input
+                        type="number"
+                        className="input"
+                        placeholder="surveyed"
+                        value={r.surveyed}
+                        onChange={(e) => updateRow(r.zone_id, { surveyed: e.target.value === '' ? '' : Number(e.target.value) })}
+                        style={{ width: '50%' }}
+                      />
+                      <input
+                        type="number"
+                        className="input"
+                        placeholder="attending"
+                        value={r.attending}
+                        onChange={(e) => updateRow(r.zone_id, { attending: e.target.value === '' ? '' : Number(e.target.value) })}
+                        style={{ width: '50%' }}
+                      />
+                    </div>
+                  </div>
+                  {mismatch && (
+                    <div className="field-error" style={{ marginTop: 4 }}>can't exceed surveyed</div>
+                  )}
+                  {apiError && (
+                    <div className="field-error" style={{ marginTop: 4 }}>{apiError}</div>
+                  )}
+                </div>
+              );
+            })}
+          </div>
+
+          <div className="row">
+            <button type="button" className="btn" onClick={closeForm}>Cancel</button>
+            <button type="button" className="btn primary" onClick={handleSubmit} disabled={!canSubmit}>
+              {createMutation.isPending ? 'Submitting…' : 'Submit wave'}
+            </button>
+          </div>
+        </InlineSheet>
         <div className="bot-pad"/>
       </FormShell>
     </ResponsiveShell>

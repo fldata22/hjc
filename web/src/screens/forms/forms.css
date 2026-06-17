@@ -32,11 +32,10 @@
   gap: 12px;
 }
 .app-root .form-shell-top .title {
-  font-family: 'Playfair Display', serif;
-  font-size: 28px;
-  font-weight: 300;
-  letter-spacing: -0.03em;
-  line-height: 1.05;
+  font-size: 22px;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  line-height: 1.1;
   color: var(--ink);
 }
 .app-root .form-shell-top .title em {
@@ -44,32 +43,33 @@
   color: var(--ink-3);
 }
 .app-root .form-shell-top .pillar-badge {
-  font-family: 'Playfair Display', serif;
-  font-size: 14px;
-  color: var(--ink);
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--ink-2);
   border: 1px solid var(--line);
-  padding: 2px 10px;
+  padding: 3px 10px;
   border-radius: 999px;
+  letter-spacing: 0.04em;
+  white-space: nowrap;
 }
 .app-root .form-shell-top .save-status {
-  font-family: 'JetBrains Mono', monospace;
   font-size: 10px;
   color: var(--ink-3);
   letter-spacing: 0.04em;
   text-transform: uppercase;
 }
 .app-root .form-shell-top .save-status.synced { color: var(--ink); }
-.app-root .form-shell-top .save-status.pending { color: var(--accent); }
+.app-root .form-shell-top .save-status.pending { color: var(--hold); }
 
 .app-root .field-error {
   font-size: 11px;
-  color: var(--accent);
+  color: var(--risk);
   margin-top: 4px;
   letter-spacing: 0.02em;
 }
 .app-root .field.has-error .input,
 .app-root .field.has-error textarea.input {
-  border-bottom: 1px solid var(--accent);
+  border-bottom: 1px solid var(--risk);
 }
 .app-root .field .input.bordered {
   border: 1px solid var(--line);
@@ -102,7 +102,7 @@
 }
 .app-root .checklist .item.on {
   border-color: var(--ink);
-  background: var(--bg-2);
+  background: var(--accent-bg);
 }
 .app-root .checklist .item .box {
   width: 18px; height: 18px;
@@ -146,14 +146,13 @@
   gap: 4px;
 }
 .app-root .form-list-row .status {
-  font-family: 'JetBrains Mono', monospace;
   font-size: 10px;
   letter-spacing: 0.12em;
   text-transform: uppercase;
   font-weight: 600;
 }
 .app-root .form-list-row .status.confirmed { color: var(--ink); }
-.app-root .form-list-row .status.pending   { color: var(--accent); }
+.app-root .form-list-row .status.pending   { color: var(--hold); }
 .app-root .form-list-row .status.declined  { color: var(--ink-3); }
 
 .app-root .stat-strip {
@@ -164,9 +163,8 @@
   border-bottom: 1px solid var(--line);
 }
 .app-root .stat-strip .num {
-  font-family: 'Playfair Display', serif;
-  font-size: 36px;
-  font-weight: 300;
+  font-size: 32px;
+  font-weight: 700;
   letter-spacing: -0.03em;
   color: var(--ink);
   line-height: 1;
@@ -207,14 +205,13 @@
   color: var(--ink-3);
 }
 .app-root .date-strip .day .dnum {
-  font-family: 'Playfair Display', serif;
-  font-size: 22px;
-  font-weight: 300;
+  font-size: 20px;
+  font-weight: 600;
   color: var(--ink);
   margin-top: 2px;
 }
 .app-root .date-strip .day.on {
-  background: var(--bg-2);
+  background: var(--accent-bg);
 }
 .app-root .date-strip .day.on::after {
   content: '';
@@ -229,7 +226,7 @@
   display: block;
   width: 100%;
   padding: 12px 20px;
-  background: var(--bg-2);
+  background: var(--surface);
   border: 0;
   border-top: 1px solid var(--line);
   border-bottom: 1px solid var(--line);
@@ -249,7 +246,7 @@
 
 .app-root .inline-form {
   padding: 8px 20px 16px;
-  background: var(--bg-2);
+  background: var(--surface);
   border-bottom: 1px solid var(--line);
 }
 .app-root .inline-form .row {
@@ -283,7 +280,7 @@
     margin: 0 auto;
     padding: 32px 48px 16px;
   }
-  .app-root .form-shell-top .title { font-size: 36px; }
+  .app-root .form-shell-top .title { font-size: 28px; }
   .app-root .stepper {
     max-width: 760px;
     margin: 0 auto;

@@ -14,6 +14,7 @@ import {
   type MustDoItem,
 } from '../../api/hooks';
 import { ApiError } from '../../api/client';
+import { InlineSheet } from './InlineSheet';
 import './forms.css';
 
 const AREAS: Array<{ value: MustDoArea; label: string }> = [
@@ -217,51 +218,43 @@ export function MustDoChecklistScreen() {
         <button
           type="button"
           className="add-toggle"
-          onClick={() => {
-            if (showForm) {
-              setDraft(emptyDraft);
-              setSaveError(null);
-            }
-            setShowForm((s) => !s);
-          }}
+          onClick={() => setShowForm(true)}
         >
-          {showForm ? 'Cancel' : 'Add item'}
+          Add item
         </button>
 
-        {showForm && (
-          <div className="inline-form">
-            <div className="fields" style={{ padding: 0 }}>
-              <SelectField
-                label="Area"
-                required
-                options={AREAS.map((a) => ({ value: a.value, label: a.label }))}
-                value={draft.area}
-                onChange={(v) => setDraft({ ...draft, area: v as MustDoArea | '' })}
-                placeholder="Select…"
-              />
-              <TextField label="Title" required placeholder="e.g. Confirm sound provider" value={draft.title} onChange={(v) => setDraft({ ...draft, title: v })}/>
-              <TextField label="Owner" placeholder="optional" value={draft.owner_name} onChange={(v) => setDraft({ ...draft, owner_name: v })}/>
-              <DateField label="Due date" value={draft.due_date} onChange={(v) => setDraft({ ...draft, due_date: v })}/>
-              <TextareaField label="Notes" value={draft.notes} onChange={(v) => setDraft({ ...draft, notes: v })}/>
-            </div>
-
-            {saveError && (
-              <div className="field-error" style={{ margin: '8px 0' }}>{saveError}</div>
-            )}
-
-            <div className="row">
-              <button type="button" className="btn" onClick={() => { setDraft(emptyDraft); setSaveError(null); }}>Clear</button>
-              <button
-                type="button"
-                className="btn primary"
-                onClick={handleAdd}
-                disabled={createMutation.isPending || draft.area === '' || draft.title.trim() === ''}
-              >
-                {createMutation.isPending ? 'Saving…' : 'Add item'}
-              </button>
-            </div>
+        <InlineSheet open={showForm} onClose={() => { setDraft(emptyDraft); setShowForm(false); setSaveError(null); }}>
+          <div className="fields" style={{ padding: 0 }}>
+            <SelectField
+              label="Area"
+              required
+              options={AREAS.map((a) => ({ value: a.value, label: a.label }))}
+              value={draft.area}
+              onChange={(v) => setDraft({ ...draft, area: v as MustDoArea | '' })}
+              placeholder="Select…"
+            />
+            <TextField label="Title" required placeholder="e.g. Confirm sound provider" value={draft.title} onChange={(v) => setDraft({ ...draft, title: v })}/>
+            <TextField label="Owner" placeholder="optional" value={draft.owner_name} onChange={(v) => setDraft({ ...draft, owner_name: v })}/>
+            <DateField label="Due date" value={draft.due_date} onChange={(v) => setDraft({ ...draft, due_date: v })}/>
+            <TextareaField label="Notes" value={draft.notes} onChange={(v) => setDraft({ ...draft, notes: v })}/>
           </div>
-        )}
+
+          {saveError && (
+            <div className="field-error" style={{ margin: '8px 0' }}>{saveError}</div>
+          )}
+
+          <div className="row">
+            <button type="button" className="btn" onClick={() => { setDraft(emptyDraft); setSaveError(null); }}>Clear</button>
+            <button
+              type="button"
+              className="btn primary"
+              onClick={handleAdd}
+              disabled={createMutation.isPending || draft.area === '' || draft.title.trim() === ''}
+            >
+              {createMutation.isPending ? 'Saving…' : 'Add item'}
+            </button>
+          </div>
+        </InlineSheet>
 
         <div className="bot-pad"/>
       </FormShell>

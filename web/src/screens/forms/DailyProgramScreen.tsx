@@ -12,6 +12,7 @@ import {
 } from '../../api/hooks';
 import { ApiError } from '../../api/client';
 import { todayISO } from '../../lib/dateHelpers';
+import { InlineSheet } from './InlineSheet';
 import './forms.css';
 
 type Draft = {
@@ -143,43 +144,35 @@ export function DailyProgramScreen() {
         <button
           type="button"
           className="add-toggle"
-          onClick={() => {
-            if (showForm) {
-              setDraft(emptyDraft());
-              setSaveError(null);
-            }
-            setShowForm((s) => !s);
-          }}
+          onClick={() => setShowForm(true)}
         >
-          {showForm ? 'Cancel' : 'Log a night'}
+          Log a night
         </button>
 
-        {showForm && (
-          <div className="inline-form">
-            <div className="fields" style={{ padding: 0 }}>
-              <DateField label="Occurred on" required value={draft.occurred_on} onChange={(v) => setDraft({ ...draft, occurred_on: v })}/>
-              <TextField label="Speaker" placeholder="e.g. Bishop Lovell" value={draft.speaker} onChange={(v) => setDraft({ ...draft, speaker: v })}/>
-              <TextField label="Topic / sermon" placeholder="optional" value={draft.topic} onChange={(v) => setDraft({ ...draft, topic: v })}/>
-              <NumberField label="Duration" suffix="min" value={draft.duration_minutes} onChange={(v) => setDraft({ ...draft, duration_minutes: v })}/>
-              <TextareaField label="Key moments" placeholder="e.g. Healing service erupted at 9pm; technician swap during worship…" value={draft.key_moments} onChange={(v) => setDraft({ ...draft, key_moments: v })}/>
-              <TextareaField label="Narrative" placeholder="Free-form notes about the night" value={draft.narrative} onChange={(v) => setDraft({ ...draft, narrative: v })}/>
-            </div>
-
-            {saveError && <div className="field-error" style={{ margin: '8px 0' }}>{saveError}</div>}
-
-            <div className="row">
-              <button type="button" className="btn" onClick={() => { setDraft(emptyDraft()); setSaveError(null); }}>Clear</button>
-              <button
-                type="button"
-                className="btn primary"
-                onClick={handleAdd}
-                disabled={createMutation.isPending || draft.occurred_on === ''}
-              >
-                {createMutation.isPending ? 'Saving…' : 'Save log'}
-              </button>
-            </div>
+        <InlineSheet open={showForm} onClose={() => { setDraft(emptyDraft()); setShowForm(false); setSaveError(null); }}>
+          <div className="fields" style={{ padding: 0 }}>
+            <DateField label="Occurred on" required value={draft.occurred_on} onChange={(v) => setDraft({ ...draft, occurred_on: v })}/>
+            <TextField label="Speaker" placeholder="e.g. Bishop Lovell" value={draft.speaker} onChange={(v) => setDraft({ ...draft, speaker: v })}/>
+            <TextField label="Topic / sermon" placeholder="optional" value={draft.topic} onChange={(v) => setDraft({ ...draft, topic: v })}/>
+            <NumberField label="Duration" suffix="min" value={draft.duration_minutes} onChange={(v) => setDraft({ ...draft, duration_minutes: v })}/>
+            <TextareaField label="Key moments" placeholder="e.g. Healing service erupted at 9pm; technician swap during worship…" value={draft.key_moments} onChange={(v) => setDraft({ ...draft, key_moments: v })}/>
+            <TextareaField label="Narrative" placeholder="Free-form notes about the night" value={draft.narrative} onChange={(v) => setDraft({ ...draft, narrative: v })}/>
           </div>
-        )}
+
+          {saveError && <div className="field-error" style={{ margin: '8px 0' }}>{saveError}</div>}
+
+          <div className="row">
+            <button type="button" className="btn" onClick={() => { setDraft(emptyDraft()); setSaveError(null); }}>Clear</button>
+            <button
+              type="button"
+              className="btn primary"
+              onClick={handleAdd}
+              disabled={createMutation.isPending || draft.occurred_on === ''}
+            >
+              {createMutation.isPending ? 'Saving…' : 'Save log'}
+            </button>
+          </div>
+        </InlineSheet>
 
         <div className="bot-pad"/>
       </FormShell>

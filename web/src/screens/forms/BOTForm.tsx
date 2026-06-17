@@ -2,29 +2,30 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ResponsiveShell } from '../app/Shell';
 import { FormShell } from './FormShell';
-import { TextField, PhoneField, SegmentedField, TextareaField } from './fields';
+import { TextField, SegmentedField, TextareaField } from './fields';
+import { ContactPicker } from './ContactPicker';
 import {
   useCrusade,
   useCommitteeMembers,
   useCreateCommitteeMember,
+  type Contact,
 } from '../../api/hooks';
 import { ApiError } from '../../api/client';
+import { InlineSheet } from './InlineSheet';
 import './forms.css';
 
 type Status = 'confirmed' | 'pending' | 'declined' | '';
 
 type Draft = {
-  name: string;
+  contact: Contact | null;
   role: string;
   organization: string;
-  phone: string;
-  email: string;
   status: Status;
   notes: string;
 };
 
 const emptyDraft: Draft = {
-  name: '', role: '', organization: '', phone: '', email: '', status: '', notes: '',
+  contact: null, role: '', organization: '', status: '', notes: '',
 };
 
 const ErrorBanner = ({ what, onRetry }: { what: string; onRetry: () => void }) => (
@@ -72,24 +73,25 @@ export function BOTForm() {
 
   const canSave =
     !!crusade &&
-    draft.name.trim() !== '' &&
+    !!draft.contact &&
     draft.role.trim() !== '' &&
-    draft.phone.trim() !== '' &&
     draft.status !== '' &&
     !createMutation.isPending;
 
   const handleSave = async () => {
-    if (!canSave || !crusade) return;
+    if (!canSave || !crusade || !draft.contact) return;
+    const c = draft.contact;
     setSaveError(null);
     try {
       await createMutation.mutateAsync({
         crusade_id: crusade.id,
+        contact_id: c.id,
         kind: 'bot',
-        name: draft.name.trim(),
+        name: c.full_name,
         role: draft.role.trim(),
         org: draft.organization.trim() === '' ? null : draft.organization.trim(),
-        phone: draft.phone.trim() === '' ? null : draft.phone.trim(),
-        email: draft.email.trim() === '' ? null : draft.email.trim(),
+        phone: c.phone,
+        email: c.email,
         status: draft.status,
         notes: draft.notes.trim() === '' ? null : draft.notes.trim(),
       });
@@ -186,49 +188,39 @@ export function BOTForm() {
         <button
           type="button"
           className="add-toggle"
-          onClick={() => {
-            if (showForm) {
-              setDraft(emptyDraft);
-              setSaveError(null);
-            }
-            setShowForm((s) => !s);
-          }}
+          onClick={() => setShowForm(true)}
         >
-          {showForm ? 'Cancel' : 'Add trustee'}
+          Add trustee
         </button>
 
-        {showForm && (
-          <div className="inline-form">
-            <div className="fields" style={{ padding: 0 }}>
-              <TextField label="Full name" value={draft.name} onChange={(v) => setDraft({ ...draft, name: v })} required/>
-              <TextField label="Role" placeholder="e.g. Treasurer" value={draft.role} onChange={(v) => setDraft({ ...draft, role: v })} required/>
-              <TextField label="Organization" value={draft.organization} onChange={(v) => setDraft({ ...draft, organization: v })}/>
-              <PhoneField label="Phone" value={draft.phone} onChange={(v) => setDraft({ ...draft, phone: v })} required/>
-              <TextField label="Email" type="email" value={draft.email} onChange={(v) => setDraft({ ...draft, email: v })}/>
-              <SegmentedField
-                label="Status"
-                options={[
-                  { value: 'confirmed', label: 'Confirmed' },
-                  { value: 'pending', label: 'Pending' },
-                  { value: 'declined', label: 'Declined' },
-                ]}
-                value={draft.status}
-                onChange={(v) => setDraft({ ...draft, status: v as Status })}
-                required
-              />
-              <TextareaField label="Notes" value={draft.notes} onChange={(v) => setDraft({ ...draft, notes: v })}/>
-            </div>
-            {saveError && (
-              <div className="field-error" style={{ margin: '4px 0' }}>{saveError}</div>
-            )}
-            <div className="row">
-              <button type="button" className="btn" onClick={() => { setDraft(emptyDraft); setShowForm(false); setSaveError(null); }}>Cancel</button>
-              <button type="button" className="btn primary" onClick={handleSave} disabled={!canSave}>
-                {createMutation.isPending ? 'Saving…' : 'Save trustee'}
-              </button>
-            </div>
+        <InlineSheet open={showForm} onClose={() => { setDraft(emptyDraft); setShowForm(false); setSaveError(null); }}>
+          <div className="fields" style={{ padding: 0 }}>
+            <ContactPicker label="Trustee" required value={draft.contact} onChange={(c) => setDraft({ ...draft, contact: c })}/>
+            <TextField label="Role" placeholder="e.g. Treasurer" value={draft.role} onChange={(v) => setDraft({ ...draft, role: v })} required/>
+            <TextField label="Organization" value={draft.organization} onChange={(v) => setDraft({ ...draft, organization: v })}/>
+            <SegmentedField
+              label="Status"
+              options={[
+                { value: 'confirmed', label: 'Confirmed' },
+                { value: 'pending', label: 'Pending' },
+                { value: 'declined', label: 'Declined' },
+              ]}
+              value={draft.status}
+              onChange={(v) => setDraft({ ...draft, status: v as Status })}
+              required
+            />
+            <TextareaField label="Notes" value={draft.notes} onChange={(v) => setDraft({ ...draft, notes: v })}/>
           </div>
-        )}
+          {saveError && (
+            <div className="field-error" style={{ margin: '4px 0' }}>{saveError}</div>
+          )}
+          <div className="row">
+            <button type="button" className="btn" onClick={() => { setDraft(emptyDraft); setShowForm(false); setSaveError(null); }}>Cancel</button>
+            <button type="button" className="btn primary" onClick={handleSave} disabled={!canSave}>
+              {createMutation.isPending ? 'Saving…' : 'Save trustee'}
+            </button>
+          </div>
+        </InlineSheet>
         <div className="bot-pad"/>
       </FormShell>
     </ResponsiveShell>

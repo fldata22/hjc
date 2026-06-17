@@ -14,6 +14,7 @@ import {
   type PledgeResource,
 } from '../../api/hooks';
 import { ApiError } from '../../api/client';
+import { InlineSheet } from './InlineSheet';
 import './forms.css';
 
 const RESOURCES: Array<{ value: PledgeResource; label: string }> = [
@@ -169,7 +170,7 @@ export function PledgeMeetingsScreen() {
   if (crusadeError) {
     return (
       <ResponsiveShell active="forms">
-        <FormShell title={<>Pledge <em>Meetings</em></>} pillar="P1" primaryAction={{ label: 'Done', onClick: () => navigate('/forms') }}>
+        <FormShell title={<>Pledges</>} pillar="P1" primaryAction={{ label: 'Done', onClick: () => navigate('/forms') }}>
           <div style={{ padding: '24px 20px', fontSize: 13, color: 'var(--accent)', textAlign: 'center' }}>Couldn't load crusade.</div>
         </FormShell>
       </ResponsiveShell>
@@ -179,7 +180,7 @@ export function PledgeMeetingsScreen() {
   if (crusadeLoading || !crusade) {
     return (
       <ResponsiveShell active="forms">
-        <FormShell title={<>Pledge <em>Meetings</em></>} pillar="P1" primaryAction={{ label: 'Done', onClick: () => navigate('/forms') }}>
+        <FormShell title={<>Pledges</>} pillar="P1" primaryAction={{ label: 'Done', onClick: () => navigate('/forms') }}>
           <div style={{ padding: '24px 20px', fontSize: 13, color: 'var(--ink-3)', textAlign: 'center' }}>Loading…</div>
         </FormShell>
       </ResponsiveShell>
@@ -188,7 +189,7 @@ export function PledgeMeetingsScreen() {
 
   return (
     <ResponsiveShell active="forms">
-      <FormShell title={<>Pledge <em>Meetings</em></>} pillar="P1" primaryAction={{ label: 'Done', onClick: () => navigate('/forms') }}>
+      <FormShell title={<>Pledges</>} pillar="P1" primaryAction={{ label: 'Done', onClick: () => navigate('/forms') }}>
         <div className="stat-strip">
           <div>
             <div className="num">{meetings.length}</div>
@@ -340,51 +341,43 @@ export function PledgeMeetingsScreen() {
         <button
           type="button"
           className="add-toggle"
-          onClick={() => {
-            if (showMeetingForm) {
-              setMeetingDraft(emptyMeeting);
-              setMeetingError(null);
-            }
-            setShowMeetingForm((s) => !s);
-          }}
+          onClick={() => setShowMeetingForm(true)}
         >
-          {showMeetingForm ? 'Cancel' : 'Schedule meeting'}
+          Schedule meeting
         </button>
 
-        {showMeetingForm && (
-          <div className="inline-form">
-            <div className="fields" style={{ padding: 0 }}>
-              <TextField label="Sequence" required placeholder="e.g. P1" value={meetingDraft.sequence} onChange={(v) => setMeetingDraft({ ...meetingDraft, sequence: v })}/>
-              <DateField label="Held on" required value={meetingDraft.held_on} onChange={(v) => setMeetingDraft({ ...meetingDraft, held_on: v })}/>
-              <TextField label="Venue" required placeholder="e.g. Wa Central church" value={meetingDraft.venue} onChange={(v) => setMeetingDraft({ ...meetingDraft, venue: v })}/>
-              <SelectField
-                label="Status"
-                options={[
-                  { value: 'upcoming', label: 'Upcoming' },
-                  { value: 'done', label: 'Done' },
-                ]}
-                value={meetingDraft.status}
-                onChange={(v) => setMeetingDraft({ ...meetingDraft, status: v as 'upcoming' | 'done' })}
-              />
-            </div>
-
-            {meetingError && (
-              <div className="field-error" style={{ margin: '8px 0' }}>{meetingError}</div>
-            )}
-
-            <div className="row">
-              <button type="button" className="btn" onClick={() => { setMeetingDraft(emptyMeeting); setMeetingError(null); }}>Clear</button>
-              <button
-                type="button"
-                className="btn primary"
-                onClick={handleAddMeeting}
-                disabled={createMutation.isPending || meetingDraft.sequence.trim() === '' || meetingDraft.held_on === '' || meetingDraft.venue.trim() === ''}
-              >
-                {createMutation.isPending ? 'Saving…' : 'Schedule meeting'}
-              </button>
-            </div>
+        <InlineSheet open={showMeetingForm} onClose={() => { setMeetingDraft(emptyMeeting); setShowMeetingForm(false); setMeetingError(null); }}>
+          <div className="fields" style={{ padding: 0 }}>
+            <TextField label="Sequence" required placeholder="e.g. P1" value={meetingDraft.sequence} onChange={(v) => setMeetingDraft({ ...meetingDraft, sequence: v })}/>
+            <DateField label="Held on" required value={meetingDraft.held_on} onChange={(v) => setMeetingDraft({ ...meetingDraft, held_on: v })}/>
+            <TextField label="Venue" required placeholder="e.g. Wa Central church" value={meetingDraft.venue} onChange={(v) => setMeetingDraft({ ...meetingDraft, venue: v })}/>
+            <SelectField
+              label="Status"
+              options={[
+                { value: 'upcoming', label: 'Upcoming' },
+                { value: 'done', label: 'Done' },
+              ]}
+              value={meetingDraft.status}
+              onChange={(v) => setMeetingDraft({ ...meetingDraft, status: v as 'upcoming' | 'done' })}
+            />
           </div>
-        )}
+
+          {meetingError && (
+            <div className="field-error" style={{ margin: '8px 0' }}>{meetingError}</div>
+          )}
+
+          <div className="row">
+            <button type="button" className="btn" onClick={() => { setMeetingDraft(emptyMeeting); setMeetingError(null); }}>Clear</button>
+            <button
+              type="button"
+              className="btn primary"
+              onClick={handleAddMeeting}
+              disabled={createMutation.isPending || meetingDraft.sequence.trim() === '' || meetingDraft.held_on === '' || meetingDraft.venue.trim() === ''}
+            >
+              {createMutation.isPending ? 'Saving…' : 'Schedule meeting'}
+            </button>
+          </div>
+        </InlineSheet>
 
         <div className="bot-pad"/>
       </FormShell>

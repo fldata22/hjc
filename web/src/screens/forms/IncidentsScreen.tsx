@@ -14,6 +14,7 @@ import {
 } from '../../api/hooks';
 import { ApiError } from '../../api/client';
 import { todayISO } from '../../lib/dateHelpers';
+import { InlineSheet } from './InlineSheet';
 import './forms.css';
 
 const SEVERITIES: Array<{ value: IncidentSeverity; label: string }> = [
@@ -177,53 +178,45 @@ export function IncidentsScreen({ kind, pillar, title }: Props) {
         <button
           type="button"
           className="add-toggle"
-          onClick={() => {
-            if (showForm) {
-              setDraft(emptyDraft());
-              setSaveError(null);
-            }
-            setShowForm((s) => !s);
-          }}
+          onClick={() => setShowForm(true)}
         >
-          {showForm ? 'Cancel' : `Log ${kind} incident`}
+          {`Log ${kind} incident`}
         </button>
 
-        {showForm && (
-          <div className="inline-form">
-            <div className="fields" style={{ padding: 0 }}>
-              <DateField label="Occurred on" required value={draft.occurred_on} onChange={(v) => setDraft({ ...draft, occurred_on: v })}/>
-              <TextField label="Time (HH:MM)" placeholder="optional" value={draft.occurred_at_time} onChange={(v) => setDraft({ ...draft, occurred_at_time: v })}/>
-              <SegmentedField
-                label="Severity"
-                required
-                options={SEVERITIES}
-                value={draft.severity}
-                onChange={(v) => setDraft({ ...draft, severity: v as IncidentSeverity })}
-              />
-              <TextField label="Location" placeholder={kind === 'security' ? 'e.g. Front rail / VIP entrance' : 'e.g. Counsellor area / row 12'} value={draft.location} onChange={(v) => setDraft({ ...draft, location: v })}/>
-              <TextareaField label="Description" required placeholder={kind === 'security' ? 'What happened?' : 'Symptoms / condition'} value={draft.description} onChange={(v) => setDraft({ ...draft, description: v })}/>
-              <TextareaField label="Response taken" placeholder={kind === 'security' ? 'How was it handled?' : 'First aid given'} value={draft.response_taken} onChange={(v) => setDraft({ ...draft, response_taken: v })}/>
-              {kind === 'medical' && (
-                <TextField label="Transported to" placeholder="Hospital / clinic, if any" value={draft.transported_to} onChange={(v) => setDraft({ ...draft, transported_to: v })}/>
-              )}
-              <TextareaField label="Resolution" placeholder="Outcome / follow-up notes" value={draft.resolution} onChange={(v) => setDraft({ ...draft, resolution: v })}/>
-            </div>
-
-            {saveError && <div className="field-error" style={{ margin: '8px 0' }}>{saveError}</div>}
-
-            <div className="row">
-              <button type="button" className="btn" onClick={() => { setDraft(emptyDraft()); setSaveError(null); }}>Clear</button>
-              <button
-                type="button"
-                className="btn primary"
-                onClick={handleAdd}
-                disabled={createMutation.isPending || draft.occurred_on === '' || draft.description.trim() === ''}
-              >
-                {createMutation.isPending ? 'Saving…' : 'Log incident'}
-              </button>
-            </div>
+        <InlineSheet open={showForm} onClose={() => { setDraft(emptyDraft()); setShowForm(false); setSaveError(null); }}>
+          <div className="fields" style={{ padding: 0 }}>
+            <DateField label="Occurred on" required value={draft.occurred_on} onChange={(v) => setDraft({ ...draft, occurred_on: v })}/>
+            <TextField label="Time (HH:MM)" placeholder="optional" value={draft.occurred_at_time} onChange={(v) => setDraft({ ...draft, occurred_at_time: v })}/>
+            <SegmentedField
+              label="Severity"
+              required
+              options={SEVERITIES}
+              value={draft.severity}
+              onChange={(v) => setDraft({ ...draft, severity: v as IncidentSeverity })}
+            />
+            <TextField label="Location" placeholder={kind === 'security' ? 'e.g. Front rail / VIP entrance' : 'e.g. Counsellor area / row 12'} value={draft.location} onChange={(v) => setDraft({ ...draft, location: v })}/>
+            <TextareaField label="Description" required placeholder={kind === 'security' ? 'What happened?' : 'Symptoms / condition'} value={draft.description} onChange={(v) => setDraft({ ...draft, description: v })}/>
+            <TextareaField label="Response taken" placeholder={kind === 'security' ? 'How was it handled?' : 'First aid given'} value={draft.response_taken} onChange={(v) => setDraft({ ...draft, response_taken: v })}/>
+            {kind === 'medical' && (
+              <TextField label="Transported to" placeholder="Hospital / clinic, if any" value={draft.transported_to} onChange={(v) => setDraft({ ...draft, transported_to: v })}/>
+            )}
+            <TextareaField label="Resolution" placeholder="Outcome / follow-up notes" value={draft.resolution} onChange={(v) => setDraft({ ...draft, resolution: v })}/>
           </div>
-        )}
+
+          {saveError && <div className="field-error" style={{ margin: '8px 0' }}>{saveError}</div>}
+
+          <div className="row">
+            <button type="button" className="btn" onClick={() => { setDraft(emptyDraft()); setSaveError(null); }}>Clear</button>
+            <button
+              type="button"
+              className="btn primary"
+              onClick={handleAdd}
+              disabled={createMutation.isPending || draft.occurred_on === '' || draft.description.trim() === ''}
+            >
+              {createMutation.isPending ? 'Saving…' : 'Log incident'}
+            </button>
+          </div>
+        </InlineSheet>
 
         <div className="bot-pad"/>
       </FormShell>

@@ -53,7 +53,7 @@ export function usePower(code: string | undefined) {
 
 // === Pastors ===
 export interface Pastor {
-  id: number; crusade_id: number; full_name: string; church_id: number | null; zone_id: number | null;
+  id: number; crusade_id: number; contact_id: number | null; full_name: string; church_id: number | null; zone_id: number | null;
   phone: string | null; email: string | null; address: string | null;
   pastor_since: number | null;
   pipeline_stage: 'identified' | 'engaged' | 'committed' | 'active' | 'champion';
@@ -275,6 +275,90 @@ export function useZones() {
   });
 }
 
+// === Churches ===
+export interface Church {
+  id: number;
+  crusade_id: number;
+  zone_id: number | null;
+  name: string;
+}
+
+export function useChurches() {
+  return useQuery({
+    queryKey: ['churches'],
+    queryFn: () => apiFetch<{ data: Church[] }>('/churches').then((r) => r.data),
+  });
+}
+
+// === Contacts (central People registry) ===
+export interface Contact {
+  id: number;
+  crusade_id: number;
+  zone_id: number | null;
+  church_id: number | null;
+  full_name: string;
+  title: string | null;
+  phone: string | null;
+  email: string | null;
+  notes: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
+export type ContactInput = {
+  crusade_id: number;
+  zone_id?: number | null;
+  church_id?: number | null;
+  full_name: string;
+  title?: string | null;
+  phone?: string | null;
+  email?: string | null;
+  notes?: string | null;
+};
+
+export function useContacts(filters: { q?: string; zone_id?: number } = {}) {
+  const params = new URLSearchParams();
+  if (filters.q) params.set('q', filters.q);
+  if (filters.zone_id != null) params.set('zone_id', String(filters.zone_id));
+  const qs = params.toString();
+  return useQuery({
+    queryKey: ['contacts', filters],
+    queryFn: () => apiFetch<{ data: Contact[] }>(`/contacts${qs ? '?' + qs : ''}`).then((r) => r.data),
+  });
+}
+
+export function useCreateContact() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (body: ContactInput) =>
+      apiFetch<{ data: Contact }>('/contacts', {
+        method: 'POST',
+        body: JSON.stringify(body),
+      }).then((r) => r.data),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ['contacts'] }),
+  });
+}
+
+export function useUpdateContact() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: ({ id, body }: { id: number; body: Partial<Omit<ContactInput, 'crusade_id'>> }) =>
+      apiFetch<{ data: Contact }>(`/contacts/${id}`, {
+        method: 'PATCH',
+        body: JSON.stringify(body),
+      }).then((r) => r.data),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ['contacts'] }),
+  });
+}
+
+export function useDeleteContact() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (id: number) => apiFetch(`/contacts/${id}`, { method: 'DELETE' }),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ['contacts'] }),
+  });
+}
+
 // === Awareness surveys (aggregate rows) ===
 export interface AwarenessSurveyRow {
   id: number;
@@ -324,6 +408,7 @@ export type CommitteeKind = 'bot' | 'cpc';
 export interface CommitteeMember {
   id: number;
   crusade_id: number;
+  contact_id: number | null;
   kind: CommitteeKind;
   name: string;
   role: string;
@@ -349,6 +434,7 @@ export function useCreateCommitteeMember() {
   return useMutation({
     mutationFn: (body: {
       crusade_id: number;
+      contact_id?: number | null;
       kind: CommitteeKind;
       name: string;
       role: string;
@@ -512,6 +598,7 @@ export function useCreatePastor() {
   return useMutation({
     mutationFn: (body: {
       crusade_id: number;
+      contact_id?: number | null;
       full_name: string;
       zone_id: number | null;
       phone: string | null;
@@ -781,6 +868,7 @@ export type StakeholderStatus = 'identified' | 'engaged' | 'committed' | 'won';
 export interface Stakeholder {
   id: number;
   crusade_id: number;
+  contact_id: number | null;
   name: string;
   org: string;
   role: string;
@@ -811,6 +899,7 @@ export function useCreateStakeholder() {
   return useMutation({
     mutationFn: (body: {
       crusade_id: number;
+      contact_id?: number | null;
       name: string;
       org: string;
       role: string;
@@ -992,12 +1081,15 @@ export function usePledgesSummary() {
 // === Workers (umbrella roster) ===
 export type WorkerGroup =
   | 'choir' | 'ushers' | 'security' | 'counsellors' | 'prayer_warriors'
-  | 'hospitality' | 'technical' | 'medical' | 'childrens' | 'general';
+  | 'hospitality' | 'technical' | 'medical' | 'womens' | 'general';
 export type WorkerStatus = 'active' | 'inactive';
 
 export interface Worker {
   id: number;
   crusade_id: number;
+  contact_id: number | null;
+  zone_id: number | null;
+  church_id: number | null;
   group_type: WorkerGroup;
   name: string;
   role: string | null;
@@ -1026,6 +1118,9 @@ export function useCreateWorker() {
   return useMutation({
     mutationFn: (body: {
       crusade_id: number;
+      contact_id?: number | null;
+      zone_id?: number | null;
+      church_id?: number | null;
       group_type: WorkerGroup;
       name: string;
       role?: string | null;
@@ -1050,6 +1145,8 @@ export function useUpdateWorker() {
     mutationFn: ({ id, body }: {
       id: number;
       body: Partial<{
+        zone_id: number | null;
+        church_id: number | null;
         group_type: WorkerGroup;
         name: string;
         role: string | null;
@@ -1718,6 +1815,7 @@ export type LandElderStatus = 'identified' | 'courted' | 'blessed' | 'neutral' |
 export interface LandElder {
   id: number;
   crusade_id: number;
+  contact_id: number | null;
   name: string;
   title: string | null;
   region: string | null;
@@ -1742,6 +1840,7 @@ export function useCreateLandElder() {
   return useMutation({
     mutationFn: (body: {
       crusade_id: number;
+      contact_id?: number | null;
       name: string;
       title?: string | null;
       region?: string | null;
@@ -1804,6 +1903,7 @@ export type DonorStatus = 'prospect' | 'engaged' | 'committed' | 'given' | 'decl
 export interface Donor {
   id: number;
   crusade_id: number;
+  contact_id: number | null;
   name: string;
   organization: string | null;
   kind: DonorKind;
@@ -1832,6 +1932,7 @@ export function useCreateDonor() {
   return useMutation({
     mutationFn: (body: {
       crusade_id: number;
+      contact_id?: number | null;
       name: string;
       organization?: string | null;
       kind: DonorKind;

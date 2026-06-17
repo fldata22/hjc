@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { ResponsiveShell } from '../app/Shell';
 import { FormShell } from './FormShell';
 import { TextField, TextareaField, CurrencyField, SelectField, SegmentedField } from './fields';
+import { ContactPicker } from './ContactPicker';
 import {
   useCrusade,
   useDonors,
@@ -12,8 +13,10 @@ import {
   type Donor,
   type DonorKind,
   type DonorStatus,
+  type Contact,
 } from '../../api/hooks';
 import { ApiError } from '../../api/client';
+import { InlineSheet } from './InlineSheet';
 import './forms.css';
 
 const KINDS: Array<{ value: DonorKind; label: string }> = [
@@ -40,6 +43,7 @@ const STATUS_CLASS: Record<DonorStatus, string> = {
 };
 
 type Draft = {
+  contact: Contact | null;
   name: string;
   organization: string;
   kind: DonorKind | '';
@@ -48,7 +52,7 @@ type Draft = {
   notes: string;
 };
 
-const emptyDraft: Draft = { name: '', organization: '', kind: '', pledge_amount: '', status: 'prospect', notes: '' };
+const emptyDraft: Draft = { contact: null, name: '', organization: '', kind: '', pledge_amount: '', status: 'prospect', notes: '' };
 
 function extractApiMessage(e: unknown, fallback = 'Failed'): string {
   if (e instanceof ApiError) {
@@ -86,15 +90,21 @@ export function DonorsScreen() {
     s === 'engaged' ? 'committed' :
     s === 'committed' ? 'given' : s;
 
+  const isIndividual = draft.kind === 'individual';
+  const canAdd =
+    draft.kind !== '' &&
+    (isIndividual ? !!draft.contact : draft.name.trim() !== '');
+
   const handleAdd = async () => {
-    if (!crusade || draft.name.trim() === '' || draft.kind === '' || createMutation.isPending) return;
+    if (!crusade || !canAdd || createMutation.isPending) return;
     setSaveError(null);
     try {
       await createMutation.mutateAsync({
         crusade_id: crusade.id,
-        name: draft.name.trim(),
-        organization: draft.organization.trim() || null,
-        kind: draft.kind,
+        contact_id: isIndividual ? (draft.contact?.id ?? null) : null,
+        name: isIndividual ? (draft.contact?.full_name ?? '') : draft.name.trim(),
+        organization: isIndividual ? null : (draft.organization.trim() || null),
+        kind: draft.kind as DonorKind,
         pledge_amount: draft.pledge_amount === '' ? null : Number(draft.pledge_amount),
         status: draft.status,
         notes: draft.notes.trim() || null,
@@ -202,56 +212,54 @@ export function DonorsScreen() {
         <button
           type="button"
           className="add-toggle"
-          onClick={() => {
-            if (showForm) {
-              setDraft(emptyDraft);
-              setSaveError(null);
-            }
-            setShowForm((s) => !s);
-          }}
+          onClick={() => setShowForm(true)}
         >
-          {showForm ? 'Cancel' : 'Add donor'}
+          Add donor
         </button>
 
-        {showForm && (
-          <div className="inline-form">
-            <div className="fields" style={{ padding: 0 }}>
-              <TextField label="Name" required placeholder="e.g. Hon. Sarah Mensah" value={draft.name} onChange={(v) => setDraft({ ...draft, name: v })}/>
-              <TextField label="Organisation" placeholder="optional" value={draft.organization} onChange={(v) => setDraft({ ...draft, organization: v })}/>
-              <SelectField
-                label="Kind"
-                required
-                options={KINDS}
-                value={draft.kind}
-                onChange={(v) => setDraft({ ...draft, kind: v as DonorKind | '' })}
-                placeholder="Select…"
-              />
-              <CurrencyField label="Pledge amount" value={draft.pledge_amount} onChange={(v) => setDraft({ ...draft, pledge_amount: v })}/>
-              <SegmentedField
-                label="Status"
-                required
-                options={STATUSES}
-                value={draft.status}
-                onChange={(v) => setDraft({ ...draft, status: v as DonorStatus })}
-              />
-              <TextareaField label="Notes" value={draft.notes} onChange={(v) => setDraft({ ...draft, notes: v })}/>
-            </div>
-
-            {saveError && <div className="field-error" style={{ margin: '8px 0' }}>{saveError}</div>}
-
-            <div className="row">
-              <button type="button" className="btn" onClick={() => { setDraft(emptyDraft); setSaveError(null); }}>Clear</button>
-              <button
-                type="button"
-                className="btn primary"
-                onClick={handleAdd}
-                disabled={createMutation.isPending || draft.name.trim() === '' || draft.kind === ''}
-              >
-                {createMutation.isPending ? 'Saving…' : 'Add donor'}
-              </button>
-            </div>
+        <InlineSheet open={showForm} onClose={() => { setDraft(emptyDraft); setShowForm(false); setSaveError(null); }}>
+          <div className="fields" style={{ padding: 0 }}>
+            <SelectField
+              label="Kind"
+              required
+              options={KINDS}
+              value={draft.kind}
+              onChange={(v) => setDraft({ ...draft, kind: v as DonorKind | '' })}
+              placeholder="Select…"
+            />
+            {isIndividual ? (
+              <ContactPicker label="Donor" required value={draft.contact} onChange={(c) => setDraft({ ...draft, contact: c })}/>
+            ) : (
+              <>
+                <TextField label="Name" required placeholder="e.g. Mercy Foundation" value={draft.name} onChange={(v) => setDraft({ ...draft, name: v })}/>
+                <TextField label="Organisation" placeholder="optional" value={draft.organization} onChange={(v) => setDraft({ ...draft, organization: v })}/>
+              </>
+            )}
+            <CurrencyField label="Pledge amount" value={draft.pledge_amount} onChange={(v) => setDraft({ ...draft, pledge_amount: v })}/>
+            <SegmentedField
+              label="Status"
+              required
+              options={STATUSES}
+              value={draft.status}
+              onChange={(v) => setDraft({ ...draft, status: v as DonorStatus })}
+            />
+            <TextareaField label="Notes" value={draft.notes} onChange={(v) => setDraft({ ...draft, notes: v })}/>
           </div>
-        )}
+
+          {saveError && <div className="field-error" style={{ margin: '8px 0' }}>{saveError}</div>}
+
+          <div className="row">
+            <button type="button" className="btn" onClick={() => { setDraft(emptyDraft); setSaveError(null); }}>Clear</button>
+            <button
+              type="button"
+              className="btn primary"
+              onClick={handleAdd}
+              disabled={createMutation.isPending || !canAdd}
+            >
+              {createMutation.isPending ? 'Saving…' : 'Add donor'}
+            </button>
+          </div>
+        </InlineSheet>
 
         <div className="bot-pad"/>
       </FormShell>

@@ -1107,3 +1107,240 @@
 
   .app-root .sidebar .sb-icon { font-size: 15px; }
 }
+
+/* ── Form Sheet Modal ── */
+.form-sheet-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+}
+
+.form-sheet-backdrop {
+  position: absolute;
+  inset: 0;
+  background: rgba(28, 25, 23, 0.45);
+}
+
+.form-sheet {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 94%;
+  background: var(--surface, #fff);
+  border-radius: 16px 16px 0 0;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  box-shadow: 0 -8px 32px rgba(28, 25, 23, 0.18);
+}
+
+.form-sheet-handle {
+  width: 36px;
+  height: 4px;
+  background: var(--line-2, #D6CFC6);
+  border-radius: 2px;
+  margin: 10px auto 0;
+  flex-shrink: 0;
+}
+
+/* ── Form field components (.field, .input, .seg) ── */
+.app-root .fields {
+  display: flex;
+  flex-direction: column;
+}
+
+.app-root .field {
+  display: flex;
+  flex-direction: column;
+  padding: 16px 0;
+  border-bottom: 1px solid var(--line);
+}
+
+.app-root .field:last-child { border-bottom: none; }
+
+.app-root .field .lbl {
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--ink-3);
+  margin-bottom: 6px;
+}
+
+.app-root .field .lbl .req {
+  color: var(--accent);
+  margin-left: 1px;
+}
+
+.app-root .field .input {
+  background: transparent;
+  border: none;
+  border-bottom: 1px solid var(--line-2);
+  border-radius: 0;
+  padding: 6px 0;
+  font-size: 15px;
+  font-family: inherit;
+  color: var(--ink);
+  outline: none;
+  width: 100%;
+}
+
+.app-root .field .input::placeholder { color: var(--ink-3); }
+.app-root .field .input:focus { border-bottom-color: var(--ink); }
+
+.app-root .field .input.area {
+  resize: none;
+  min-height: 72px;
+}
+
+/* ── Segmented control ── */
+.app-root .seg {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.app-root .seg span {
+  display: inline-block;
+  padding: 6px 14px;
+  border-radius: 999px;
+  border: 1px solid var(--line-2);
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--ink-2);
+  cursor: pointer;
+  user-select: none;
+  transition: background 0.12s, color 0.12s, border-color 0.12s;
+}
+
+.app-root .seg span.on {
+  background: var(--ink);
+  color: var(--surface);
+  border-color: var(--ink);
+}
+
+/* ── InlineSheet content body ── */
+.form-sheet-body {
+  padding: 16px 20px 24px;
+  overflow-y: auto;
+  flex: 1;
+}
+
+.form-sheet-body .field {
+  padding: 16px 0;
+  border-bottom: 1px solid var(--line);
+  display: flex;
+  flex-direction: column;
+}
+
+.form-sheet-body .field:last-of-type { border-bottom: none; }
+
+.form-sheet-body .row {
+  display: flex;
+  gap: 10px;
+  padding: 12px 0 0;
+  border-top: 1px solid var(--line);
+  margin-top: 4px;
+}
+
+.form-sheet-body .row .btn {
+  flex: 1;
+  padding: 12px 16px;
+  font-size: 14px;
+  font-weight: 600;
+  border-radius: 999px;
+  border: 1.5px solid var(--ink);
+  background: transparent;
+  color: var(--ink);
+  font-family: inherit;
+  cursor: pointer;
+  letter-spacing: -0.01em;
+}
+
+.form-sheet-body .row .btn.primary {
+  background: var(--ink);
+  color: var(--surface);
+}
+
+.form-sheet-body .row .btn:disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+}
+
+.form-sheet-body .field-error {
+  font-size: 11px;
+  color: var(--risk);
+  margin-top: 4px;
+}
+
+/* Contact picker (searchable People dropdown) */
+.app-root .contact-chip {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+  border: 1px solid var(--line-2);
+  border-radius: 10px;
+  background: var(--bg);
+}
+.app-root .contact-chip .cc-body { flex: 1; min-width: 0; }
+.app-root .contact-chip .cc-name { font-size: 15px; font-weight: 600; color: var(--ink); }
+.app-root .contact-chip .cc-sub { font-size: 12px; color: var(--ink-3); margin-top: 1px; }
+.app-root .contact-chip .cc-clear {
+  flex-shrink: 0;
+  padding: 6px 12px;
+  font-size: 12px;
+  font-weight: 600;
+  border-radius: 999px;
+  border: 1px solid var(--line-2);
+  background: transparent;
+  color: var(--ink-2);
+  font-family: inherit;
+  cursor: pointer;
+}
+
+.app-root .contact-menu {
+  margin-top: 6px;
+  border: 1px solid var(--line-2);
+  border-radius: 10px;
+  overflow: hidden;
+  background: var(--surface);
+}
+.app-root .contact-menu .cm-empty {
+  padding: 12px 14px;
+  font-size: 13px;
+  color: var(--ink-3);
+}
+.app-root .contact-menu .cm-item {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 1px;
+  width: 100%;
+  text-align: left;
+  padding: 10px 14px;
+  background: transparent;
+  border: none;
+  border-bottom: 1px solid var(--line);
+  font-family: inherit;
+  cursor: pointer;
+}
+.app-root .contact-menu .cm-item:last-child { border-bottom: none; }
+.app-root .contact-menu .cm-item:hover { background: var(--bg); }
+.app-root .contact-menu .cm-item .cm-name { font-size: 14px; color: var(--ink); }
+.app-root .contact-menu .cm-item .cm-sub { font-size: 12px; color: var(--ink-3); }
+.app-root .contact-menu .cm-add {
+  width: 100%;
+  text-align: left;
+  padding: 11px 14px;
+  background: var(--accent-bg);
+  border: none;
+  border-top: 1px solid var(--line);
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--accent-text, var(--accent));
+  cursor: pointer;
+}
+.app-root .contact-menu .cm-add:disabled { opacity: 0.5; cursor: not-allowed; }

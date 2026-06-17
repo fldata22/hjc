@@ -15,6 +15,7 @@ import { compressImage } from '../../lib/imageCompress';
 import { ReceiptModal } from './ReceiptModal';
 import { todayISO, last14Days, formatDayLabel } from '../../lib/dateHelpers';
 import { useToast } from '../../lib/toast-context';
+import { InlineSheet } from './InlineSheet';
 import './forms.css';
 
 type Draft = {
@@ -282,76 +283,68 @@ export function DailyExpensesForm() {
         <button
           type="button"
           className="add-toggle"
-          onClick={() => {
-            if (showForm) {
-              setDraft(emptyDraft(selectedDate));
-              setSaveError(null);
-            }
-            setShowForm((s) => !s);
-          }}
+          onClick={() => setShowForm(true)}
         >
-          {showForm ? 'Cancel' : 'Add expense'}
+          Add expense
         </button>
 
-        {showForm && (
-          <div className="inline-form">
-            <div className="fields" style={{ padding: 0 }}>
-              <DateField label="Date" value={draft.date} onChange={(v) => setDraft({ ...draft, date: v })} required/>
-              <TextField label="Vendor" placeholder="e.g. Sahel Transport" value={draft.vendor} onChange={(v) => setDraft({ ...draft, vendor: v })} required/>
-              <SelectField
-                label="Category"
-                options={categoryOptions}
-                value={draft.budgetCategoryId === '' ? '' : String(draft.budgetCategoryId)}
-                onChange={(v) => setDraft({ ...draft, budgetCategoryId: v === '' ? '' : Number(v) })}
-                placeholder="Uncategorized"
-              />
-              <CurrencyField label="Amount" value={draft.amount} onChange={(v) => setDraft({ ...draft, amount: v })} required/>
-              <TextareaField label="Notes" value={draft.notes} onChange={(v) => setDraft({ ...draft, notes: v })}/>
-            </div>
-
-            <div style={{ padding: '12px 0' }}>
-              {draft.receiptPreview ? (
-                <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-                  <img
-                    src={draft.receiptPreview}
-                    alt="Receipt preview"
-                    style={{ width: 60, height: 60, objectFit: 'cover', borderRadius: 6, border: '1px solid var(--line)' }}
-                  />
-                  <button
-                    type="button"
-                    onClick={() => setDraft((d) => ({ ...d, receiptPreview: null, receiptBlob: null }))}
-                    style={{ background: 'transparent', border: 0, color: 'var(--accent)', cursor: 'pointer', fontSize: 12, fontFamily: 'inherit' }}
-                  >
-                    Remove
-                  </button>
-                </div>
-              ) : (
-                <label className="receipt-capture-btn" style={{ display: 'inline-block', padding: '8px 12px', border: '1px solid var(--line)', borderRadius: 6, cursor: 'pointer', fontSize: 12 }}>
-                  <input
-                    type="file"
-                    accept="image/*"
-                    capture="environment"
-                    style={{ display: 'none' }}
-                    onChange={handleReceiptChange}
-                    disabled={capturing}
-                  />
-                  {capturing ? 'Processing…' : '+ Add receipt'}
-                </label>
-              )}
-            </div>
-
-            {saveError && (
-              <div className="field-error" style={{ margin: '4px 0' }}>{saveError}</div>
-            )}
-
-            <div className="row">
-              <button type="button" className="btn" onClick={() => { setDraft(emptyDraft(selectedDate)); setSaveError(null); }}>Clear</button>
-              <button type="button" className="btn primary" onClick={handleAdd} disabled={!canAdd}>
-                {createMutation.isPending ? 'Saving…' : 'Save expense'}
-              </button>
-            </div>
+        <InlineSheet open={showForm} onClose={() => { setDraft(emptyDraft(selectedDate)); setShowForm(false); setSaveError(null); }}>
+          <div className="fields" style={{ padding: 0 }}>
+            <DateField label="Date" value={draft.date} onChange={(v) => setDraft({ ...draft, date: v })} required/>
+            <TextField label="Vendor" placeholder="e.g. Sahel Transport" value={draft.vendor} onChange={(v) => setDraft({ ...draft, vendor: v })} required/>
+            <SelectField
+              label="Category"
+              options={categoryOptions}
+              value={draft.budgetCategoryId === '' ? '' : String(draft.budgetCategoryId)}
+              onChange={(v) => setDraft({ ...draft, budgetCategoryId: v === '' ? '' : Number(v) })}
+              placeholder="Uncategorized"
+            />
+            <CurrencyField label="Amount" value={draft.amount} onChange={(v) => setDraft({ ...draft, amount: v })} required/>
+            <TextareaField label="Notes" value={draft.notes} onChange={(v) => setDraft({ ...draft, notes: v })}/>
           </div>
-        )}
+
+          <div style={{ padding: '12px 0' }}>
+            {draft.receiptPreview ? (
+              <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+                <img
+                  src={draft.receiptPreview}
+                  alt="Receipt preview"
+                  style={{ width: 60, height: 60, objectFit: 'cover', borderRadius: 6, border: '1px solid var(--line)' }}
+                />
+                <button
+                  type="button"
+                  onClick={() => setDraft((d) => ({ ...d, receiptPreview: null, receiptBlob: null }))}
+                  style={{ background: 'transparent', border: 0, color: 'var(--accent)', cursor: 'pointer', fontSize: 12, fontFamily: 'inherit' }}
+                >
+                  Remove
+                </button>
+              </div>
+            ) : (
+              <label className="receipt-capture-btn" style={{ display: 'inline-block', padding: '8px 12px', border: '1px solid var(--line)', borderRadius: 6, cursor: 'pointer', fontSize: 12 }}>
+                <input
+                  type="file"
+                  accept="image/*"
+                  capture="environment"
+                  style={{ display: 'none' }}
+                  onChange={handleReceiptChange}
+                  disabled={capturing}
+                />
+                {capturing ? 'Processing…' : '+ Add receipt'}
+              </label>
+            )}
+          </div>
+
+          {saveError && (
+            <div className="field-error" style={{ margin: '4px 0' }}>{saveError}</div>
+          )}
+
+          <div className="row">
+            <button type="button" className="btn" onClick={() => { setDraft(emptyDraft(selectedDate)); setSaveError(null); }}>Clear</button>
+            <button type="button" className="btn primary" onClick={handleAdd} disabled={!canAdd}>
+              {createMutation.isPending ? 'Saving…' : 'Save expense'}
+            </button>
+          </div>
+        </InlineSheet>
 
         {openReceipt && <ReceiptModal photo={openReceipt} onClose={() => setOpenReceipt(null)}/>}
         <div className="bot-pad"/>

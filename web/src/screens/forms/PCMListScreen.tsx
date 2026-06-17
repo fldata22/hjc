@@ -1,16 +1,21 @@
 import { useMemo, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
 import { ResponsiveShell } from '../app/Shell';
 import { FormShell } from './FormShell';
 import {
   type Pastor,
+  type Contact,
   usePastors,
   useZones,
   useUpdatePastor,
+  useCreatePastor,
+  useCreatePastorIdentification,
+  useCrusade,
 } from '../../api/hooks';
 import { ApiError } from '../../api/client';
 import { useToast } from '../../lib/toast-context';
-import { TextareaField, DateField, SegmentedField, SelectField } from './fields';
+import { TextField, TextareaField, DateField, SegmentedField, SelectField } from './fields';
+import { ContactPicker } from './ContactPicker';
+import { InlineSheet } from './InlineSheet';
 import './forms.css';
 
 type Stage = Pastor['pipeline_stage'];
@@ -77,16 +82,27 @@ function extractApiMessage(e: unknown, fallback = 'Failed'): string {
   return fallback;
 }
 
+type AddDraft = { contact: Contact | null; role: string };
+const emptyAddDraft: AddDraft = { contact: null, role: '' };
+
 export function PCMListScreen() {
-  const navigate = useNavigate();
   const toast = useToast();
   const { data: page, isLoading, isError, refetch } = usePastors({ per_page: 50 });
   const { data: zones } = useZones();
+  const { data: crusade } = useCrusade();
   const updateMutation = useUpdatePastor();
+  const createPastor = useCreatePastor();
+  const createIdentification = useCreatePastorIdentification();
 
+  // Edit sheet
   const [editingId, setEditingId] = useState<number | null>(null);
   const [editDraft, setEditDraft] = useState<EditDraft | null>(null);
   const [editError, setEditError] = useState<string | null>(null);
+
+  // Add sheet
+  const [showAdd, setShowAdd] = useState(false);
+  const [addDraft, setAddDraft] = useState<AddDraft>(emptyAddDraft);
+  const [addError, setAddError] = useState<string | null>(null);
 
   const pastors = useMemo(() => page?.data ?? [], [page]);
   const zoneById = useMemo(
@@ -111,6 +127,46 @@ export function PCMListScreen() {
     setEditingId(null);
     setEditDraft(null);
     setEditError(null);
+  };
+
+  const closeAdd = () => {
+    setShowAdd(false);
+    setAddDraft(emptyAddDraft);
+    setAddError(null);
+  };
+
+  const canAdd = !!addDraft.contact;
+
+  const handleAddSave = async () => {
+    if (!crusade || !addDraft.contact || createPastor.isPending) return;
+    const c = addDraft.contact;
+    setAddError(null);
+    try {
+      const pastor = await createPastor.mutateAsync({
+        crusade_id: crusade.id,
+        contact_id: c.id,
+        full_name: c.full_name,
+        zone_id: c.zone_id,
+        phone: c.phone,
+        email: c.email,
+        address: null,
+        pastor_since: null,
+        pipeline_stage: 'identified',
+      });
+      await createIdentification.mutateAsync({
+        pastorId: pastor.id,
+        body: {
+          category: 'PCM',
+          sub_role: addDraft.role.trim() || c.title || 'Pastor',
+          assigned_at: new Date().toISOString().slice(0, 10),
+        },
+      });
+      toast.show(`${pastor.full_name} added as PCM.`, 'success');
+      closeAdd();
+      refetch();
+    } catch (e) {
+      setAddError(extractApiMessage(e));
+    }
   };
 
   const handleStageClick = async (p: Pastor, ev: React.MouseEvent) => {
@@ -159,7 +215,7 @@ export function PCMListScreen() {
       <FormShell
         title={<>PCM <em>Primary Committee</em></>}
         pillar="P1"
-        primaryAction={{ label: 'Add new PCM', onClick: () => navigate('/forms/pcm/new') }}
+        primaryAction={{ label: 'Add new PCM', onClick: () => setShowAdd(true) }}
       >
         {isError ? (
           <div
@@ -221,75 +277,94 @@ export function PCMListScreen() {
               {pastors.map((p) => {
                 const zone = p.zone_id != null ? zoneById.get(p.zone_id) : null;
                 const zoneLabel = zone?.name ?? zone?.code ?? null;
-                const isEditing = editingId === p.id;
                 return (
-                  <div key={p.id} style={{ borderBottom: '1px solid var(--line)' }}>
-                    <button
-                      type="button"
-                      onClick={() => (isEditing ? closeEdit() : openEdit(p))}
-                      className="form-list-row"
-                      style={{ background: 'transparent', border: 0, padding: '14px 0', textAlign: 'left', cursor: 'pointer', fontFamily: 'inherit', width: '100%', borderBottom: 0 }}
-                    >
-                      <div>
-                        <div className="name">{p.full_name}</div>
-                        <div className="sub">{zoneLabel ?? '—'}{p.last_contact_at ? ` · last contact ${p.last_contact_at.slice(0, 10)}` : ''}</div>
-                      </div>
-                      <div className="right" style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                        <button
-                          type="button"
-                          onClick={(ev) => handleStageClick(p, ev)}
-                          className={'status ' + STAGE_CLASS[p.pipeline_stage]}
-                          style={{ border: 0, cursor: 'pointer', fontFamily: 'inherit' }}
-                          aria-label="Advance stage"
-                          disabled={updateMutation.isPending}
-                        >
-                          {STAGE_LABEL[p.pipeline_stage]}
-                        </button>
-                        {p.phone && (
-                          <div style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: 11, color: 'var(--ink-3)' }}>{p.phone}</div>
-                        )}
-                      </div>
-                    </button>
-
-                    {isEditing && editDraft && (
-                      <div style={{ padding: '0 0 16px' }}>
-                        <div className="fields" style={{ padding: 0 }}>
-                          <SegmentedField
-                            label="Stage"
-                            options={STAGES}
-                            value={editDraft.pipeline_stage}
-                            onChange={(v) => setEditDraft({ ...editDraft, pipeline_stage: v as Stage })}
-                          />
-                          <SelectField
-                            label="Zone"
-                            options={zoneOptions}
-                            value={editDraft.zone_id === '' ? '' : String(editDraft.zone_id)}
-                            onChange={(v) => setEditDraft({ ...editDraft, zone_id: v === '' ? '' : Number(v) })}
-                            placeholder="Optional"
-                          />
-                          <DateField label="Last contact" value={editDraft.last_contact_at} onChange={(v) => setEditDraft({ ...editDraft, last_contact_at: v })}/>
-                          <TextareaField label="Notes (not yet persisted)" value={editDraft.notes} onChange={(v) => setEditDraft({ ...editDraft, notes: v })}/>
-                        </div>
-                        {editError && <div className="field-error" style={{ marginTop: 8 }}>{editError}</div>}
-                        <div className="row">
-                          <button type="button" className="btn" onClick={closeEdit}>Cancel</button>
-                          <button
-                            type="button"
-                            className="btn primary"
-                            onClick={handleEditSave}
-                            disabled={updateMutation.isPending}
-                          >
-                            {updateMutation.isPending ? 'Saving…' : 'Save'}
-                          </button>
-                        </div>
-                      </div>
-                    )}
-                  </div>
+                  <button
+                    key={p.id}
+                    type="button"
+                    onClick={() => openEdit(p)}
+                    className="form-list-row"
+                    style={{ background: 'transparent', border: 0, textAlign: 'left', cursor: 'pointer', fontFamily: 'inherit', width: '100%' }}
+                  >
+                    <div>
+                      <div className="name">{p.full_name}</div>
+                      <div className="sub">{zoneLabel ?? '—'}{p.last_contact_at ? ` · ${p.last_contact_at.slice(0, 10)}` : ''}</div>
+                    </div>
+                    <div className="right" style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                      <span
+                        role="button"
+                        tabIndex={0}
+                        onClick={(ev) => handleStageClick(p, ev)}
+                        className={'status ' + STAGE_CLASS[p.pipeline_stage]}
+                        aria-label="Advance stage"
+                      >
+                        {STAGE_LABEL[p.pipeline_stage]}
+                      </span>
+                      {p.phone && (
+                        <div style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: 11, color: 'var(--ink-3)' }}>{p.phone}</div>
+                      )}
+                    </div>
+                  </button>
                 );
               })}
             </div>
+
+            {/* Edit sheet */}
+            <InlineSheet open={editingId !== null} onClose={closeEdit}>
+              {editDraft && (
+                <>
+                  <div style={{ padding: '4px 0 12px', fontSize: 15, fontWeight: 600, color: 'var(--ink)', borderBottom: '1px solid var(--line)', marginBottom: 0 }}>
+                    {pastors.find((p) => p.id === editingId)?.full_name}
+                  </div>
+                  <div className="fields" style={{ padding: 0 }}>
+                    <SegmentedField
+                      label="Stage"
+                      options={STAGES}
+                      value={editDraft.pipeline_stage}
+                      onChange={(v) => setEditDraft({ ...editDraft, pipeline_stage: v as Stage })}
+                    />
+                    <SelectField
+                      label="Zone"
+                      options={zoneOptions}
+                      value={editDraft.zone_id === '' ? '' : String(editDraft.zone_id)}
+                      onChange={(v) => setEditDraft({ ...editDraft, zone_id: v === '' ? '' : Number(v) })}
+                      placeholder="Optional"
+                    />
+                    <DateField label="Last contact" value={editDraft.last_contact_at} onChange={(v) => setEditDraft({ ...editDraft, last_contact_at: v })}/>
+                    <TextareaField label="Notes" value={editDraft.notes} onChange={(v) => setEditDraft({ ...editDraft, notes: v })}/>
+                  </div>
+                  {editError && <div className="field-error" style={{ margin: '4px 0' }}>{editError}</div>}
+                  <div className="row">
+                    <button type="button" className="btn" onClick={closeEdit}>Cancel</button>
+                    <button type="button" className="btn primary" onClick={handleEditSave} disabled={updateMutation.isPending}>
+                      {updateMutation.isPending ? 'Saving…' : 'Save'}
+                    </button>
+                  </div>
+                </>
+              )}
+            </InlineSheet>
           </>
         )}
+
+        {/* Add PCM sheet — always rendered so it can open when list is empty too */}
+        <InlineSheet open={showAdd} onClose={closeAdd}>
+          <div className="fields" style={{ padding: 0 }}>
+            <ContactPicker
+              label="Pastor"
+              required
+              value={addDraft.contact}
+              onChange={(c) => setAddDraft({ ...addDraft, contact: c })}
+            />
+            <TextField label="Role / title" placeholder="optional — e.g. Senior Pastor" value={addDraft.role} onChange={(v) => setAddDraft({ ...addDraft, role: v })}/>
+          </div>
+          {addError && <div className="field-error" style={{ margin: '4px 0' }}>{addError}</div>}
+          <div className="row">
+            <button type="button" className="btn" onClick={closeAdd}>Cancel</button>
+            <button type="button" className="btn primary" onClick={handleAddSave} disabled={!canAdd || createPastor.isPending}>
+              {createPastor.isPending ? 'Saving…' : 'Add PCM'}
+            </button>
+          </div>
+        </InlineSheet>
+
         <div className="bot-pad"/>
       </FormShell>
     </ResponsiveShell>

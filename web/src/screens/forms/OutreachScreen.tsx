@@ -14,6 +14,7 @@ import {
 } from '../../api/hooks';
 import { ApiError } from '../../api/client';
 import { todayISO } from '../../lib/dateHelpers';
+import { InlineSheet } from './InlineSheet';
 import './forms.css';
 
 type Draft = {
@@ -180,57 +181,49 @@ export function OutreachScreen({ kind, pillar, title, ctaLabel }: Props) {
         <button
           type="button"
           className="add-toggle"
-          onClick={() => {
-            if (showForm) {
-              setDraft(emptyDraft());
-              setSaveError(null);
-            }
-            setShowForm((s) => !s);
-          }}
+          onClick={() => setShowForm(true)}
         >
-          {showForm ? 'Cancel' : ctaLabel}
+          {ctaLabel}
         </button>
 
-        {showForm && (
-          <div className="inline-form">
-            <div className="fields" style={{ padding: 0 }}>
-              <DateField label="Occurred on" required value={draft.occurred_on} onChange={(v) => setDraft({ ...draft, occurred_on: v })}/>
-              <SelectField
-                label="Zone"
-                options={zoneOptions}
-                value={draft.zone_id === '' ? '' : String(draft.zone_id)}
-                onChange={(v) => setDraft({ ...draft, zone_id: v === '' ? '' : Number(v) })}
-                placeholder="Optional"
-              />
-              <TextField label="Team lead" placeholder="optional" value={draft.team_lead_name} onChange={(v) => setDraft({ ...draft, team_lead_name: v })}/>
-              <NumberField label="Households reached" value={draft.households_reached} onChange={(v) => setDraft({ ...draft, households_reached: v })}/>
-              {kind === 'door_to_door' && (
-                <>
-                  <NumberField label="Conversations" value={draft.conversations_count} onChange={(v) => setDraft({ ...draft, conversations_count: v })}/>
-                  <NumberField label="Pamphlets distributed" value={draft.pamphlets_distributed} onChange={(v) => setDraft({ ...draft, pamphlets_distributed: v })}/>
-                </>
-              )}
-              {kind === 'convoy' && (
-                <TextareaField label="Route summary" placeholder="e.g. Wa-Central → Wa-North radio drops" value={draft.route_summary} onChange={(v) => setDraft({ ...draft, route_summary: v })}/>
-              )}
-              <TextareaField label="Notes" value={draft.notes} onChange={(v) => setDraft({ ...draft, notes: v })}/>
-            </div>
-
-            {saveError && <div className="field-error" style={{ margin: '8px 0' }}>{saveError}</div>}
-
-            <div className="row">
-              <button type="button" className="btn" onClick={() => { setDraft(emptyDraft()); setSaveError(null); }}>Clear</button>
-              <button
-                type="button"
-                className="btn primary"
-                onClick={handleAdd}
-                disabled={createMutation.isPending || draft.occurred_on === ''}
-              >
-                {createMutation.isPending ? 'Saving…' : 'Save entry'}
-              </button>
-            </div>
+        <InlineSheet open={showForm} onClose={() => { setDraft(emptyDraft()); setShowForm(false); setSaveError(null); }}>
+          <div className="fields" style={{ padding: 0 }}>
+            <DateField label="Occurred on" required value={draft.occurred_on} onChange={(v) => setDraft({ ...draft, occurred_on: v })}/>
+            <SelectField
+              label="Zone"
+              options={zoneOptions}
+              value={draft.zone_id === '' ? '' : String(draft.zone_id)}
+              onChange={(v) => setDraft({ ...draft, zone_id: v === '' ? '' : Number(v) })}
+              placeholder="Optional"
+            />
+            <TextField label="Team lead" placeholder="optional" value={draft.team_lead_name} onChange={(v) => setDraft({ ...draft, team_lead_name: v })}/>
+            <NumberField label="Households reached" value={draft.households_reached} onChange={(v) => setDraft({ ...draft, households_reached: v })}/>
+            {kind === 'door_to_door' && (
+              <>
+                <NumberField label="Conversations" value={draft.conversations_count} onChange={(v) => setDraft({ ...draft, conversations_count: v })}/>
+                <NumberField label="Pamphlets distributed" value={draft.pamphlets_distributed} onChange={(v) => setDraft({ ...draft, pamphlets_distributed: v })}/>
+              </>
+            )}
+            {kind === 'convoy' && (
+              <TextareaField label="Route summary" placeholder="e.g. Wa-Central → Wa-North radio drops" value={draft.route_summary} onChange={(v) => setDraft({ ...draft, route_summary: v })}/>
+            )}
+            <TextareaField label="Notes" value={draft.notes} onChange={(v) => setDraft({ ...draft, notes: v })}/>
           </div>
-        )}
+
+          {saveError && <div className="field-error" style={{ margin: '8px 0' }}>{saveError}</div>}
+
+          <div className="row">
+            <button type="button" className="btn" onClick={() => { setDraft(emptyDraft()); setSaveError(null); }}>Clear</button>
+            <button
+              type="button"
+              className="btn primary"
+              onClick={handleAdd}
+              disabled={createMutation.isPending || draft.occurred_on === ''}
+            >
+              {createMutation.isPending ? 'Saving…' : 'Save entry'}
+            </button>
+          </div>
+        </InlineSheet>
 
         <div className="bot-pad"/>
       </FormShell>

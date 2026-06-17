@@ -12,6 +12,7 @@ import {
 } from '../../api/hooks';
 import { ApiError } from '../../api/client';
 import { todayISO } from '../../lib/dateHelpers';
+import { InlineSheet } from './InlineSheet';
 import './forms.css';
 
 const METHODS = [
@@ -155,47 +156,39 @@ export function DailyAttendanceScreen() {
         <button
           type="button"
           className="add-toggle"
-          onClick={() => {
-            if (showForm) {
-              setDraft(emptyDraft());
-              setSaveError(null);
-            }
-            setShowForm((s) => !s);
-          }}
+          onClick={() => setShowForm(true)}
         >
-          {showForm ? 'Cancel' : 'Add count'}
+          Add count
         </button>
 
-        {showForm && (
-          <div className="inline-form">
-            <div className="fields" style={{ padding: 0 }}>
-              <DateField label="Counted on" required value={draft.counted_on} onChange={(v) => setDraft({ ...draft, counted_on: v })}/>
-              <NumberField label="Headcount" required suffix="people" value={draft.count} onChange={(v) => setDraft({ ...draft, count: v })}/>
-              <SelectField
-                label="Method"
-                options={METHODS}
-                value={draft.estimation_method}
-                onChange={(v) => setDraft({ ...draft, estimation_method: v })}
-                placeholder="Optional"
-              />
-              <TextareaField label="Notes" value={draft.notes} onChange={(v) => setDraft({ ...draft, notes: v })}/>
-            </div>
-
-            {saveError && <div className="field-error" style={{ margin: '8px 0' }}>{saveError}</div>}
-
-            <div className="row">
-              <button type="button" className="btn" onClick={() => { setDraft(emptyDraft()); setSaveError(null); }}>Clear</button>
-              <button
-                type="button"
-                className="btn primary"
-                onClick={handleAdd}
-                disabled={createMutation.isPending || draft.counted_on === '' || typeof draft.count !== 'number' || draft.count < 0}
-              >
-                {createMutation.isPending ? 'Saving…' : 'Save count'}
-              </button>
-            </div>
+        <InlineSheet open={showForm} onClose={() => { setDraft(emptyDraft()); setShowForm(false); setSaveError(null); }}>
+          <div className="fields" style={{ padding: 0 }}>
+            <DateField label="Counted on" required value={draft.counted_on} onChange={(v) => setDraft({ ...draft, counted_on: v })}/>
+            <NumberField label="Headcount" required suffix="people" value={draft.count} onChange={(v) => setDraft({ ...draft, count: v })}/>
+            <SelectField
+              label="Method"
+              options={METHODS}
+              value={draft.estimation_method}
+              onChange={(v) => setDraft({ ...draft, estimation_method: v })}
+              placeholder="Optional"
+            />
+            <TextareaField label="Notes" value={draft.notes} onChange={(v) => setDraft({ ...draft, notes: v })}/>
           </div>
-        )}
+
+          {saveError && <div className="field-error" style={{ margin: '8px 0' }}>{saveError}</div>}
+
+          <div className="row">
+            <button type="button" className="btn" onClick={() => { setDraft(emptyDraft()); setSaveError(null); }}>Clear</button>
+            <button
+              type="button"
+              className="btn primary"
+              onClick={handleAdd}
+              disabled={createMutation.isPending || draft.counted_on === '' || typeof draft.count !== 'number' || draft.count < 0}
+            >
+              {createMutation.isPending ? 'Saving…' : 'Save count'}
+            </button>
+          </div>
+        </InlineSheet>
 
         <div className="bot-pad"/>
       </FormShell>

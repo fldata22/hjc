@@ -13,6 +13,7 @@ import {
   type Permit,
 } from '../../api/hooks';
 import { ApiError } from '../../api/client';
+import { InlineSheet } from './InlineSheet';
 import './forms.css';
 
 const STATUSES: Array<{ value: PermitStatus; label: string }> = [
@@ -266,38 +267,30 @@ export function PermitsScreen() {
         <button
           type="button"
           className="add-toggle"
-          onClick={() => {
-            if (showCreate) {
-              setCreateDraft(emptyDraft);
-              setCreateError(null);
-            }
-            setShowCreate((s) => !s);
-          }}
+          onClick={() => setShowCreate(true)}
         >
-          {showCreate ? 'Cancel' : 'Add permit'}
+          Add permit
         </button>
 
-        {showCreate && (
-          <div className="inline-form">
-            <div className="fields" style={{ padding: 0 }}>
-              <TextField label="Permit name" required placeholder="e.g. Crusade ground assembly permit" value={createDraft.name} onChange={(v) => setCreateDraft({ ...createDraft, name: v })}/>
-              <TextField label="Agency" required placeholder="e.g. Wa Municipal Assembly" value={createDraft.agency} onChange={(v) => setCreateDraft({ ...createDraft, agency: v })}/>
-              <DateField label="Due on" value={createDraft.due_on} onChange={(v) => setCreateDraft({ ...createDraft, due_on: v })}/>
-            </div>
-            {createError && <div className="field-error" style={{ margin: '8px 0' }}>{createError}</div>}
-            <div className="row">
-              <button type="button" className="btn" onClick={() => { setCreateDraft(emptyDraft); setCreateError(null); }}>Clear</button>
-              <button
-                type="button"
-                className="btn primary"
-                onClick={handleCreate}
-                disabled={createMutation.isPending || createDraft.name.trim() === '' || createDraft.agency.trim() === ''}
-              >
-                {createMutation.isPending ? 'Saving…' : 'Add permit'}
-              </button>
-            </div>
+        <InlineSheet open={showCreate} onClose={() => { setCreateDraft(emptyDraft); setShowCreate(false); setCreateError(null); }}>
+          <div className="fields" style={{ padding: 0 }}>
+            <TextField label="Permit name" required placeholder="e.g. Crusade ground assembly permit" value={createDraft.name} onChange={(v) => setCreateDraft({ ...createDraft, name: v })}/>
+            <TextField label="Agency" required placeholder="e.g. Wa Municipal Assembly" value={createDraft.agency} onChange={(v) => setCreateDraft({ ...createDraft, agency: v })}/>
+            <DateField label="Due on" value={createDraft.due_on} onChange={(v) => setCreateDraft({ ...createDraft, due_on: v })}/>
           </div>
-        )}
+          {createError && <div className="field-error" style={{ margin: '8px 0' }}>{createError}</div>}
+          <div className="row">
+            <button type="button" className="btn" onClick={() => { setCreateDraft(emptyDraft); setCreateError(null); }}>Clear</button>
+            <button
+              type="button"
+              className="btn primary"
+              onClick={handleCreate}
+              disabled={createMutation.isPending || createDraft.name.trim() === '' || createDraft.agency.trim() === ''}
+            >
+              {createMutation.isPending ? 'Saving…' : 'Add permit'}
+            </button>
+          </div>
+        </InlineSheet>
 
         <div className="bot-pad"/>
       </FormShell>

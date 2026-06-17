@@ -1,6 +1,6 @@
 import { useMemo } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { AppBar, Drawer, ResponsiveShell, TabBar } from './Shell';
+import { AppBar, Drawer, ResponsiveShell, TabBar, useDrawer } from './Shell';
 import {
   usePower,
   useMissionControl,
@@ -8,7 +8,6 @@ import {
   useWeeklyLatest,
 } from '../../api/hooks';
 import './app.css';
-import { useState } from 'react';
 
 const STATUS_LABEL: Record<'success' | 'warning' | 'danger' | 'muted', string> = {
   success: 'On track',
@@ -17,10 +16,16 @@ const STATUS_LABEL: Record<'success' | 'warning' | 'danger' | 'muted', string> =
   muted: 'No data',
 };
 
+function statusClass(pct: number): 'risk' | 'hold' | 'ok' {
+  if (pct < 50) return 'risk';
+  if (pct < 75) return 'hold';
+  return 'ok';
+}
+
 export function PillarDetailScreen() {
   const navigate = useNavigate();
   const { code } = useParams<{ code: string }>();
-  const [drawer, setDrawer] = useState(false);
+  const drawer = useDrawer();
 
   const { data: power, isLoading: powerLoading, isError: powerError } = usePower(code);
   const { data: mc } = useMissionControl();
@@ -51,11 +56,19 @@ export function PillarDetailScreen() {
     });
   }, [mc, power]);
 
+  const pct = mcPower?.value_pct ?? 0;
+  const cls = statusClass(pct);
+
   return (
     <ResponsiveShell active="pillars">
-      <AppBar onMenu={() => setDrawer(true)}/>
+      <AppBar
+        title={power?.name ?? '…'}
+        sub={power ? `Pillar · ${power.code}` : ''}
+        onMenu={drawer.show}
+      />
       <div className="scroll">
-        <div style={{ padding: '16px 20px 0' }}>
+
+        <div style={{ padding: '12px 20px 0' }}>
           <button
             type="button"
             onClick={() => navigate('/pillars')}
@@ -67,7 +80,6 @@ export function PillarDetailScreen() {
               color: 'var(--ink-3)',
               fontFamily: 'inherit',
               cursor: 'pointer',
-              marginBottom: 16,
             }}
           >
             ← All pillars
@@ -75,135 +87,110 @@ export function PillarDetailScreen() {
         </div>
 
         {powerError ? (
-          <div style={{ padding: '24px 20px', fontSize: 13, color: 'var(--accent)', textAlign: 'center' }}>
-            Couldn't load this pillar.
+          <div className="error-banner" style={{ margin: '16px 20px' }}>
+            <span>Couldn't load this pillar.</span>
           </div>
         ) : powerLoading || !power ? (
-          <div style={{ padding: '24px 20px', fontSize: 13, color: 'var(--ink-3)', textAlign: 'center' }}>Loading…</div>
+          <div className="empty-state">Loading…</div>
         ) : (
           <>
-            {/* Header */}
-            <div style={{ padding: '0 20px 0' }}>
-              <div
-                className="eyebrow"
-                style={{ fontSize: 10, letterSpacing: '0.16em', textTransform: 'uppercase', color: 'var(--ink-3)', fontWeight: 500, marginBottom: 10 }}
-              >
-                Pillar · {power.code}
+            {power.description && (
+              <div style={{ padding: '12px 20px 0', fontSize: 13, color: 'var(--ink-3)', lineHeight: 1.55 }}>
+                {power.description}
               </div>
-              <h1 className="serif" style={{ fontSize: 34, fontWeight: 300, letterSpacing: '-0.035em', lineHeight: 1.02 }}>
-                {power.name}.
-              </h1>
-              {power.description && (
-                <p style={{ fontSize: 13, color: 'var(--ink-3)', lineHeight: 1.55, margin: '12px 0 0', maxWidth: 560 }}>
-                  {power.description}
-                </p>
-              )}
-            </div>
+            )}
 
-            {/* Composite stat */}
-            <div className="composite" style={{ marginTop: 24 }}>
-              <div className="label">Current value</div>
-              <div className="row">
-                <div className="num serif">{mcPower?.value_pct != null ? `${mcPower.value_pct}%` : '—'}</div>
-                <div className="delta">
-                  {mcPower?.status && <b>{STATUS_LABEL[mcPower.status]}</b>}
-                  {dir !== null && (
-                    <>
-                      {' · '}
-                      <span className={dir >= 0 ? 'delta-up' : 'delta-down'}>
-                        {dir >= 0 ? '▲' : '▼'} {Math.abs(dir)} pts wk
-                      </span>
-                    </>
-                  )}
-                </div>
+            <div className="readiness-stat">
+              <div className="stat-row">
+                <span className={`stat-num${mcPower?.value_pct == null ? '' : ''}`} style={mcPower?.value_pct == null ? { color: 'var(--ink-3)' } : undefined}>
+                  {mcPower?.value_pct != null ? mcPower.value_pct : '—'}
+                </span>
+                {mcPower?.value_pct != null && <span style={{ fontSize: 20, fontWeight: 500, color: 'var(--ink-3)', alignSelf: 'flex-end', marginBottom: 8 }}>%</span>}
+              </div>
+              <div className="stat-sub">
+                {mcPower?.status ? <b>{STATUS_LABEL[mcPower.status]}</b> : 'No data'}
+                {dir !== null && (
+                  <>
+                    {' · '}
+                    <span className={dir >= 0 ? 'delta-up' : 'delta-down'}>
+                      {dir >= 0 ? '▲' : '▼'} {Math.abs(dir)} pts wk
+                    </span>
+                  </>
+                )}
               </div>
               {mcPower?.value_pct != null && (
-                <div className="track">
-                  <i style={{ width: `${mcPower.value_pct}%`, background: mcPower.value_pct < 50 ? 'var(--accent)' : 'var(--ink)' }}/>
+                <div className="progress-track">
+                  <div className={`progress-fill ${cls}`} style={{ width: `${mcPower.value_pct}%` }}/>
                 </div>
               )}
             </div>
 
-            {/* Relevant risks */}
             {relevantRisks.length > 0 && (
               <>
-                <div className="sec">
-                  <h2 className="serif">Open <em>risks</em></h2>
-                  <span className="more">{relevantRisks.length}</span>
+                <div className="sec-label">
+                  Open risks
+                  <span className="sec-count">{relevantRisks.length}</span>
                 </div>
-                <div style={{ padding: '0 20px' }}>
-                  {relevantRisks.map((r, i) => (
-                    <div key={i} className="form-list-row">
-                      <div>
-                        <div className="name" style={{ fontSize: 13 }}>{r.text}</div>
-                        <div className="sub">Severity · {r.severity}</div>
-                      </div>
+                {relevantRisks.map((r, i) => (
+                  <div key={i} className="list-row">
+                    <div style={{ flex: 1 }}>
+                      <div className="row-label">{r.text}</div>
+                      <div className="row-sub">Severity · {r.severity}</div>
                     </div>
-                  ))}
-                </div>
+                  </div>
+                ))}
               </>
             )}
 
-            {/* Recent activity */}
-            <div className="sec">
-              <h2 className="serif">Recent <em>activity</em></h2>
-              <span className="more">{activityList.length}</span>
-            </div>
-            <div style={{ padding: '0 20px' }}>
-              {activityList.length === 0 ? (
-                <div className="empty">No activity logged for this pillar yet.</div>
-              ) : (
-                activityList.slice(0, 12).map((e) => (
-                  <div key={e.id} className="form-list-row">
-                    <div>
-                      <div className="name" style={{ fontSize: 13 }}>{e.description}</div>
-                      <div className="sub">
-                        {new Date(e.occurred_at).toLocaleString('en-GB', { day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit' })}
-                      </div>
-                    </div>
-                    <div className="right">
-                      <div className={'status ' + (e.status === 'done' ? 'confirmed' : 'pending')}>
-                        {e.status === 'done' ? 'Done' : 'Running'}
-                      </div>
-                    </div>
-                  </div>
-                ))
-              )}
-              {activityList.length > 0 && (
-                <div style={{ padding: '12px 0', textAlign: 'center' }}>
-                  <button
-                    type="button"
-                    onClick={() => navigate('/activity')}
-                    style={{ background: 'transparent', border: 0, fontSize: 11, color: 'var(--accent)', fontFamily: 'inherit', cursor: 'pointer', letterSpacing: '0.06em', textTransform: 'uppercase' }}
-                  >
-                    See all activity →
-                  </button>
-                </div>
-              )}
+            <div className="sec-label">
+              Recent activity
+              <span className="sec-count">{activityList.length}</span>
             </div>
 
-            <div className="sec">
-              <h2 className="serif">Log <em>activity</em></h2>
-            </div>
-            <div style={{ padding: '0 20px' }}>
+            {activityList.length === 0 ? (
+              <div className="empty-state">No activity logged for this pillar yet.</div>
+            ) : (
+              activityList.slice(0, 12).map((e) => (
+                <div key={e.id} className="list-row">
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <div className="row-label">{e.description}</div>
+                    <div className="row-sub">
+                      {new Date(e.occurred_at).toLocaleString('en-GB', { day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit' })}
+                    </div>
+                  </div>
+                  <div className="row-right">
+                    <span
+                      className="flr-status"
+                      style={e.status === 'done' ? { background: 'var(--accent-bg)', borderColor: 'transparent', color: 'var(--accent-text)' } : undefined}
+                    >
+                      {e.status === 'done' ? 'Done' : 'Running'}
+                    </span>
+                  </div>
+                </div>
+              ))
+            )}
+
+            {activityList.length > 0 && (
+              <div style={{ padding: '12px 20px', textAlign: 'center' }}>
+                <button
+                  type="button"
+                  onClick={() => navigate('/activity')}
+                  style={{ background: 'transparent', border: 0, fontSize: 11, color: 'var(--ink-3)', fontFamily: 'inherit', cursor: 'pointer', letterSpacing: '0.06em', textTransform: 'uppercase' }}
+                >
+                  See all activity →
+                </button>
+              </div>
+            )}
+
+            <div className="sec-label">Log activity</div>
+            <div style={{ padding: '12px 20px' }}>
               <button
                 type="button"
+                className="btn-primary"
+                style={{ width: '100%' }}
                 onClick={() => navigate('/forms/activity-quick-log')}
-                style={{
-                  display: 'block',
-                  width: '100%',
-                  padding: '14px 16px',
-                  fontSize: 13,
-                  fontWeight: 500,
-                  border: '1px solid var(--ink)',
-                  background: 'var(--ink)',
-                  color: 'var(--bg)',
-                  borderRadius: 8,
-                  cursor: 'pointer',
-                  fontFamily: 'inherit',
-                }}
               >
-                Quick-log → /forms/activity-quick-log
+                Quick-log activity →
               </button>
             </div>
           </>
@@ -212,7 +199,7 @@ export function PillarDetailScreen() {
         <div className="bot-pad"/>
       </div>
       <TabBar active="pillars"/>
-      {drawer && <Drawer active="pillars" onClose={() => setDrawer(false)}/>}
+      {drawer.open && <Drawer active="pillars" onClose={drawer.hide}/>}
     </ResponsiveShell>
   );
 }

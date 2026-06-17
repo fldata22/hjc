@@ -2,23 +2,24 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ResponsiveShell } from '../app/Shell';
 import { FormShell } from './FormShell';
-import { TextField, PhoneField, SegmentedField, SelectField, TextareaField } from './fields';
+import { TextField, SegmentedField, SelectField, TextareaField } from './fields';
+import { ContactPicker } from './ContactPicker';
 import {
   useCrusade,
   useCommitteeMembers,
   useCreateCommitteeMember,
+  type Contact,
 } from '../../api/hooks';
 import { ApiError } from '../../api/client';
+import { InlineSheet } from './InlineSheet';
 import './forms.css';
 
 type Status = 'active' | 'on-leave' | 'stepped-down' | '';
 
 type Draft = {
-  fullName: string;
+  contact: Contact | null;
   role: string;
   zone: string;
-  phone: string;
-  email: string;
   status: Status;
   notes: string;
 };
@@ -44,7 +45,7 @@ const STATUS_LABEL: Record<'active' | 'on-leave' | 'stepped-down', string> = {
 };
 
 const emptyDraft: Draft = {
-  fullName: '', role: '', zone: '', phone: '', email: '', status: '', notes: '',
+  contact: null, role: '', zone: '', status: '', notes: '',
 };
 
 const ErrorBanner = ({ what, onRetry }: { what: string; onRetry: () => void }) => (
@@ -92,26 +93,27 @@ export function CPCForm() {
 
   const canSave =
     !!crusade &&
-    draft.fullName.trim() !== '' &&
+    !!draft.contact &&
     draft.role.trim() !== '' &&
     draft.zone !== '' &&
-    draft.phone.trim() !== '' &&
     draft.status !== '' &&
     !createMutation.isPending;
 
   const handleSave = async () => {
-    if (!canSave || !crusade) return;
+    if (!canSave || !crusade || !draft.contact) return;
+    const c = draft.contact;
     setSaveError(null);
     const zoneLabel = ZONES.find((z) => z.value === draft.zone)?.label ?? draft.zone;
     try {
       await createMutation.mutateAsync({
         crusade_id: crusade.id,
+        contact_id: c.id,
         kind: 'cpc',
-        name: draft.fullName.trim(),
+        name: c.full_name,
         role: draft.role.trim(),
         org: zoneLabel,
-        phone: draft.phone.trim() === '' ? null : draft.phone.trim(),
-        email: draft.email.trim() === '' ? null : draft.email.trim(),
+        phone: c.phone,
+        email: c.email,
         status: draft.status,
         notes: draft.notes.trim() === '' ? null : draft.notes.trim(),
       });
@@ -214,49 +216,39 @@ export function CPCForm() {
         <button
           type="button"
           className="add-toggle"
-          onClick={() => {
-            if (showForm) {
-              setDraft(emptyDraft);
-              setSaveError(null);
-            }
-            setShowForm((s) => !s);
-          }}
+          onClick={() => setShowForm(true)}
         >
-          {showForm ? 'Cancel' : 'Add CPC member'}
+          Add CPC member
         </button>
 
-        {showForm && (
-          <div className="inline-form">
-            <div className="fields" style={{ padding: 0 }}>
-              <TextField label="Full name" value={draft.fullName} onChange={(v) => setDraft({ ...draft, fullName: v })} required/>
-              <TextField label="Role" placeholder="e.g. Zone Coordinator" value={draft.role} onChange={(v) => setDraft({ ...draft, role: v })} required/>
-              <SelectField label="Zone" required options={ZONES} value={draft.zone} onChange={(v) => setDraft({ ...draft, zone: v })} placeholder="Select zone…"/>
-              <PhoneField label="Phone" value={draft.phone} onChange={(v) => setDraft({ ...draft, phone: v })} required/>
-              <TextField label="Email" type="email" value={draft.email} onChange={(v) => setDraft({ ...draft, email: v })}/>
-              <SegmentedField
-                label="Status"
-                required
-                options={[
-                  { value: 'active', label: 'Active' },
-                  { value: 'on-leave', label: 'On leave' },
-                  { value: 'stepped-down', label: 'Stepped down' },
-                ]}
-                value={draft.status}
-                onChange={(v) => setDraft({ ...draft, status: v as Status })}
-              />
-              <TextareaField label="Notes" value={draft.notes} onChange={(v) => setDraft({ ...draft, notes: v })}/>
-            </div>
-            {saveError && (
-              <div className="field-error" style={{ margin: '4px 0' }}>{saveError}</div>
-            )}
-            <div className="row">
-              <button type="button" className="btn" onClick={() => { setDraft(emptyDraft); setShowForm(false); setSaveError(null); }}>Cancel</button>
-              <button type="button" className="btn primary" onClick={handleSave} disabled={!canSave}>
-                {createMutation.isPending ? 'Saving…' : 'Save member'}
-              </button>
-            </div>
+        <InlineSheet open={showForm} onClose={() => { setDraft(emptyDraft); setShowForm(false); setSaveError(null); }}>
+          <div className="fields" style={{ padding: 0 }}>
+            <ContactPicker label="Member" required value={draft.contact} onChange={(c) => setDraft({ ...draft, contact: c })}/>
+            <TextField label="Role" placeholder="e.g. Zone Coordinator" value={draft.role} onChange={(v) => setDraft({ ...draft, role: v })} required/>
+            <SelectField label="Zone" required options={ZONES} value={draft.zone} onChange={(v) => setDraft({ ...draft, zone: v })} placeholder="Select zone…"/>
+            <SegmentedField
+              label="Status"
+              required
+              options={[
+                { value: 'active', label: 'Active' },
+                { value: 'on-leave', label: 'On leave' },
+                { value: 'stepped-down', label: 'Stepped down' },
+              ]}
+              value={draft.status}
+              onChange={(v) => setDraft({ ...draft, status: v as Status })}
+            />
+            <TextareaField label="Notes" value={draft.notes} onChange={(v) => setDraft({ ...draft, notes: v })}/>
           </div>
-        )}
+          {saveError && (
+            <div className="field-error" style={{ margin: '4px 0' }}>{saveError}</div>
+          )}
+          <div className="row">
+            <button type="button" className="btn" onClick={() => { setDraft(emptyDraft); setShowForm(false); setSaveError(null); }}>Cancel</button>
+            <button type="button" className="btn primary" onClick={handleSave} disabled={!canSave}>
+              {createMutation.isPending ? 'Saving…' : 'Save member'}
+            </button>
+          </div>
+        </InlineSheet>
         <div className="bot-pad"/>
       </FormShell>
     </ResponsiveShell>

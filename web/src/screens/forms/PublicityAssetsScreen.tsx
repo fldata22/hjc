@@ -14,6 +14,7 @@ import {
   type PublicityStatus,
 } from '../../api/hooks';
 import { ApiError } from '../../api/client';
+import { InlineSheet } from './InlineSheet';
 import './forms.css';
 
 const KINDS: Array<{ value: PublicityKind; label: string }> = [
@@ -193,48 +194,40 @@ export function PublicityAssetsScreen() {
         <button
           type="button"
           className="add-toggle"
-          onClick={() => {
-            if (showForm) {
-              setDraft(emptyDraft);
-              setSaveError(null);
-            }
-            setShowForm((s) => !s);
-          }}
+          onClick={() => setShowForm(true)}
         >
-          {showForm ? 'Cancel' : 'Add asset'}
+          Add asset
         </button>
 
-        {showForm && (
-          <div className="inline-form">
-            <div className="fields" style={{ padding: 0 }}>
-              <SelectField
-                label="Kind"
-                required
-                options={KINDS}
-                value={draft.kind}
-                onChange={(v) => setDraft({ ...draft, kind: v as PublicityKind | '' })}
-                placeholder="Select…"
-              />
-              <TextField label="Title" required placeholder="e.g. Crusade Wa-Central A2 poster" value={draft.title} onChange={(v) => setDraft({ ...draft, title: v })}/>
-              <NumberField label="Quantity" suffix="units" value={draft.quantity} onChange={(v) => setDraft({ ...draft, quantity: v })}/>
-              <TextareaField label="Notes" value={draft.notes} onChange={(v) => setDraft({ ...draft, notes: v })}/>
-            </div>
-
-            {saveError && <div className="field-error" style={{ margin: '8px 0' }}>{saveError}</div>}
-
-            <div className="row">
-              <button type="button" className="btn" onClick={() => { setDraft(emptyDraft); setSaveError(null); }}>Clear</button>
-              <button
-                type="button"
-                className="btn primary"
-                onClick={handleAdd}
-                disabled={createMutation.isPending || draft.kind === '' || draft.title.trim() === ''}
-              >
-                {createMutation.isPending ? 'Saving…' : 'Add asset'}
-              </button>
-            </div>
+        <InlineSheet open={showForm} onClose={() => { setDraft(emptyDraft); setShowForm(false); setSaveError(null); }}>
+          <div className="fields" style={{ padding: 0 }}>
+            <SelectField
+              label="Kind"
+              required
+              options={KINDS}
+              value={draft.kind}
+              onChange={(v) => setDraft({ ...draft, kind: v as PublicityKind | '' })}
+              placeholder="Select…"
+            />
+            <TextField label="Title" required placeholder="e.g. Crusade Wa-Central A2 poster" value={draft.title} onChange={(v) => setDraft({ ...draft, title: v })}/>
+            <NumberField label="Quantity" suffix="units" value={draft.quantity} onChange={(v) => setDraft({ ...draft, quantity: v })}/>
+            <TextareaField label="Notes" value={draft.notes} onChange={(v) => setDraft({ ...draft, notes: v })}/>
           </div>
-        )}
+
+          {saveError && <div className="field-error" style={{ margin: '8px 0' }}>{saveError}</div>}
+
+          <div className="row">
+            <button type="button" className="btn" onClick={() => { setDraft(emptyDraft); setSaveError(null); }}>Clear</button>
+            <button
+              type="button"
+              className="btn primary"
+              onClick={handleAdd}
+              disabled={createMutation.isPending || draft.kind === '' || draft.title.trim() === ''}
+            >
+              {createMutation.isPending ? 'Saving…' : 'Add asset'}
+            </button>
+          </div>
+        </InlineSheet>
 
         <div className="bot-pad"/>
       </FormShell>

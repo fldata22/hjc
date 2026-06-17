@@ -1,224 +1,276 @@
 import { useMemo, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { ResponsiveShell, AppBar, TabBar, Drawer } from './Shell';
-import { usePastors, useCommitteeMembers } from '../../api/hooks';
+import { AppBar, Drawer, ResponsiveShell, TabBar, useDrawer } from './Shell';
+import {
+  type Contact,
+  useContacts,
+  useCreateContact,
+  useUpdateContact,
+  useDeleteContact,
+  useCrusade,
+  useZones,
+  useChurches,
+} from '../../api/hooks';
+import { ApiError } from '../../api/client';
+import { useToast } from '../../lib/toast-context';
+import { TextField, PhoneField, TextareaField, SelectField } from '../forms/fields';
+import { InlineSheet } from '../forms/InlineSheet';
+import '../forms/forms.css';
 import './app.css';
 
-type PersonType = 'pcm' | 'bot' | 'cpc';
-
-type Person = {
-  name: string;
-  role: string;
+type Draft = {
+  full_name: string;
+  title: string;
   phone: string;
-  type: PersonType;
-  sourceId: number | string;
+  email: string;
+  zoneId: number | '';
+  churchId: number | '';
+  notes: string;
 };
 
-type ChipKey = 'all' | PersonType;
+const emptyDraft: Draft = { full_name: '', title: '', phone: '', email: '', zoneId: '', churchId: '', notes: '' };
+
+const draftFromContact = (c: Contact): Draft => ({
+  full_name: c.full_name,
+  title: c.title ?? '',
+  phone: c.phone ?? '',
+  email: c.email ?? '',
+  zoneId: c.zone_id ?? '',
+  churchId: c.church_id ?? '',
+  notes: c.notes ?? '',
+});
+
+function extractApiMessage(e: unknown, fallback = 'Failed'): string {
+  if (e instanceof ApiError) {
+    const body = e.body;
+    if (body && typeof body === 'object' && 'message' in body && typeof (body as { message?: unknown }).message === 'string') {
+      return (body as { message: string }).message;
+    }
+    return e.message;
+  }
+  if (e instanceof Error) return e.message;
+  return fallback;
+}
 
 export function PeopleScreen() {
-  const navigate = useNavigate();
-  const [drawer, setDrawer] = useState(false);
-
-  const { data: pastorPage } = usePastors({ per_page: 100 });
-  const { data: botMembers } = useCommitteeMembers('bot');
-  const { data: cpcMembers } = useCommitteeMembers('cpc');
+  const drawer = useDrawer();
+  const toast = useToast();
 
   const [search, setSearch] = useState('');
-  const [activeChip, setActiveChip] = useState<ChipKey>('all');
+  const { data: contacts, isLoading } = useContacts({ q: search.trim() || undefined });
+  const { data: crusade } = useCrusade();
+  const { data: zones } = useZones();
+  const { data: churches } = useChurches();
+  const createContact = useCreateContact();
+  const updateContact = useUpdateContact();
+  const deleteContact = useDeleteContact();
 
-  const pastors = useMemo(() => pastorPage?.data ?? [], [pastorPage]);
-  const bots = useMemo(() => botMembers ?? [], [botMembers]);
-  const cpcs = useMemo(() => cpcMembers ?? [], [cpcMembers]);
+  const [showAdd, setShowAdd] = useState(false);
+  const [editingId, setEditingId] = useState<number | null>(null);
+  const [draft, setDraft] = useState<Draft>(emptyDraft);
+  const [error, setError] = useState<string | null>(null);
 
-  const allPeople = useMemo<Person[]>(() => {
-    const pcm: Person[] = pastors.map((p) => ({
-      name: p.full_name,
-      role: '',
-      phone: p.phone ?? '',
-      type: 'pcm',
-      sourceId: p.id,
-    }));
-    const bot: Person[] = bots.map((m) => ({
-      name: m.name,
-      role: m.role,
-      phone: m.phone ?? '',
-      type: 'bot',
-      sourceId: m.id,
-    }));
-    const cpc: Person[] = cpcs.map((m) => ({
-      name: m.name,
-      role: m.role,
-      phone: m.phone ?? '',
-      type: 'cpc',
-      sourceId: m.id,
-    }));
-    return [...pcm, ...bot, ...cpc].sort((a, b) => a.name.localeCompare(b.name));
-  }, [pastors, bots, cpcs]);
+  const list = useMemo(() => contacts ?? [], [contacts]);
+  const zoneById = useMemo(() => new Map((zones ?? []).map((z) => [z.id, z] as const)), [zones]);
+  const churchById = useMemo(() => new Map((churches ?? []).map((c) => [c.id, c] as const)), [churches]);
+  const zoneOptions = useMemo(
+    () => (zones ?? []).map((z) => ({ value: String(z.id), label: z.name ?? z.code })),
+    [zones],
+  );
+  const churchOptions = useMemo(
+    () =>
+      (churches ?? [])
+        .filter((c) => draft.zoneId === '' || c.zone_id === draft.zoneId)
+        .map((c) => ({ value: String(c.id), label: c.name })),
+    [churches, draft.zoneId],
+  );
 
-  const totalPeople = allPeople.length;
-  const pcmCount = pastors.length;
-  const botCount = bots.length;
-  const cpcCount = cpcs.length;
+  const sheetOpen = showAdd || editingId !== null;
+  const editing = editingId !== null;
 
-  const filteredPeople = useMemo(() => {
-    const q = search.trim().toLowerCase();
-    return allPeople.filter((p) => {
-      if (activeChip !== 'all' && p.type !== activeChip) return false;
-      if (q === '') return true;
-      return p.name.toLowerCase().includes(q) || p.role.toLowerCase().includes(q);
-    });
-  }, [allPeople, search, activeChip]);
+  const openAdd = () => {
+    setDraft(emptyDraft);
+    setError(null);
+    setEditingId(null);
+    setShowAdd(true);
+  };
 
-  const isEmpty = totalPeople === 0;
+  const openEdit = (c: Contact) => {
+    setDraft(draftFromContact(c));
+    setError(null);
+    setShowAdd(false);
+    setEditingId(c.id);
+  };
+
+  const close = () => {
+    setShowAdd(false);
+    setEditingId(null);
+    setDraft(emptyDraft);
+    setError(null);
+  };
+
+  const canSave = draft.full_name.trim() !== '';
+  const pending = createContact.isPending || updateContact.isPending;
+
+  const subLine = (c: Contact): string => {
+    const parts: string[] = [];
+    if (c.title) parts.push(c.title);
+    const zoneName = c.zone_id != null ? (zoneById.get(c.zone_id)?.name ?? zoneById.get(c.zone_id)?.code) : null;
+    const churchName = c.church_id != null ? churchById.get(c.church_id)?.name : null;
+    if (zoneName) parts.push(zoneName);
+    if (churchName) parts.push(churchName);
+    return parts.join(' · ') || '—';
+  };
+
+  const handleSave = async () => {
+    if (!canSave || pending) return;
+    setError(null);
+    const body = {
+      full_name: draft.full_name.trim(),
+      title: draft.title.trim() || null,
+      phone: draft.phone.trim() || null,
+      email: draft.email.trim() || null,
+      zone_id: typeof draft.zoneId === 'number' ? draft.zoneId : null,
+      church_id: typeof draft.churchId === 'number' ? draft.churchId : null,
+      notes: draft.notes.trim() || null,
+    };
+    try {
+      if (editing && editingId != null) {
+        await updateContact.mutateAsync({ id: editingId, body });
+        toast.show('Contact updated.', 'success');
+      } else {
+        if (!crusade) return;
+        await createContact.mutateAsync({ crusade_id: crusade.id, ...body });
+        toast.show(`${body.full_name} added.`, 'success');
+      }
+      close();
+    } catch (e) {
+      setError(extractApiMessage(e));
+    }
+  };
+
+  const handleDelete = async () => {
+    if (editingId == null || deleteContact.isPending) return;
+    if (!confirm('Delete this contact? They will be removed from the People list.')) return;
+    try {
+      await deleteContact.mutateAsync(editingId);
+      toast.show('Contact deleted.', 'success');
+      close();
+    } catch (e) {
+      setError(extractApiMessage(e));
+    }
+  };
 
   return (
     <ResponsiveShell active="home">
-      <AppBar onMenu={() => setDrawer(true)}/>
-      <div className="scroll">
-        <div style={{ padding: '20px 20px 0' }}>
-          <div
-            className="eyebrow"
-            style={{
-              fontSize: 10,
-              letterSpacing: '0.16em',
-              textTransform: 'uppercase',
-              color: 'var(--ink-3)',
-              fontWeight: 500,
-              marginBottom: 10,
-            }}
-          >
-            People · crusade committee
-          </div>
-          <h1
-            className="serif"
-            style={{ fontSize: 34, fontWeight: 300, letterSpacing: '-0.035em', lineHeight: 1.02 }}
-          >
-            Directory.
-          </h1>
-        </div>
+      <AppBar title="People" sub="contacts directory" onMenu={drawer.show}/>
+      <div className="search-bar" style={{ display: 'flex', gap: 10 }}>
+        <input
+          className="search-input"
+          type="search"
+          placeholder="Search people…"
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+          autoComplete="off"
+          style={{ flex: 1 }}
+        />
+        <button
+          type="button"
+          onClick={openAdd}
+          style={{
+            flexShrink: 0,
+            padding: '0 16px',
+            fontSize: 13,
+            fontWeight: 600,
+            borderRadius: 8,
+            border: '1px solid var(--ink)',
+            background: 'var(--ink)',
+            color: 'var(--surface)',
+            fontFamily: 'inherit',
+            cursor: 'pointer',
+          }}
+        >
+          + Add
+        </button>
+      </div>
 
-        {isEmpty ? (
-          <div style={{ padding: '32px 20px', textAlign: 'center', fontSize: 13, color: 'var(--ink-3)', lineHeight: 1.6 }}>
-            No people yet.<br/>
-            Add a{' '}
-            <button
-              type="button"
-              onClick={() => navigate('/forms/pcm')}
-              style={{ background: 'transparent', border: 0, color: 'var(--accent)', cursor: 'pointer', fontFamily: 'inherit', fontSize: 13, textDecoration: 'underline', padding: 0 }}
-            >
-              PCM
-            </button>
-            ,{' '}
-            <button
-              type="button"
-              onClick={() => navigate('/forms/bot')}
-              style={{ background: 'transparent', border: 0, color: 'var(--accent)', cursor: 'pointer', fontFamily: 'inherit', fontSize: 13, textDecoration: 'underline', padding: 0 }}
-            >
-              BOT member
-            </button>
-            , or{' '}
-            <button
-              type="button"
-              onClick={() => navigate('/forms/cpc')}
-              style={{ background: 'transparent', border: 0, color: 'var(--accent)', cursor: 'pointer', fontFamily: 'inherit', fontSize: 13, textDecoration: 'underline', padding: 0 }}
-            >
-              CPC member
-            </button>
-            .
+      <div className="scroll">
+        {isLoading ? (
+          <div style={{ padding: '24px 20px', fontSize: 13, color: 'var(--ink-3)', textAlign: 'center' }}>Loading…</div>
+        ) : list.length === 0 ? (
+          <div className="empty-state" style={{ padding: '32px 20px', textAlign: 'center', lineHeight: 1.6 }}>
+            {search ? `No people match “${search}”.` : 'No people added yet. Tap + Add to create your first contact.'}
           </div>
         ) : (
           <>
-            <div className="stat-strip">
-              <div>
-                <div className="num">{totalPeople}</div>
-                <div className="lbl">people total</div>
-              </div>
-              <div style={{ flex: 1 }}/>
-              <div>
-                <div className="lbl">
-                  <b>{pcmCount}</b> PCM · <b>{botCount}</b> BOT · <b>{cpcCount}</b> CPC
-                </div>
-              </div>
+            <div style={{ padding: '14px 20px 6px', fontSize: 11, fontWeight: 600, letterSpacing: '0.08em', textTransform: 'uppercase', color: 'var(--ink-3)' }}>
+              {list.length} {list.length === 1 ? 'person' : 'people'}
             </div>
-
-            <div style={{ padding: '12px 20px 0' }}>
-              <input
-                type="search"
-                className="input bordered"
-                placeholder="Search by name or role…"
-                value={search}
-                onChange={(e) => setSearch(e.target.value)}
-                style={{ width: '100%' }}
-              />
+            <div style={{ padding: '0 20px' }}>
+              {list.map((c) => (
+                <button
+                  key={c.id}
+                  type="button"
+                  className="form-list-row"
+                  onClick={() => openEdit(c)}
+                  style={{ background: 'transparent', border: 0, borderBottom: '1px solid var(--line)', textAlign: 'left', cursor: 'pointer', fontFamily: 'inherit', width: '100%' }}
+                >
+                  <div>
+                    <div className="name">{c.full_name}</div>
+                    <div className="sub">{subLine(c)}</div>
+                  </div>
+                  {c.phone && (
+                    <div className="right" style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: 11, color: 'var(--ink-3)' }}>{c.phone}</div>
+                  )}
+                </button>
+              ))}
             </div>
-
-            <div className="chips">
-              <div className={'chip' + (activeChip === 'all' ? ' on' : '')} onClick={() => setActiveChip('all')}>
-                All<span className="n">{totalPeople}</span>
-              </div>
-              <div className={'chip' + (activeChip === 'pcm' ? ' on' : '')} onClick={() => setActiveChip('pcm')}>
-                PCM<span className="n">{pcmCount}</span>
-              </div>
-              <div className={'chip' + (activeChip === 'bot' ? ' on' : '')} onClick={() => setActiveChip('bot')}>
-                BOT<span className="n">{botCount}</span>
-              </div>
-              <div className={'chip' + (activeChip === 'cpc' ? ' on' : '')} onClick={() => setActiveChip('cpc')}>
-                CPC<span className="n">{cpcCount}</span>
-              </div>
-            </div>
-
-            {filteredPeople.length === 0 ? (
-              <div style={{ padding: '24px 20px', textAlign: 'center', fontSize: 13, color: 'var(--ink-3)' }}>
-                No matches{search ? ` for "${search}"` : ''}.
-              </div>
-            ) : (
-              <div style={{ padding: '0 20px' }}>
-                {filteredPeople.map((p) => (
-                  <button
-                    type="button"
-                    key={`${p.type}-${p.sourceId}`}
-                    className="form-list-row"
-                    onClick={() => navigate(`/forms/${p.type}`)}
-                    style={{
-                      background: 'transparent',
-                      border: 0,
-                      padding: '14px 0',
-                      textAlign: 'left',
-                      cursor: 'pointer',
-                      fontFamily: 'inherit',
-                      width: '100%',
-                    }}
-                  >
-                    <div>
-                      <div className="name">{p.name}</div>
-                      <div className="sub">{p.role || (p.type === 'pcm' ? 'Pastor' : '—')}</div>
-                    </div>
-                    <div className="right">
-                      <span style={{
-                        fontFamily: 'JetBrains Mono, monospace',
-                        fontSize: 10,
-                        letterSpacing: '0.12em',
-                        textTransform: 'uppercase',
-                        color: 'var(--ink-3)',
-                        border: '1px solid var(--line)',
-                        padding: '2px 8px',
-                        borderRadius: 999,
-                      }}>
-                        {p.type}
-                      </span>
-                    </div>
-                  </button>
-                ))}
-              </div>
-            )}
           </>
         )}
-
         <div className="bot-pad"/>
       </div>
+
+      <InlineSheet open={sheetOpen} onClose={close}>
+        <div style={{ padding: '4px 0 12px', fontSize: 15, fontWeight: 600, color: 'var(--ink)', borderBottom: '1px solid var(--line)' }}>
+          {editing ? 'Edit contact' : 'New contact'}
+        </div>
+        <div className="fields" style={{ padding: 0 }}>
+          <TextField label="Full name" required placeholder="e.g. Rev. Edmund Asare" value={draft.full_name} onChange={(v) => setDraft({ ...draft, full_name: v })}/>
+          <TextField label="Title / role" placeholder="optional — e.g. Senior Pastor" value={draft.title} onChange={(v) => setDraft({ ...draft, title: v })}/>
+          <PhoneField label="Phone" value={draft.phone} onChange={(v) => setDraft({ ...draft, phone: v })}/>
+          <TextField label="Email" type="email" value={draft.email} onChange={(v) => setDraft({ ...draft, email: v })}/>
+          <SelectField
+            label="Zone"
+            options={zoneOptions}
+            value={draft.zoneId === '' ? '' : String(draft.zoneId)}
+            onChange={(v) => setDraft({ ...draft, zoneId: v === '' ? '' : Number(v), churchId: '' })}
+            placeholder="Select zone…"
+          />
+          <SelectField
+            label="Church"
+            options={churchOptions}
+            value={draft.churchId === '' ? '' : String(draft.churchId)}
+            onChange={(v) => setDraft({ ...draft, churchId: v === '' ? '' : Number(v) })}
+            placeholder={draft.zoneId === '' ? 'Select church…' : 'Select church in zone…'}
+          />
+          <TextareaField label="Notes" value={draft.notes} onChange={(v) => setDraft({ ...draft, notes: v })}/>
+        </div>
+        {error && <div className="field-error" style={{ margin: '4px 0' }}>{error}</div>}
+        <div className="row">
+          {editing ? (
+            <button type="button" className="btn" onClick={handleDelete} disabled={deleteContact.isPending} style={{ color: 'var(--risk)', borderColor: 'var(--risk)' }}>
+              {deleteContact.isPending ? 'Deleting…' : 'Delete'}
+            </button>
+          ) : (
+            <button type="button" className="btn" onClick={close}>Cancel</button>
+          )}
+          <button type="button" className="btn primary" onClick={handleSave} disabled={!canSave || pending}>
+            {pending ? 'Saving…' : editing ? 'Save' : 'Add contact'}
+          </button>
+        </div>
+      </InlineSheet>
+
       <TabBar active="home"/>
-      {drawer && <Drawer active="home" onClose={() => setDrawer(false)}/>}
+      {drawer.open && <Drawer active="home" onClose={drawer.hide}/>}
     </ResponsiveShell>
   );
 }
