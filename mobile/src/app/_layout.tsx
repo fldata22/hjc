@@ -5,6 +5,7 @@ import { StatusBar } from 'expo-status-bar';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 
 import { AuthProvider, useAuth } from '@/lib/auth';
+import { registerAndUploadPushToken } from '@/lib/push';
 import { QueryProvider } from '@/lib/query';
 
 // Auth gate: redirect between the app and the login screen based on session status.
@@ -22,6 +23,11 @@ function RootNavigator() {
       router.replace('/');
     }
   }, [status, segments, router]);
+
+  // Register this device for push once signed in (no-op on simulators / before EAS link).
+  useEffect(() => {
+    if (status === 'authed') registerAndUploadPushToken();
+  }, [status]);
 
   if (status === 'loading') {
     return (

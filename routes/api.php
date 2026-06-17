@@ -12,6 +12,8 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/zones', [\App\Http\Controllers\Api\ZoneController::class, 'index']);
     Route::get('/churches', [\App\Http\Controllers\Api\ChurchController::class, 'index']);
     Route::apiResource('contacts', \App\Http\Controllers\Api\ContactController::class);
+    Route::post('/push-token', [\App\Http\Controllers\Api\PushTokenController::class, 'store']);
+    Route::delete('/push-token', [\App\Http\Controllers\Api\PushTokenController::class, 'destroy']);
     Route::get('/pastors/stage-counts', [\App\Http\Controllers\Api\PastorController::class, 'stageCounts']);
     Route::get('/pastors/{pastor}/pledges', [\App\Http\Controllers\Api\PastorController::class, 'pledges']);
     Route::apiResource('pastors', \App\Http\Controllers\Api\PastorController::class);
